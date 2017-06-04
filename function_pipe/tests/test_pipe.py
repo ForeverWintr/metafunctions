@@ -75,7 +75,7 @@ class TestUnit(BaseTestCase):
             return x + 'y'
 
         cmp = y | y * 2 | y + y | y
-        self.assertEqual(cmp('_'), 'yyyyy')
+        self.assertEqual(cmp('_'), '_yyyyy')
         self.assertEqual(call_count, 5)
 
     def test_repr(self):
