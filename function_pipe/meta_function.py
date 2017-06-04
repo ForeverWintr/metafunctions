@@ -2,21 +2,17 @@ import functools
 import operator
 from collections.abc import Callable
 import typing as tp
+import abc
 
-class MetaFunction:
-    def __init__(self, functions: tuple):
-        '''A MetaFunction is a function that contains other functions. When executed, it calls the
-        functions it contains.
 
-        MetaFunctions can be composed with
-        '''
-        self._functions = functions
+class MetaFunction(abc.ABC):
+    '''A MetaFunction is a function that contains other functions. When executed, it calls the
+    functions it contains.
+    '''
 
+    @abc.abstractmethod
     def __call__(self, arg):
-        result = arg
-        for f in self._functions:
-            result = f(result)
-        return result
+        '''Call the functions contained in this MetaFunction'''
 
     @classmethod
     def make_meta(cls, function):
@@ -25,8 +21,6 @@ class MetaFunction:
             return cls((function, ))
         return function
 
-    def __repr__(self):
-        return 'MetaFunction({})'.format(' | '.join((f.__name__ for f in self._functions)))
 
     def binary_operation(method):
         '''Internal decorator to apply common type checking for binary operations'''
@@ -57,6 +51,34 @@ class MetaFunction:
 
     # This is almost definitely a bad idea, but it's interesting that it works
     del binary_operation
+
+
+class FunctionChain(MetaFunction):
+    def __init__(self, functions:tuple):
+        '''A FunctionChain is a metafunction that calls its functions in sequence, passing the results of the first function subsequent functions.
+        '''
+        self._functions = functions
+
+    def __call__(self, *args, **kwargs):
+        result = arg
+        for f in self._functions:
+            result = f(result)
+        return result
+
+    def __repr__(self):
+        return f'{self.__class__.__name__}({' | '.join((f.__name__ for f in self._functions))})'
+
+
+class FunctionMerge(MetaFunction):
+    def __init__(self, merge_func:tp.Callable, functions:tuple):
+        '''A FunctionMerge merges its functions by executing all of them and passing their results to `merge_func`
+        '''
+        self._merge_func
+        self._functions = functions
+
+    def __call__(self, *args, **kwargs):
+        results = (f(*args, **kwargs) for f in self._functions)
+        return self._merge_func(*results)
 
 
 class FunctionTuple(tuple):
