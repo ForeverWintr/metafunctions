@@ -1,7 +1,7 @@
+import operator
 
 from function_pipe.tests.util import BaseTestCase
 from function_pipe.decorators import pipe_node
-
 
 
 class TestUnit(BaseTestCase):
@@ -28,6 +28,55 @@ class TestUnit(BaseTestCase):
     def test_basic_composition(self):
         composite = a | b | c | d
         self.assertEqual(composite('_'), '_abcd')
+
+    def test_non_callable_composition(self):
+        '''Anything that is not callable in a composition is applied at call time (to the results
+        of the composed functions).
+        '''
+        @pipe_node
+        def g(x):
+            return x
+
+        cmps_to_expected = (
+            (g + 1, 11),
+            (g - 1, 9),
+            (g * 2, 20),
+            (g / 2, 5),
+        )
+
+        for cmp, expected in cmps_to_expected:
+            with self.subTest():
+                self.assertEqual(cmp(10), expected)
+
+
+    def test_or(self):
+        '''Assert that we can still use or'''
+        @pipe_node
+        def return_a_set(x):
+            return set(*x)
+
+        #Just wrap anything that isn't callable in a lambda, to put it off until call time
+        outer_set = set((1, 2, 3))
+
+        cmp = return_a_set | outer_set
+        reverse_cmp = outer_set | return_a_set
+
+        self.assertSetEqual(cmp('abc'), set('abc'))
+        self.assertSetEqual(reverse_cmp('abc'), set('abc'))
+
+
+    def test_single_calls(self):
+        '''every function is only called once'''
+        call_count = 0
+        @pipe_node
+        def y(x):
+            nonlocal call_count
+            call_count += 1
+            return x + 'y'
+
+        cmp = y | y * 2 | y + y | y
+        self.assertEqual(cmp('_'), 'yyyyy')
+        self.assertEqual(call_count, 5)
 
 
 ### Simple Sample Functions ###
