@@ -78,6 +78,10 @@ class TestUnit(BaseTestCase):
         self.assertEqual(cmp('_'), 'yyyyy')
         self.assertEqual(call_count, 5)
 
+    def test_repr(self):
+        cmp = a | b | c | (lambda x: None)
+        self.assertEqual(str(cmp), 'MetaFunction(a | b | c | <lambda>)')
+
 
 ### Simple Sample Functions ###
 @pipe_node
