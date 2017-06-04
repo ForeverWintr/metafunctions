@@ -60,13 +60,17 @@ class FunctionChain(MetaFunction):
         self._functions = functions
 
     def __call__(self, *args, **kwargs):
-        result = arg
-        for f in self._functions:
+        f_iter = iter(self._functions)
+        result = next(f_iter)(*args, **kwargs)
+        for f in f_iter:
             result = f(result)
         return result
 
+    def __str__(self):
+        return f'({" | ".join(f.__name__ for f in self._functions)})'
+
     def __repr__(self):
-        return f'{self.__class__.__name__}({' | '.join((f.__name__ for f in self._functions))})'
+        return f'{self.__class__.__name__}({self._functions})'
 
 
 class FunctionMerge(MetaFunction):
