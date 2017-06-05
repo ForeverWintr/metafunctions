@@ -1,4 +1,3 @@
-import operator
 
 from function_pipe.meta_function import FunctionChain
 from function_pipe.tests.util import BaseTestCase

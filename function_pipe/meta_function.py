@@ -74,15 +74,44 @@ class FunctionChain(MetaFunction):
 
 
 class FunctionMerge(MetaFunction):
-    def __init__(self, merge_func:tp.Callable, functions:tuple):
+    _character_to_operator = {
+        '+': operator.add,
+        '-': operator.sub,
+        '*': operator.mul,
+        '/': operator.truediv,
+    }
+    _operator_to_format = {f: f'{{}} {c} {{}}' for c, f in _character_to_operator.items()}
+    def __init__(self, merge_func:tp.Callable, functions:tuple, format_string=None):
         '''A FunctionMerge merges its functions by executing all of them and passing their results to `merge_func`
+
+        Args:
+            format_string: If you're using a `merge_func` that is not one of the standard operator
+            functions, use this argument to provide a custom format string.
         '''
-        self._merge_func
+        self._merge_func = merge_func
         self._functions = functions
+        self._format = self._operator_to_format[merge_func].format
+        if format_string:
+            self._format = format_string.format
 
     def __call__(self, *args, **kwargs):
         results = (f(*args, **kwargs) for f in self._functions)
         return self._merge_func(*results)
+
+    def __str__(self):
+        return f'({self._format(*self._functions)})'
+
+
+class SimpleFunction(MetaFunction):
+    def __init__(self, function):
+        '''A MetaFunction-aware wrapper around a single function'''
+        self._function = function
+
+        # This works!!!!
+        functools.wraps(function)(self)
+
+    def __call__(self, *args, **kwargs):
+        return self._function(*args, **kwargs)
 
 
 class FunctionTuple(tuple):
