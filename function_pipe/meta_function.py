@@ -66,11 +66,12 @@ class FunctionChain(MetaFunction):
             result = f(result)
         return result
 
+    def __repr__(self):
+        return f'{self.__class__.__name__}({self._functions})'
+
     def __str__(self):
         return f'({" | ".join(f.__name__ for f in self._functions)})'
 
-    def __repr__(self):
-        return f'{self.__class__.__name__}({self._functions})'
 
 
 class FunctionMerge(MetaFunction):
@@ -81,6 +82,7 @@ class FunctionMerge(MetaFunction):
         '/': operator.truediv,
     }
     _operator_to_format = {f: f'{{}} {c} {{}}' for c, f in _character_to_operator.items()}
+
     def __init__(self, merge_func:tp.Callable, functions:tuple, format_string=None):
         '''A FunctionMerge merges its functions by executing all of them and passing their results to `merge_func`
 
@@ -98,8 +100,11 @@ class FunctionMerge(MetaFunction):
         results = (f(*args, **kwargs) for f in self._functions)
         return self._merge_func(*results)
 
+    def __repr__(self):
+        return f'{self.__class__.__name__}({self._merge_func}, {self._functions})'
+
     def __str__(self):
-        return f'({self._format(*self._functions)})'
+        return f'({self._format(*(str(f) for f in self._functions))})'
 
 
 class SimpleFunction(MetaFunction):

@@ -1,6 +1,7 @@
 import operator
 
 from function_pipe.meta_function import FunctionMerge
+from function_pipe.meta_function import SimpleFunction
 from function_pipe.tests.util import BaseTestCase
 
 
@@ -11,13 +12,14 @@ class TestUnit(BaseTestCase):
         self.assertEqual(repr(c), f'FunctionMerge({operator.add}, {(a, b)})')
 
     def test_call(self):
-        c = FunctionMerge((a, b, l))
-        self.assertEqual(c('_'), '_abl')
+        c = FunctionMerge(operator.add, (a, b))
+        self.assertEqual(c('_'), '_a_b')
 
 
-
+@SimpleFunction
 def a(x):
     return x + 'a'
+@SimpleFunction
 def b(x):
     return x + 'b'
-l = lambda x: x + 'l'
+l = SimpleFunction(lambda x: x + 'l')
