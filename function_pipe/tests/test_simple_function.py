@@ -9,11 +9,16 @@ class TestUnit(BaseTestCase):
         self.assertEqual(a.__name__, 'a')
         self.assertEqual(a.__module__, __name__)
 
+    def test_call(self):
+        self.assertEqual(a('_'), '_a')
+        self.assertEqual(l('_'), '_l')
+
+    def test_str(self):
+        self.assertEqual(repr(a), f'SimpleFunction({repr(a._function)})')
+        self.assertEqual(str(a), 'a')
+
 
 @SimpleFunction
 def a(x):
     return x + 'a'
-@SimpleFunction
-def b(x):
-    return x + 'b'
 l = SimpleFunction(lambda x: x + 'l')

@@ -113,6 +113,12 @@ class SimpleFunction(MetaFunction):
     def __call__(self, *args, **kwargs):
         return self._function(*args, **kwargs)
 
+    def __repr__(self):
+        return f'{self.__class__.__name__}({self._function})'
+
+    def __str__(self):
+        return self.__name__
+
 
 class FunctionTuple(tuple):
     _character_to_operator = {
