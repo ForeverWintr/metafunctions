@@ -120,19 +120,4 @@ class SimpleFunction(MetaFunction):
         return self.__name__
 
 
-class FunctionTuple(tuple):
-    _character_to_operator = {
-        '+': operator.add,
-        '-': operator.sub,
-        '*': operator.mul,
-        '/': operator.truediv,
-    }
-    _operator_to_format = {f: f'{{}} {c} {{}}' for c, f in _character_to_operator.items()}
 
-    def __new__(cls, operator_func: tp.Callable, *funcs):
-        if not operator_func in cls._operator_to_format:
-            raise TypeError(f'Invalid operation argument. {operator_func} is not a member of {set(cls._operator_to_format)}')
-        return tuple.__new__(cls, (operator_func,) + funcs)
-
-    def __str__(self):
-        return self._operator_to_format[self[0]].format(*self[1:])
