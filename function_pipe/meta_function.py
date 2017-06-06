@@ -46,7 +46,11 @@ class MetaFunction(abc.ABC):
     ### Non composing operators ###
     @binary_operation
     def __add__(self, other):
-        return self.__class__()
+        return FunctionMerge(operator.add, (self, other))
+
+    @binary_operation
+    def __radd__(self, other):
+        return FunctionMerge(operator.add, (other, self))
 
     @binary_operation
     def __mul__(self, other):
