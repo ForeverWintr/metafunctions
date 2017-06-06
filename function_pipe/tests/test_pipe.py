@@ -1,4 +1,5 @@
 import operator
+import unittest
 
 from function_pipe.tests.util import BaseTestCase
 from function_pipe.decorators import pipe_node
@@ -53,7 +54,7 @@ class TestUnit(BaseTestCase):
             with self.subTest():
                 self.assertEqual(cmp(10), expected)
 
-
+    @unittest.skip("Making this work doesn't make sense anymore")
     def test_or(self):
         '''Assert that we can still use or'''
         @pipe_node
@@ -80,7 +81,7 @@ class TestUnit(BaseTestCase):
             return x + 'y'
 
         cmp = y | y * 2 | y + y | y
-        self.assertEqual(cmp('_'), '_yyyyy')
+        self.assertEqual(cmp('_'), '_yy_yyy_yy_yyyy')
         self.assertEqual(call_count, 5)
 
     def test_repr(self):
