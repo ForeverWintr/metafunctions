@@ -23,7 +23,7 @@ class TestUnit(BaseTestCase):
 
         self.assertEqual(str(FunctionChain.combine(chain, chain)),
                 '(a | b | <lambda> | a | b | <lambda>)')
-        self.assertEqual(str(chain|chain),
+        self.assertEqual(str(chain | chain),
                 '(a | b | <lambda> | a | b | <lambda>)')
         self.assertEqual(str(chain | merge | chain),
                 '(a | b | <lambda> | (a + b) | a | b | <lambda>)')
