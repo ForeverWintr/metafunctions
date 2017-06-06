@@ -35,15 +35,16 @@ class MetaFunction(abc.ABC):
             return method(self, self.make_meta(new_other))
         return binary_operation
 
+
+    ### Operator overloads ###
     @binary_operation
     def __or__(self, other):
-        return FunctionChain(self.functions + other.functions)
+        return FunctionChain.combine(self, other)
 
     @binary_operation
     def __ror__(self, other):
-        return FunctionChain(other.functions + self.functions)
+        return FunctionChain.combine(other, self)
 
-    ### Non composing operators ###
     @binary_operation
     def __add__(self, other):
         return FunctionMerge(operator.add, (self, other))
@@ -62,9 +63,22 @@ class MetaFunction(abc.ABC):
 
 class FunctionChain(MetaFunction):
     def __init__(self, functions:tuple):
-        '''A FunctionChain is a metafunction that calls its functions in sequence, passing the results of the first function subsequent functions.
+        '''A FunctionChain is a metafunction that calls its functions in sequence, passing the
+        results of the first function subsequent functions.
         '''
         self._functions = functions
+
+    @classmethod
+    def combine(cls, *funcs):
+        '''Merge chains; i.e., combine all FunctionChains in `funcs` into a single FunctionChain.
+        '''
+        new_funcs = []
+        for f in funcs:
+            if isinstance(f, FunctionChain):
+                new_funcs.extend(f.functions)
+            else:
+                new_funcs.append(f)
+        return cls(tuple(new_funcs))
 
     def __call__(self, *args, **kwargs):
         f_iter = iter(self._functions)
@@ -74,11 +88,10 @@ class FunctionChain(MetaFunction):
         return result
 
     def __repr__(self):
-        return f'{self.__class__.__name__}({self._functions})'
+        return f'{self.__class__.__name__}({self.functions})'
 
     def __str__(self):
-        return f'({" | ".join(f.__name__ for f in self._functions)})'
-
+        return f'({" | ".join(str(f) for f in self.functions)})'
 
 
 class FunctionMerge(MetaFunction):
@@ -104,14 +117,14 @@ class FunctionMerge(MetaFunction):
             self._format = format_string.format
 
     def __call__(self, *args, **kwargs):
-        results = (f(*args, **kwargs) for f in self._functions)
+        results = (f(*args, **kwargs) for f in self.functions)
         return self._merge_func(*results)
 
     def __repr__(self):
-        return f'{self.__class__.__name__}({self._merge_func}, {self._functions})'
+        return f'{self.__class__.__name__}({self._merge_func}, {self.functions})'
 
     def __str__(self):
-        return f'({self._format(*(str(f) for f in self._functions))})'
+        return f'({self._format(*(str(f) for f in self.functions))})'
 
 
 class SimpleFunction(MetaFunction):

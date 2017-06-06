@@ -1,5 +1,8 @@
+import operator
 
 from function_pipe.meta_function import FunctionChain
+from function_pipe.meta_function import FunctionMerge
+from function_pipe.meta_function import SimpleFunction
 from function_pipe.tests.util import BaseTestCase
 
 
@@ -13,9 +16,22 @@ class TestUnit(BaseTestCase):
         c = FunctionChain((a, b, l))
         self.assertEqual(c('_'), '_abl')
 
+    def test_combine(self):
+        '''Avoid nesting chains'''
+        chain = FunctionChain((a, b, l))
+        merge = FunctionMerge(operator.add, (a, b))
 
+        self.assertEqual(str(FunctionChain.combine(chain, chain)),
+                '(a | b | <lambda> | a | b | <lambda>)')
+        self.assertEqual(str(chain|chain),
+                '(a | b | <lambda> | a | b | <lambda>)')
+        self.assertEqual(str(chain | merge | chain),
+                '(a | b | <lambda> | (a + b) | a | b | <lambda>)')
+
+@SimpleFunction
 def a(x):
     return x + 'a'
+@SimpleFunction
 def b(x):
     return x + 'b'
-l = lambda x: x + 'l'
+l = SimpleFunction(lambda x: x + 'l')
