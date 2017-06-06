@@ -1,10 +1,8 @@
 from functools import wraps
 
-from function_pipe.meta_function import MetaFunction
+from function_pipe.meta_function import SimpleFunction
 
 
 
 def pipe_node(function):
-    mf = MetaFunction((function, ))
-    mf = wraps(function)(mf)
-    return mf
+    return SimpleFunction(function)
