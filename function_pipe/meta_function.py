@@ -14,13 +14,16 @@ class MetaFunction(abc.ABC):
     def __call__(self, arg):
         '''Call the functions contained in this MetaFunction'''
 
+    @property
+    def functions(self):
+        return self._functions
+
     @classmethod
     def make_meta(cls, function):
-        '''Wrap the given function in a metaclass, unless it's already a metaclass'''
-        if not isinstance(function, cls):
-            return cls((function, ))
+        '''Wrap the given function in a metafunction, unless it's already a metafunction'''
+        if not isinstance(function, MetaFunction):
+            return SimpleFunction(function)
         return function
-
 
     def binary_operation(method):
         '''Internal decorator to apply common type checking for binary operations'''
@@ -34,11 +37,11 @@ class MetaFunction(abc.ABC):
 
     @binary_operation
     def __or__(self, other):
-        return self.__class__(self._functions + other._functions)
+        return FunctionChain(self.functions + other.functions)
 
     @binary_operation
     def __ror__(self, other):
-        return self.__class__(other._functions + self._functions)
+        return FunctionChain(other.functions + self.functions)
 
     ### Non composing operators ###
     @binary_operation
@@ -124,5 +127,7 @@ class SimpleFunction(MetaFunction):
     def __str__(self):
         return self.__name__
 
-
+    @property
+    def functions(self):
+        return (self._function, )
 
