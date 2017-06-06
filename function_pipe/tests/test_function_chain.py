@@ -1,8 +1,8 @@
 import operator
 
-from function_pipe.meta_function import FunctionChain
-from function_pipe.meta_function import FunctionMerge
-from function_pipe.meta_function import SimpleFunction
+from function_pipe.metafunctions import FunctionChain
+from function_pipe.metafunctions import FunctionMerge
+from function_pipe.metafunctions import SimpleFunction
 from function_pipe.tests.util import BaseTestCase
 
 
