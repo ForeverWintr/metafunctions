@@ -54,8 +54,28 @@ class MetaFunction(abc.ABC):
         return FunctionMerge(operator.add, (other, self))
 
     @binary_operation
+    def __sub__(self, other):
+        return FunctionMerge(operator.sub, (self, other))
+
+    @binary_operation
+    def __rsub__(self, other):
+        return FunctionMerge(operator.sub, (other, self))
+
+    @binary_operation
     def __mul__(self, other):
-        asdf
+        return FunctionMerge(operator.mul, (self, other))
+
+    @binary_operation
+    def __rmul__(self, other):
+        return FunctionMerge(operator.mul, (other, self))
+
+    @binary_operation
+    def __truediv__(self, other):
+        return FunctionMerge(operator.truediv, (self, other))
+
+    @binary_operation
+    def __rtruediv__(self, other):
+        return FunctionMerge(operator.truediv, (other, self))
 
     # This is almost definitely a bad idea, but it's interesting that it works
     del binary_operation

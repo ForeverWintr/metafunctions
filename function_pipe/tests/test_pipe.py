@@ -29,6 +29,11 @@ class TestUnit(BaseTestCase):
         composite = a | b | c | d
         self.assertEqual(composite('_'), '_abcd')
 
+    def test_advanced_str(self):
+        cmp = a | b + c + d | e
+        self.assertEqual(str(cmp), '(a | ((b + c) + d) | e)')
+        self.assertEqual(cmp('_'), '_ab_ac_ade')
+
     def test_non_callable_composition(self):
         '''Anything that is not callable in a composition is applied at call time (to the results
         of the composed functions).
@@ -80,7 +85,7 @@ class TestUnit(BaseTestCase):
 
     def test_repr(self):
         cmp = a | b | c | (lambda x: None)
-        self.assertEqual(str(cmp), 'MetaFunction(a | b | c | <lambda>)')
+        self.assertEqual(str(cmp), '(a | b | c | <lambda>)')
 
 
 ### Simple Sample Functions ###
@@ -96,3 +101,6 @@ def c(x):
 @pipe_node
 def d(x):
     return x + 'd'
+@pipe_node
+def e(x):
+    return x + 'e'
