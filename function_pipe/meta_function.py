@@ -5,7 +5,7 @@ import typing as tp
 import abc
 
 
-class MetaFunction(abc.ABC):
+class MetaFunction(metaclass=abc.ABCMeta):
     '''A MetaFunction is a function that contains other functions. When executed, it calls the
     functions it contains.
     '''

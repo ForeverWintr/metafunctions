@@ -22,9 +22,11 @@ class TestUnit(BaseTestCase):
 
         ay = a | y
         ya = y | a
+        ayyyy = a | y | y | y | y
 
         self.assertEqual(ay('_'), '_ay')
         self.assertEqual(ya('_'), '_ya')
+        self.assertEqual(ayyyy('_'), '_ayyyy')
 
     def test_basic_composition(self):
         composite = a | b | c | d
