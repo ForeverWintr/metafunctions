@@ -1,8 +1,8 @@
 import operator
 import unittest
 
-from function_pipe.tests.util import BaseTestCase
-from function_pipe.decorators import pipe_node
+from metafunctions.tests.util import BaseTestCase
+from metafunctions.decorators import pipe_node
 
 
 class TestUnit(BaseTestCase):

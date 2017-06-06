@@ -1,6 +1,6 @@
 from functools import wraps
 
-from function_pipe.metafunctions import SimpleFunction
+from metafunctions.metafunctions import SimpleFunction
 
 
 

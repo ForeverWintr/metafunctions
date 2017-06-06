@@ -4,7 +4,7 @@
 # Wing IDE project file                                          #
 ##################################################################
 [project attributes]
-proj.directory-list = [{'dirloc': loc('function_pipe'),
+proj.directory-list = [{'dirloc': loc('metafunctions'),
                         'excludes': (),
                         'filter': u'*',
                         'include_hidden': False,

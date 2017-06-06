@@ -1,7 +1,7 @@
 import operator
 
-from function_pipe.metafunctions import SimpleFunction
-from function_pipe.tests.util import BaseTestCase
+from metafunctions.metafunctions import SimpleFunction
+from metafunctions.tests.util import BaseTestCase
 
 
 class TestUnit(BaseTestCase):
