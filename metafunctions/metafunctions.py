@@ -6,9 +6,12 @@ import abc
 
 
 class MetaFunction(metaclass=abc.ABCMeta):
-    '''A MetaFunction is a function that contains other functions. When executed, it calls the
-    functions it contains.
-    '''
+
+    @abc.abstractmethod
+    def __init__(self, *args, **kwargs):
+        '''A MetaFunction is a function that contains other functions. When executed, it calls the
+        functions it contains.
+        '''
 
     @abc.abstractmethod
     def __call__(self, arg):
