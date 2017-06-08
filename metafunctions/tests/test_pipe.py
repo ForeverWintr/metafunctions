@@ -5,7 +5,7 @@ from metafunctions.tests.util import BaseTestCase
 from metafunctions.decorators import pipe_node
 
 
-class TestUnit(BaseTestCase):
+class TestIntegration(BaseTestCase):
     def test_basic_usage(self):
         self.assertEqual(a('_'), '_a')
 
@@ -24,9 +24,18 @@ class TestUnit(BaseTestCase):
         ya = y | a
         ayyyy = a | y | y | y | y
 
+        # Can't do this
+        #ayy = a | y + y
+
+        # But this should work
+        yayy = y | a + y
+        yy_ya = y | y + a
+
         self.assertEqual(ay('_'), '_ay')
         self.assertEqual(ya('_'), '_ya')
         self.assertEqual(ayyyy('_'), '_ayyyy')
+        self.assertEqual(yayy('_'), '_ya_yy')
+        self.assertEqual(yy_ya('_'), '_yy_ya')
 
     def test_basic_composition(self):
         composite = a | b | c | d
