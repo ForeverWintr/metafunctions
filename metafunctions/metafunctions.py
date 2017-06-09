@@ -172,10 +172,11 @@ class SimpleFunction(MetaFunction):
         functools.wraps(function)(self)
 
     def __call__(self, *args, **kwargs):
+        meta = kwargs.pop('meta', self)
         additional_args = ()
         if self._bind:
             #If we've recieved a higher function's meta, pass it. Else pass self.
-            additional_args = (kwargs.pop('meta', self), )
+            additional_args = (meta, )
         return self._function(*additional_args, *args, **kwargs)
 
     def __repr__(self):
