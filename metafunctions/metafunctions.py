@@ -12,6 +12,7 @@ class MetaFunction(metaclass=abc.ABCMeta):
         '''A MetaFunction is a function that contains other functions. When executed, it calls the
         functions it contains.
         '''
+        self.data = {}
 
     @abc.abstractmethod
     def __call__(self, arg):
@@ -27,6 +28,12 @@ class MetaFunction(metaclass=abc.ABCMeta):
         if not isinstance(function, MetaFunction):
             return SimpleFunction(function)
         return function
+
+    def _modify_kwargs(self, kwargs:dict):
+        '''Do pre-call modifications to the kwargs dictionary. Currently this just means adding a
+        meta object if _bind is true.
+        '''
+        kwargs.setdefault('meta', self)
 
     def binary_operation(method):
         '''Internal decorator to apply common type checking for binary operations'''
@@ -89,6 +96,7 @@ class FunctionChain(MetaFunction):
         '''A FunctionChain is a metafunction that calls its functions in sequence, passing the
         results of the first function subsequent functions.
         '''
+        super().__init__()
         self._functions = functions
 
     @classmethod
@@ -104,10 +112,11 @@ class FunctionChain(MetaFunction):
         return cls(tuple(new_funcs))
 
     def __call__(self, *args, **kwargs):
+        self._modify_kwargs(kwargs)
         f_iter = iter(self._functions)
         result = next(f_iter)(*args, **kwargs)
         for f in f_iter:
-            result = f(result)
+            result = f(result, **kwargs)
         return result
 
     def __repr__(self):
@@ -133,6 +142,7 @@ class FunctionMerge(MetaFunction):
             format_string: If you're using a `merge_func` that is not one of the standard operator
             functions, use this argument to provide a custom format string.
         '''
+        super().__init__()
         self._merge_func = merge_func
         self._functions = functions
         self._format = self._operator_to_format[merge_func].format
@@ -140,6 +150,7 @@ class FunctionMerge(MetaFunction):
             self._format = format_string.format
 
     def __call__(self, *args, **kwargs):
+        self._modify_kwargs(kwargs)
         results = (f(*args, **kwargs) for f in self.functions)
         return self._merge_func(*results)
 
@@ -151,15 +162,21 @@ class FunctionMerge(MetaFunction):
 
 
 class SimpleFunction(MetaFunction):
-    def __init__(self, function):
+    def __init__(self, function, bind=False):
         '''A MetaFunction-aware wrapper around a single function'''
+        super().__init__()
+        self._bind = bind
         self._function = function
 
         # This works!!!!
         functools.wraps(function)(self)
 
     def __call__(self, *args, **kwargs):
-        return self._function(*args, **kwargs)
+        additional_args = ()
+        if self._bind:
+            #If we've recieved a higher function's meta, pass it. Else pass self.
+            additional_args = (kwargs.pop('meta', self), )
+        return self._function(*additional_args, *args, **kwargs)
 
     def __repr__(self):
         return f'{self.__class__.__name__}({self._function})'
