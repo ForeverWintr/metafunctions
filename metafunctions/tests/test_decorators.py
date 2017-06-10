@@ -1,4 +1,5 @@
 from metafunctions import decorators
+from metafunctions.metafunctions import SimpleFunction
 from metafunctions.metafunctions import MetaFunction
 from metafunctions.tests.util import BaseTestCase
 
@@ -27,3 +28,18 @@ class TestUnit(BaseTestCase):
         self.assertEqual(cmp('_'), '_ab')
         cmp = f | a | a | f + f
         self.assertEqual(cmp('_'), '_faab_faab')
+
+    def test_node_bracketless(self):
+        '''I'm allowing the node decorator to be applied without calling because this is how both
+        celery and function_pipes work.
+        '''
+        @decorators.node
+        def a(x):
+            return x + 'a'
+        @decorators.node()
+        def b(x):
+            return x + 'b'
+
+        self.assertIsInstance(a, SimpleFunction)
+        self.assertIsInstance(b, SimpleFunction)
+        self.assertEqual((b|a)('_'), '_ba')
