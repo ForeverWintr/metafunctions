@@ -46,3 +46,42 @@ Well you may not *need* a new syntax, but the ability to compose a data pipeline
   ```python
   pipeline = step1 | step2 + step3
   result = pipeline(data)
+  ```
+
+## How does it work?
+
+Conceptually, a MetaFunction is a function that contains other functions. When you call a MetaFunction, the MetaFunction calls the functions it contains. 
+
+You can create a MetaFunction using the `node` decorator:
+```python
+from metafunctions.decorators import node
+
+@node
+def get_name(prompt):
+    return input(prompt)
+
+@node
+def say_hello(name):
+    return 'Hello {}!'.format(name)
+```
+
+MetaFunctions override certain operators to allow for composition. For example, the following creates a new MetaFunction that combines `get_name` and `say_hello`:
+```python
+greet = get_name | say_hello
+```
+
+When we call the `greet` MetaFunction, it calls both its internal functions in turn.
+```python
+# First, `get_name` is called, which prints our prompt to the screen.
+# If we enter 'Tom' at the prompt, the second function returns the string 'Hello Tom!'
+greeting = greet('Please enter your name ')
+print(greeting) # Hello Tom!
+```
+
+MetaFunctions are also capable of upgrading regular functions to MetaFunctions at composition time, so we can simplify our example by composing `say_hello` directly with the builtin `input` and `print` functions:
+```python
+>>> greet = input | say_hello | print
+>>> greet('Please enter your name: ')
+# Please enter your name: Tom
+# Hello tom!
+```
