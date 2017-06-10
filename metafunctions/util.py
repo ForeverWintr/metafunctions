@@ -2,7 +2,7 @@
 Utility functions for use in function pipelines.
 '''
 from metafunctions.decorators import node
-from metafunctions.metafunctions import MetaFunction
+from metafunctions.core import MetaFunction
 
 
 def store(key):

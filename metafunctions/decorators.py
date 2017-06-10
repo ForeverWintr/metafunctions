@@ -1,6 +1,6 @@
 from functools import wraps
 
-from metafunctions.metafunctions import SimpleFunction
+from metafunctions.core import SimpleFunction
 
 
 def node(_func=None, *, bind=False):

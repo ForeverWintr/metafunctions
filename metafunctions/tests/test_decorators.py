@@ -1,6 +1,6 @@
 from metafunctions import decorators
-from metafunctions.metafunctions import SimpleFunction
-from metafunctions.metafunctions import MetaFunction
+from metafunctions.core import SimpleFunction
+from metafunctions.core import MetaFunction
 from metafunctions.tests.util import BaseTestCase
 
 

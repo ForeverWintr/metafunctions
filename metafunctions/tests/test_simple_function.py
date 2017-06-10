@@ -1,6 +1,6 @@
 import operator
 
-from metafunctions.metafunctions import SimpleFunction
+from metafunctions.core import SimpleFunction
 from metafunctions.tests.util import BaseTestCase
 
 

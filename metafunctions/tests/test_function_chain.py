@@ -1,8 +1,8 @@
 import operator
 
-from metafunctions.metafunctions import FunctionChain
-from metafunctions.metafunctions import FunctionMerge
-from metafunctions.metafunctions import SimpleFunction
+from metafunctions.core import FunctionChain
+from metafunctions.core import FunctionMerge
+from metafunctions.core import SimpleFunction
 from metafunctions.tests.util import BaseTestCase
 
 
