@@ -3,11 +3,6 @@ from functools import wraps
 from metafunctions.metafunctions import SimpleFunction
 
 
-
-def pipe_node(function):
-    return SimpleFunction(function)
-
-
 def node(_func=None, *, bind=False):
     '''Turn the decorated function into a MetaFunction.
 

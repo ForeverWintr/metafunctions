@@ -2,7 +2,7 @@ import operator
 import unittest
 
 from metafunctions.tests.util import BaseTestCase
-from metafunctions.decorators import pipe_node
+from metafunctions.decorators import node
 
 
 class TestIntegration(BaseTestCase):
@@ -10,7 +10,7 @@ class TestIntegration(BaseTestCase):
         self.assertEqual(a('_'), '_a')
 
     def test_wraps(self):
-        @pipe_node
+        @node
         def d():
             'a docstring for d'
         self.assertEqual(d.__doc__, 'a docstring for d')
@@ -50,7 +50,7 @@ class TestIntegration(BaseTestCase):
         '''Anything that is not callable in a composition is applied at call time (to the results
         of the composed functions).
         '''
-        @pipe_node
+        @node
         def g(x):
             return x
 
@@ -68,7 +68,7 @@ class TestIntegration(BaseTestCase):
     @unittest.skip("Making this work doesn't make sense anymore")
     def test_or(self):
         '''Assert that we can still use or'''
-        @pipe_node
+        @node
         def return_a_set(x):
             return set(*x)
 
@@ -85,7 +85,7 @@ class TestIntegration(BaseTestCase):
     def test_single_calls(self):
         '''every function is only called once'''
         call_count = 0
-        @pipe_node
+        @node
         def y(x):
             nonlocal call_count
             call_count += 1
@@ -101,18 +101,18 @@ class TestIntegration(BaseTestCase):
 
 
 ### Simple Sample Functions ###
-@pipe_node
+@node
 def a(x):
     return x + 'a'
-@pipe_node
+@node
 def b(x):
     return x + 'b'
-@pipe_node
+@node
 def c(x):
     return x + 'c'
-@pipe_node
+@node
 def d(x):
     return x + 'd'
-@pipe_node
+@node
 def e(x):
     return x + 'e'
