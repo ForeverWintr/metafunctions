@@ -37,6 +37,12 @@ class TestIntegration(BaseTestCase):
         self.assertEqual(yayy('_'), '_ya_yy')
         self.assertEqual(yy_ya('_'), '_yy_ya')
 
+    def test_auto_meta_builtins(self):
+        '''We can upgrade builtin functions too'''
+
+        mean = node(sum) / len
+        self.assertEqual(mean((100, 200, 300)), 200)
+
     def test_basic_composition(self):
         composite = a | b | c | d
         self.assertEqual(composite('_'), '_abcd')
