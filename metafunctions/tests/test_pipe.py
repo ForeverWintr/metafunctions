@@ -65,6 +65,10 @@ class TestIntegration(BaseTestCase):
             (g - 1, 9),
             (g * 2, 20),
             (g / 2, 5),
+            (1 + g, 11),
+            (1 - g, -9),
+            (2 * g, 20),
+            (2 / g, .2),
         )
 
         for cmp, expected in cmps_to_expected:
