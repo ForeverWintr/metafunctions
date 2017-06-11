@@ -1,9 +1,14 @@
 import os
 import contextlib
 import pathlib
+import shutil
 from setuptools import setup, find_packages
 
-import pandoc
+has_pandoc = True
+try:
+    import pandoc
+except ImportError:
+    has_pandoc = False
 
 import metafunctions
 
@@ -17,10 +22,13 @@ def md_to_rst(dir_):
     dir_ = pathlib.Path(dir_)
     rstfiles = []
     for mdfile in dir_.glob('*.md'):
-        doc = pandoc.Document()
-        doc.markdown = mdfile.read_bytes()
         rstfile = mdfile.with_suffix('.rst')
-        rstfile.write_bytes(doc.rst)
+        if has_pandoc:
+            doc = pandoc.Document()
+            doc.markdown = mdfile.read_bytes()
+            rstfile.write_bytes(doc.rst)
+        else:
+            shutil.copy(mdfile, rstfile)
         rstfiles.append(rstfile)
 
     yield rstfiles
