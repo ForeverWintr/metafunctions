@@ -39,10 +39,11 @@ class MetaFunction(metaclass=abc.ABCMeta):
         '''Internal decorator to apply common type checking for binary operations'''
         @functools.wraps(method)
         def binary_operation(self, other):
-            new_other = other
-            if not isinstance(other, Callable):
+            if isinstance(other, Callable):
+                new_other = self.make_meta(other)
+            else:
                 new_other = DeferredValue(other)
-            return method(self, self.make_meta(new_other))
+            return method(self, new_other)
         return binary_operation
 
 

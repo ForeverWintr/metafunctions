@@ -53,6 +53,9 @@ class TestIntegration(BaseTestCase):
 
         cmp = a + 'f'
         self.assertEqual(str(cmp), "(a + 'f')")
+        self.assertEqual(repr(cmp),
+                "FunctionMerge(<built-in function add>, "
+                f"(SimpleFunction({repr(a._function)}), DeferredValue('f')))")
 
     def test_non_callable_composition(self):
         '''
