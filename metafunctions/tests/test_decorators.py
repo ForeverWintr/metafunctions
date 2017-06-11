@@ -6,7 +6,8 @@ from metafunctions.tests.util import BaseTestCase
 
 class TestUnit(BaseTestCase):
     def test_node_bind(self):
-        '''Node bind rules:
+        '''
+        Node bind rules:
         The MetaFunction recieved in a base function when bind is true is the
         function that was called. E.g., if a SimpleFunction is called directly, meta will be that
         SimpleFunction itself. However, if the SimpleFunction is contained within a hierarchy of
@@ -30,7 +31,8 @@ class TestUnit(BaseTestCase):
         self.assertEqual(cmp('_'), '_faab_faab')
 
     def test_node_bracketless(self):
-        '''I'm allowing the node decorator to be applied without calling because this is how both
+        '''
+        I'm allowing the node decorator to be applied without calling because this is how both
         celery and function_pipes work.
         '''
         @decorators.node

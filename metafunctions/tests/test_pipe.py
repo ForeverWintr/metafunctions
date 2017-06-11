@@ -53,7 +53,8 @@ class TestIntegration(BaseTestCase):
         self.assertEqual(cmp('_'), '_ab_ac_ade')
 
     def test_non_callable_composition(self):
-        '''Anything that is not callable in a composition is applied at call time (to the results
+        '''
+        Anything that is not callable in a composition is applied at call time (to the results
         of the composed functions).
         '''
         @node
