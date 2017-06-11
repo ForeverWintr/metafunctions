@@ -12,5 +12,8 @@ proj.directory-list = [{'dirloc': loc('metafunctions'),
                         'watch_for_changes': True}]
 proj.file-list = [loc('setup.py')]
 proj.file-type = 'shared'
+proj.launch-config = {loc('setup.py'): ('project',
+        (u'sdist\n',
+         ''))}
 testing.auto-test-file-specs = (('glob',
                                  'test_*.py'),)
