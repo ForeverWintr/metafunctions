@@ -13,6 +13,7 @@ class MetaFunction(metaclass=abc.ABCMeta):
         functions it contains.
         '''
         self.data = {}
+        self.called_functions = []
 
     @abc.abstractmethod
     def __call__(self, arg):

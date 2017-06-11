@@ -126,6 +126,7 @@ class TestIntegration(BaseTestCase):
         abc_ = abc + parent_test
 
         meta = abc_('_')
+        self.assertListEqual(meta.called_functions, [a, b, c, parent_test])
         self.fail()
 
 
