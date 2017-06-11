@@ -29,7 +29,7 @@ class MetaFunction(metaclass=abc.ABCMeta):
             return SimpleFunction(function)
         return function
 
-    def _modify_kwargs(self, kwargs:dict):
+    def _modify_kwargs(self, kwargs: dict):
         '''Do pre-call modifications to the kwargs dictionary. Currently this just means adding a
         meta object if _bind is true.
         '''

@@ -1,5 +1,3 @@
-from functools import wraps
-
 from metafunctions.core import SimpleFunction
 
 

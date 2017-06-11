@@ -1,5 +1,3 @@
-import operator
-
 from metafunctions.core import SimpleFunction
 from metafunctions.tests.util import BaseTestCase
 

@@ -1,4 +1,3 @@
-import operator
 import unittest
 
 from metafunctions.tests.util import BaseTestCase

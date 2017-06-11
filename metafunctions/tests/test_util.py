@@ -1,6 +1,4 @@
 
-import unittest
-
 from metafunctions.tests.util import BaseTestCase
 from metafunctions.decorators import node
 from metafunctions import util
