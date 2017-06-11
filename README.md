@@ -29,7 +29,7 @@ Well you may not *need* a new syntax, but the ability to compose a data pipeline
   
   # preprocess is now a MetaFunction, and can be reused
   clean_data1 = preprocess('path/to/data/file')
-  clean_data2 = preprocess('path/to/different/file.')
+  clean_data2 = preprocess('path/to/different/file')
   
   # Preprocess can be included in larger pipelines
   pipeline = preprocess | step1 | step2 | step3
@@ -39,12 +39,12 @@ Well you may not *need* a new syntax, but the ability to compose a data pipeline
   ```python
   >>> str(preprocess)
   "(load | parse | clean | validate | format)"
-* **Advanced Composition**. Anything beyond simple function chaining becomes difficult using traditional methods. What if you want to send the result of `step1` to both steps `2` and `3`, then sum the results? You'd traditionally have to write something like:
+* **Advanced Composition**. Anything beyond simple function chaining becomes difficult using traditional methods. What if you want to send the result of `step1` to both steps `2` and `3`, then sum the results? The traditional approach requires an intermediate variable and can quickly become unwieldy:
   ```python
   result1 = step1(data)
   result2 = step2(result1) + step3(result1)
   ```
-  Which requires an intermediate variable and can quickly become unwieldy. Using metafunctions, you can declare a pipeline that does the same thing:
+  Using metafunctions, you can declare a pipeline that does the same thing:
   ```python
   pipeline = step1 | step2 + step3
   result = pipeline(data)
