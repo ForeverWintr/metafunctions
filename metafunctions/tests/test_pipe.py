@@ -112,6 +112,22 @@ class TestIntegration(BaseTestCase):
         cmp = a | b | c | (lambda x: None)
         self.assertEqual(str(cmp), '(a | b | c | <lambda>)')
 
+    def test_called_functions(self):
+        '''
+        Parent refers to the parent MetaFunction.
+        '''
+
+        @node(bind=True)
+        def parent_test(meta, x):
+            return meta
+
+        ab = a | b
+        abc = ab + c
+        abc_ = abc + parent_test
+
+        meta = abc_('_')
+        self.fail()
+
 
 ### Simple Sample Functions ###
 @node
