@@ -51,6 +51,9 @@ class TestIntegration(BaseTestCase):
         self.assertEqual(str(cmp), '(a | ((b + c) + d) | e)')
         self.assertEqual(cmp('_'), '_ab_ac_ade')
 
+        cmp = a + 'f'
+        self.assertEqual(str(cmp), "(a + DeferredValue('f'))")
+
     def test_non_callable_composition(self):
         '''
         Anything that is not callable in a composition is applied at call time (to the results

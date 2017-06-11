@@ -41,7 +41,7 @@ class MetaFunction(metaclass=abc.ABCMeta):
         def binary_operation(self, other):
             new_other = other
             if not isinstance(other, Callable):
-                new_other = lambda *args, **kwargs: other
+                new_other = DeferredValue(other)
             return method(self, self.make_meta(new_other))
         return binary_operation
 
@@ -189,3 +189,16 @@ class SimpleFunction(MetaFunction):
     def functions(self):
         return (self._function, )
 
+
+class DeferredValue:
+    def __init__(self, value):
+        '''A simple Deferred Value. Returns `value` when called. Equivalent to lambda x: x.
+        '''
+        self._value = value
+        self.__name__ = str(self)
+
+    def __call__(self, *args, **kwargs):
+        return self._value
+
+    def __repr__(self):
+        return f'{self.__class__.__name__}({repr(self._value)})'
