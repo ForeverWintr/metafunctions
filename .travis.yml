@@ -1,0 +1,5 @@
+language: python
+python:
+  - "3.6"
+  - "3.7dev"
+script: python -m unittest discover
