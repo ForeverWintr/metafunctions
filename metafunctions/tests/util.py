@@ -5,13 +5,7 @@ import unittest
 import tempfile
 import sys
 import random
-import functools
 import os
-import pathlib
-import itertools
-import string
-from collections import defaultdict
-import shutil
 
 
 class BaseTestCase(unittest.TestCase):
