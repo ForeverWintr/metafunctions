@@ -13,7 +13,7 @@ class MetaFunction(metaclass=abc.ABCMeta):
         functions it contains.
         '''
         self.data = {}
-        self.called_functions = []
+        self._called_functions = []
 
     @abc.abstractmethod
     def __call__(self, arg):
@@ -174,6 +174,7 @@ class SimpleFunction(MetaFunction):
 
     def __call__(self, *args, **kwargs):
         meta = kwargs.pop('meta', self)
+        meta._called_functions.append(self)
         additional_args = ()
         if self._bind:
             #If we've recieved a higher function's meta, pass it. Else pass self.
