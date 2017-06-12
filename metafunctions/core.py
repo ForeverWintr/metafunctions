@@ -40,10 +40,11 @@ class MetaFunction(metaclass=abc.ABCMeta):
         '''Internal decorator to apply common type checking for binary operations'''
         @functools.wraps(method)
         def binary_operation(self, other):
-            new_other = other
-            if not isinstance(other, Callable):
+            if isinstance(other, Callable):
+                new_other = self.make_meta(other)
+            else:
                 new_other = DeferredValue(other)
-            return method(self, self.make_meta(new_other))
+            return method(self, new_other)
         return binary_operation
 
 
@@ -182,7 +183,7 @@ class SimpleFunction(MetaFunction):
         return self._function(*additional_args, *args, **kwargs)
 
     def __repr__(self):
-        return f'{self.__class__.__name__}({self._function})'
+        return f'{self.__class__.__name__}({self.functions[0]})'
 
     def __str__(self):
         return self.__name__
@@ -192,15 +193,16 @@ class SimpleFunction(MetaFunction):
         return (self._function, )
 
 
-class DeferredValue:
+class DeferredValue(SimpleFunction):
     def __init__(self, value):
         '''A simple Deferred Value. Returns `value` when called. Equivalent to lambda x: x.
         '''
         self._value = value
-        self.__name__ = str(self)
+        self.__name__ = repr(value)
 
     def __call__(self, *args, **kwargs):
         return self._value
 
-    def __repr__(self):
-        return f'{self.__class__.__name__}({repr(self._value)})'
+    @property
+    def functions(self):
+        return (self, )

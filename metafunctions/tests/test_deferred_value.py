@@ -13,5 +13,5 @@ class TestUnit(BaseTestCase):
         a = object()
         b = DeferredValue(a)
         self.assertEqual(repr(b), f'DeferredValue({repr(a)})')
-        self.assertEqual(str(DeferredValue(5)), 'DeferredValue(5)')
-        self.assertEqual(str(DeferredValue('a')), "DeferredValue('a')")
+        self.assertEqual(str(DeferredValue(5)), '5')
+        self.assertEqual(repr(DeferredValue('a')), "DeferredValue('a')")
