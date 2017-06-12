@@ -29,7 +29,7 @@ class TestUnit(BaseTestCase):
         @node(bind=True)
         def f(meta, x):
             if len(meta._called_functions) == 6:
-                location_string = util.highlight_current_function(meta)
+                location_string = util.highlight_current_function(meta, use_color=False)
                 location_strin_color = util.highlight_current_function(meta, use_color=True)
                 self.assertEqual(location_string, '(a | b | ff | f | f | ->f<- | f | f)')
                 self.assertEqual(location_strin_color,
