@@ -132,6 +132,17 @@ class TestIntegration(BaseTestCase):
         self.assertIs(abc_, meta)
         self.assertListEqual(meta._called_functions, [a, b, c, parent_test])
 
+    def test_pretty_exceptions(self):
+        @node
+        def f(x):
+            raise RuntimeError('Something bad happened!')
+
+        abf = a | b + f
+
+        with self.assertRaises(RuntimeError) as e:
+            abf('_')
+        self.fail()
+
 
 ### Simple Sample Functions ###
 @node

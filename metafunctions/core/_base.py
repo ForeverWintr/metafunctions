@@ -4,6 +4,9 @@ from collections.abc import Callable
 import typing as tp
 import abc
 
+from ._decorators import binary_operation
+from ._decorators import raise_with_location
+
 
 class MetaFunction(metaclass=abc.ABCMeta):
 
@@ -23,30 +26,23 @@ class MetaFunction(metaclass=abc.ABCMeta):
     def functions(self):
         return self._functions
 
-    @classmethod
-    def make_meta(cls, function):
+    @staticmethod
+    def make_meta(function):
         '''Wrap the given function in a metafunction, unless it's already a metafunction'''
         if not isinstance(function, MetaFunction):
             return SimpleFunction(function)
         return function
+
+    @staticmethod
+    def defer_value(value):
+        '''Wrap the given value in a DeferredValue object, (which returns its value when called).'''
+        return DeferredValue(value)
 
     def _modify_kwargs(self, kwargs: dict):
         '''Do pre-call modifications to the kwargs dictionary. Currently this just means adding a
         meta object if _bind is true.
         '''
         kwargs.setdefault('meta', self)
-
-    def binary_operation(method):
-        '''Internal decorator to apply common type checking for binary operations'''
-        @functools.wraps(method)
-        def binary_operation(self, other):
-            if isinstance(other, Callable):
-                new_other = self.make_meta(other)
-            else:
-                new_other = DeferredValue(other)
-            return method(self, new_other)
-        return binary_operation
-
 
     ### Operator overloads ###
     @binary_operation
@@ -88,9 +84,6 @@ class MetaFunction(metaclass=abc.ABCMeta):
     @binary_operation
     def __rtruediv__(self, other):
         return FunctionMerge(operator.truediv, (other, self))
-
-    # This is almost definitely a bad idea, but it's interesting that it works
-    del binary_operation
 
 
 class FunctionChain(MetaFunction):
@@ -173,6 +166,7 @@ class SimpleFunction(MetaFunction):
         # This works!!!!
         functools.wraps(function)(self)
 
+    @raise_with_location
     def __call__(self, *args, **kwargs):
         meta = kwargs.pop('meta', self)
         meta._called_functions.append(self)
