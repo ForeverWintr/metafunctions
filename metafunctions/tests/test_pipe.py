@@ -139,8 +139,8 @@ class TestIntegration(BaseTestCase):
 
         abf = a | b + f
 
-        with self.assertRaises(RuntimeError) as e:
-            abf('_')
+        #with self.assertRaises(RuntimeError) as e:
+        abf('_')
         self.fail()
 
 
