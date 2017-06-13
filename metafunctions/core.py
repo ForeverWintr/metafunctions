@@ -4,8 +4,7 @@ from collections.abc import Callable
 import typing as tp
 import abc
 
-from ._decorators import binary_operation
-from ._decorators import raise_with_location
+from metafunctions.decorators import raise_with_location
 
 
 class MetaFunction(metaclass=abc.ABCMeta):
@@ -38,6 +37,17 @@ class MetaFunction(metaclass=abc.ABCMeta):
         '''Wrap the given value in a DeferredValue object, (which returns its value when called).'''
         return DeferredValue(value)
 
+    def _binary_operation(method):
+        '''Internal decorator to apply common type checking for binary operations'''
+        @functools.wraps(method)
+        def binary_operation(self, other):
+            if isinstance(other, Callable):
+                new_other = self.make_meta(other)
+            else:
+                new_other = self.defer_value(other)
+            return method(self, new_other)
+        return binary_operation
+
     def _modify_kwargs(self, kwargs: dict):
         '''Do pre-call modifications to the kwargs dictionary. Currently this just means adding a
         meta object if _bind is true.
@@ -45,45 +55,48 @@ class MetaFunction(metaclass=abc.ABCMeta):
         kwargs.setdefault('meta', self)
 
     ### Operator overloads ###
-    @binary_operation
+    @_binary_operation
     def __or__(self, other):
         return FunctionChain.combine(self, other)
 
-    @binary_operation
+    @_binary_operation
     def __ror__(self, other):
         return FunctionChain.combine(other, self)
 
-    @binary_operation
+    @_binary_operation
     def __add__(self, other):
         return FunctionMerge(operator.add, (self, other))
 
-    @binary_operation
+    @_binary_operation
     def __radd__(self, other):
         return FunctionMerge(operator.add, (other, self))
 
-    @binary_operation
+    @_binary_operation
     def __sub__(self, other):
         return FunctionMerge(operator.sub, (self, other))
 
-    @binary_operation
+    @_binary_operation
     def __rsub__(self, other):
         return FunctionMerge(operator.sub, (other, self))
 
-    @binary_operation
+    @_binary_operation
     def __mul__(self, other):
         return FunctionMerge(operator.mul, (self, other))
 
-    @binary_operation
+    @_binary_operation
     def __rmul__(self, other):
         return FunctionMerge(operator.mul, (other, self))
 
-    @binary_operation
+    @_binary_operation
     def __truediv__(self, other):
         return FunctionMerge(operator.truediv, (self, other))
 
-    @binary_operation
+    @_binary_operation
     def __rtruediv__(self, other):
         return FunctionMerge(operator.truediv, (other, self))
+
+    # This is almost definitely a bad idea, but it's interesting that it works
+    del _binary_operation
 
 
 class FunctionChain(MetaFunction):
