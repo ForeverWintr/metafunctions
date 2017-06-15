@@ -4,7 +4,7 @@ from collections.abc import Callable
 import typing as tp
 import abc
 
-from metafunctions.decorators import raise_with_location
+#from metafunctions.util import raise_with_location
 
 
 class MetaFunction(metaclass=abc.ABCMeta):
@@ -179,7 +179,7 @@ class SimpleFunction(MetaFunction):
         # This works!!!!
         functools.wraps(function)(self)
 
-    @raise_with_location
+    #@raise_with_location
     def __call__(self, *args, **kwargs):
         meta = kwargs.pop('meta', self)
         meta._called_functions.append(self)

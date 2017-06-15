@@ -1,11 +1,52 @@
 
 from metafunctions.tests.util import BaseTestCase
-from metafunctions.decorators import node
-from metafunctions import util
+from metafunctions.util import store, recall, node, highlight_current_function
+from metafunctions.core import MetaFunction, SimpleFunction
 
 class TestUnit(BaseTestCase):
+    def test_node_bind(self):
+        '''
+        Node bind rules:
+        The MetaFunction recieved in a base function when bind is true is the
+        function that was called. E.g., if a SimpleFunction is called directly, meta will be that
+        SimpleFunction itself. However, if the SimpleFunction is contained within a hierarchy of
+        other MetaFunction, meta will be the highest level (i.e., outermost) Metafunction.
+        '''
+        @node(bind=True)
+        def a(meta, x):
+            self.assertIsInstance(meta, MetaFunction)
+            meta.data['a'] = 'b'
+            return x + 'a'
+        @node(bind=True)
+        def f(meta, x):
+            return x + meta.data.get('a', 'f')
+
+        self.assertEqual(a('_'), '_a')
+        self.assertEqual(f('_'), '_f')
+
+        cmp = a | f
+        self.assertEqual(cmp('_'), '_ab')
+        cmp = f | a | a | f + f
+        self.assertEqual(cmp('_'), '_faab_faab')
+
+    def test_node_bracketless(self):
+        '''
+        I'm allowing the node decorator to be applied without calling because this is how both
+        celery and function_pipes work.
+        '''
+        @node
+        def a(x):
+            return x + 'a'
+        @node()
+        def b(x):
+            return x + 'b'
+
+        self.assertIsInstance(a, SimpleFunction)
+        self.assertIsInstance(b, SimpleFunction)
+        self.assertEqual((b|a)('_'), '_ba')
+
     def test_store(self):
-        abc = a | b | util.store('output') | c
+        abc = a | b | store('output') | c
 
         self.assertEqual(abc('_'), '_abc')
         self.assertEqual(abc.data['output'], '_ab')
@@ -13,10 +54,10 @@ class TestUnit(BaseTestCase):
     def test_recall(self):
         a.data['k'] = 'secret'
 
-        cmp = a + b | util.store('k') | c + util.recall('k')
+        cmp = a + b | store('k') | c + recall('k')
         self.assertEqual(cmp('_'), '_a_bc_a_b')
 
-        cmp = a + b | util.store('k') | c + util.recall('k') | util.recall('k', from_meta=a)
+        cmp = a + b | store('k') | c + recall('k') | recall('k', from_meta=a)
         self.assertEqual(cmp('_'), 'secret')
 
     def test_highlight_current_function(self):
@@ -29,8 +70,8 @@ class TestUnit(BaseTestCase):
         @node(bind=True)
         def f(meta, x):
             if len(meta._called_functions) == 6:
-                location_string = util.highlight_current_function(meta, use_color=False)
-                location_strin_color = util.highlight_current_function(meta, use_color=True)
+                location_string = highlight_current_function(meta, use_color=False)
+                location_strin_color = highlight_current_function(meta, use_color=True)
                 self.assertEqual(location_string, '(a | b | ff | f | f | ->f<- | f | f)')
                 self.assertEqual(location_strin_color,
                         '(a | b | ff | f | f | \x1b[31m->f<-\x1b[0m | f | f)')
@@ -42,7 +83,7 @@ class TestUnit(BaseTestCase):
 
         af = a + f
         af('_')
-        curr_f = util.highlight_current_function(meta)
+        curr_f = highlight_current_function(meta)
         self.fail()
 
 @node

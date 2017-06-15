@@ -1,7 +1,7 @@
 import unittest
 
 from metafunctions.tests.util import BaseTestCase
-from metafunctions.decorators import node
+from metafunctions.util import node
 
 
 class TestIntegration(BaseTestCase):
