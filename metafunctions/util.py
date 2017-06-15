@@ -24,14 +24,14 @@ def node(_func=None, *, bind=False, modify_tracebacks=True):
     def f(metafunc, x):
        <do something cool>
     '''
+    def decorator(function):
+        if modify_tracebacks:
+            newfunc = raise_with_location(function)
+        newfunc = SimpleFunction(newfunc, bind)
+        return newfunc
     if not _func:
-        def decorator(function):
-            newfunc = SimpleFunction(function, bind)
-            if modify_tracebacks:
-                newfunc = raise_with_location(newfunc)
-            return newfunc
         return decorator
-    return SimpleFunction(_func, bind)
+    return decorator(_func)
 
 
 def store(key):

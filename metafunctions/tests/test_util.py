@@ -13,7 +13,7 @@ class TestUnit(BaseTestCase):
         other MetaFunction, meta will be the highest level (i.e., outermost) Metafunction.
         '''
         @node(bind=True)
-        def a(meta, x):
+        def a_(meta, x):
             self.assertIsInstance(meta, MetaFunction)
             meta.data['a'] = 'b'
             return x + 'a'
@@ -24,9 +24,9 @@ class TestUnit(BaseTestCase):
         self.assertEqual(a('_'), '_a')
         self.assertEqual(f('_'), '_f')
 
-        cmp = a | f
+        cmp = a_ | f
         self.assertEqual(cmp('_'), '_ab')
-        cmp = f | a | a | f + f
+        cmp = f | a_ | a_ | f + f
         self.assertEqual(cmp('_'), '_faab_faab')
 
     def test_node_bracketless(self):
