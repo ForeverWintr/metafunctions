@@ -76,15 +76,15 @@ class TestUnit(BaseTestCase):
                 self.assertEqual(location_strin_color,
                         '(a | b | ff | f | f | \x1b[31m->f<-\x1b[0m | f | f)')
                 self.assertEqual(x, '_abFff')
-            return x + str(f)
+            return x + 'f'
 
         pipe = a | b | ff | f | f | f | f | f
         pipe('_')
 
         af = a + f
         af('_')
-        curr_f = highlight_current_function(meta)
-        self.fail()
+        curr_f = highlight_current_function(af)
+        self.assertEqual(curr_f, '(a + ->f<-)')
 
 @node
 def a(x):

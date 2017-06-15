@@ -11,7 +11,7 @@ from metafunctions.core import MetaFunction
 from metafunctions.core import SimpleFunction
 
 
-def node(_func=None, *, bind=False):
+def node(_func=None, *, bind=False, modify_tracebacks=True):
     '''Turn the decorated function into a MetaFunction.
 
     Args:
@@ -26,7 +26,10 @@ def node(_func=None, *, bind=False):
     '''
     if not _func:
         def decorator(function):
-            return SimpleFunction(function, bind)
+            newfunc = SimpleFunction(function, bind)
+            if modify_tracebacks:
+                newfunc = raise_with_location(newfunc)
+            return newfunc
         return decorator
     return SimpleFunction(_func, bind)
 
@@ -72,40 +75,41 @@ def highlight_current_function(meta, color=colors.red, use_color=_system_support
 
     Consider this a 'you are here' when called from within a function pipeline.
     '''
-    current_index = len(meta._called_functions)
     current_name = str(meta._called_functions[-1])
 
     # how many times will current_name appear in str(meta)?
     # Bearing in mind that pervious function names may contain current_name
     num_occurences = sum(str(f).count(current_name) for f in meta._called_functions)
 
+    # There's probably a better regex for this.
+    skip = f'.*{current_name}'
+    regex = f"((?:.*?{current_name}.*?){{{num_occurences-1}}}.*?)f(.*$)"
 
     highlighted_name = f'->{current_name}<-'
     if use_color:
         highlighted_name = color(highlighted_name)
 
-    regex = f'({current_name}.*?){{{num_occurences-1}}}{current_name}'
-    highlighted_string = re.sub(regex, fr'\1{highlighted_name}', str(meta))
+    highlighted_string = re.sub(regex, fr'\1{highlighted_name}\2', str(meta))
     return highlighted_string
 
 
-def raise_with_location(method):
+def raise_with_location(function):
     '''
-    Wrap the given method in an exception handler that intercepts exceptions to add information
+    Wrap the given function in an exception handler that intercepts exceptions to add information
     about where in the function pipeline they occured. Note that for this to work, the outer
     function in the function must be present as kwargs['meta'].
 
     SimpleFunction applies this decorator by default.
     '''
-    @functools.wraps(method)
-    def new_call(self, *args, **kwargs):
+    @functools.wraps(function)
+    def new_function(*args, **kwargs):
         try:
-            return method(self, *args, **kwargs)
+            return function(*args, **kwargs)
         except Exception as e:
             meta = kwargs.get('meta')
             detailed_message = str(e)
             if meta:
                 detailed_message = f"{str(e)} \n\n Occured in the following function: {highlight_current_function(meta)}"
             raise type(e)(detailed_message).with_traceback(e.__traceback__)
-    return new_call
+    return new_function
 
