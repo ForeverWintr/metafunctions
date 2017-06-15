@@ -143,6 +143,49 @@ class TestIntegration(BaseTestCase):
         abf('_')
         self.fail()
 
+    def test_consistent_meta(self):
+        '''
+        Every function in the pipeline recieves the same meta.
+        '''
+        @node(bind=True)
+        def f(meta, x):
+            self.assertIs(meta, cmp)
+            return 1
+        @node(bind=True)
+        def g(meta, x):
+            self.assertIs(meta, cmp)
+            return 1
+        @node(bind=True)
+        def h(meta, x):
+            self.assertIs(meta, cmp)
+            return 1
+        @node(bind=True)
+        def i(meta, x):
+            self.assertIs(meta, cmp)
+            return 1
+
+        cmp = f | g | i | h + f + f / h + i - g
+        self.assertEqual(cmp(1), 3)
+
+    def test_defaults(self):
+        '''
+        If you specify defaults in nodes, they are respected.
+        '''
+        @node
+        def f(x='F'):
+            return x + 'f'
+        @node(bind=True)
+        def g(meta, x='G'):
+            return x + 'g'
+
+        cmp = f | g | f + g
+        self.assertEqual(cmp(), 'FfgfFfgg')
+        self.assertEqual(cmp('_'), '_fgf_fgg')
+
+        cmp2 = g | f | f + g
+        self.assertEqual(cmp2(), 'GgffGgfg')
+        self.assertEqual(cmp2('_'), '_gff_gfg')
+
 
 ### Simple Sample Functions ###
 @node
