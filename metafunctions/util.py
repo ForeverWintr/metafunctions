@@ -63,7 +63,7 @@ def highlight_current_function(meta, color=colors.red, use_color=system_supports
     if use_color:
         highlighted_name = color(highlighted_name)
 
-    regex = f'^((.*?{current_name}.*?){{{num_occurences-1}}}){current_name}'
+    regex = f'({current_name}.*?){{{num_occurences-1}}}{current_name}'
     highlighted_string = re.sub(regex, fr'\1{highlighted_name}', str(meta))
     return highlighted_string
 

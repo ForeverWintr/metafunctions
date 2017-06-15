@@ -40,6 +40,10 @@ class TestUnit(BaseTestCase):
         pipe = a | b | ff | f | f | f | f | f
         pipe('_')
 
+        af = a + f
+        af('_')
+        curr_f = util.highlight_current_function(meta)
+        self.fail()
 
 @node
 def a(x):

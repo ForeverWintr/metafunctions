@@ -1,6 +1,8 @@
 import functools
 
 from metafunctions.exceptions import MetaFunctionError
+from metafunctions.util import highlight_current_function
+
 
 
 def node(_func=None, *, bind=False):
@@ -32,7 +34,6 @@ def raise_with_location(method):
 
     SimpleFunction applies this decorator by default.
     '''
-    from metafunctions.util import highlight_current_function
     @functools.wraps(method)
     def new_call(self, *args, **kwargs):
         try:
