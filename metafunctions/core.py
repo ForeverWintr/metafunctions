@@ -13,6 +13,7 @@ class MetaFunction(metaclass=abc.ABCMeta):
         functions it contains.
         '''
         self.data = {}
+        self._called_functions = []
 
     @abc.abstractmethod
     def __call__(self, arg):
@@ -22,12 +23,28 @@ class MetaFunction(metaclass=abc.ABCMeta):
     def functions(self):
         return self._functions
 
-    @classmethod
-    def make_meta(cls, function):
+    @staticmethod
+    def make_meta(function):
         '''Wrap the given function in a metafunction, unless it's already a metafunction'''
         if not isinstance(function, MetaFunction):
             return SimpleFunction(function)
         return function
+
+    @staticmethod
+    def defer_value(value):
+        '''Wrap the given value in a DeferredValue object, (which returns its value when called).'''
+        return DeferredValue(value)
+
+    def _binary_operation(method):
+        '''Internal decorator to apply common type checking for binary operations'''
+        @functools.wraps(method)
+        def binary_operation(self, other):
+            if isinstance(other, Callable):
+                new_other = self.make_meta(other)
+            else:
+                new_other = self.defer_value(other)
+            return method(self, new_other)
+        return binary_operation
 
     def _modify_kwargs(self, kwargs: dict):
         '''Do pre-call modifications to the kwargs dictionary. Currently this just means adding a
@@ -35,61 +52,49 @@ class MetaFunction(metaclass=abc.ABCMeta):
         '''
         kwargs.setdefault('meta', self)
 
-    def binary_operation(method):
-        '''Internal decorator to apply common type checking for binary operations'''
-        @functools.wraps(method)
-        def binary_operation(self, other):
-            if isinstance(other, Callable):
-                new_other = self.make_meta(other)
-            else:
-                new_other = DeferredValue(other)
-            return method(self, new_other)
-        return binary_operation
-
-
     ### Operator overloads ###
-    @binary_operation
+    @_binary_operation
     def __or__(self, other):
         return FunctionChain.combine(self, other)
 
-    @binary_operation
+    @_binary_operation
     def __ror__(self, other):
         return FunctionChain.combine(other, self)
 
-    @binary_operation
+    @_binary_operation
     def __add__(self, other):
         return FunctionMerge(operator.add, (self, other))
 
-    @binary_operation
+    @_binary_operation
     def __radd__(self, other):
         return FunctionMerge(operator.add, (other, self))
 
-    @binary_operation
+    @_binary_operation
     def __sub__(self, other):
         return FunctionMerge(operator.sub, (self, other))
 
-    @binary_operation
+    @_binary_operation
     def __rsub__(self, other):
         return FunctionMerge(operator.sub, (other, self))
 
-    @binary_operation
+    @_binary_operation
     def __mul__(self, other):
         return FunctionMerge(operator.mul, (self, other))
 
-    @binary_operation
+    @_binary_operation
     def __rmul__(self, other):
         return FunctionMerge(operator.mul, (other, self))
 
-    @binary_operation
+    @_binary_operation
     def __truediv__(self, other):
         return FunctionMerge(operator.truediv, (self, other))
 
-    @binary_operation
+    @_binary_operation
     def __rtruediv__(self, other):
         return FunctionMerge(operator.truediv, (other, self))
 
     # This is almost definitely a bad idea, but it's interesting that it works
-    del binary_operation
+    del _binary_operation
 
 
 class FunctionChain(MetaFunction):
@@ -163,22 +168,27 @@ class FunctionMerge(MetaFunction):
 
 
 class SimpleFunction(MetaFunction):
-    def __init__(self, function, bind=False):
+    def __init__(self, function, bind=False, print_location_in_traceback=False):
         '''A MetaFunction-aware wrapper around a single function'''
         super().__init__()
         self._bind = bind
         self._function = function
+        self._add_location_to_traceback = print_location_in_traceback
 
         # This works!!!!
         functools.wraps(function)(self)
 
     def __call__(self, *args, **kwargs):
         meta = kwargs.pop('meta', self)
+        meta._called_functions.append(self)
         additional_args = ()
         if self._bind:
             #If we've recieved a higher function's meta, pass it. Else pass self.
             additional_args = (meta, )
-        return self._function(*additional_args, *args, **kwargs)
+        try:
+            return self._function(*additional_args, *args, **kwargs)
+        except Exception as e:
+            self._handle_exception(meta, e)
 
     def __repr__(self):
         return f'{self.__class__.__name__}({self.functions[0]})'
@@ -189,6 +199,15 @@ class SimpleFunction(MetaFunction):
     @property
     def functions(self):
         return (self._function, )
+
+    def _handle_exception(self, meta, e):
+        if self._add_location_to_traceback:
+            from metafunctions.util import highlight_current_function
+            detailed_message = str(e)
+            if meta:
+                detailed_message = f"{str(e)} \n\n Occured in the following function: {highlight_current_function(meta)}"
+            raise type(e)(detailed_message).with_traceback(e.__traceback__)
+        raise
 
 
 class DeferredValue(SimpleFunction):

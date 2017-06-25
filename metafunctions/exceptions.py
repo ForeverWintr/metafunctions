@@ -1,0 +1,5 @@
+
+
+class MetaFunctionError(Exception):
+    pass
+

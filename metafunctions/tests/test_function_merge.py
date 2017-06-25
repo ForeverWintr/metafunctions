@@ -15,6 +15,10 @@ class TestUnit(BaseTestCase):
         c = FunctionMerge(operator.add, (a, b))
         self.assertEqual(c('_'), '_a_b')
 
+    def test_format(self):
+        c = FunctionMerge(operator.add, (a, b), format_string='tacos')
+        self.assertEqual(str(c), '(tacos)')
+
 
 @SimpleFunction
 def a(x):

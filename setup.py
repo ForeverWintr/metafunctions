@@ -61,4 +61,5 @@ with md_to_rst(here):
         keywords='functional-programming function-composition',
         packages=find_packages(),
         test_suite='metafunctions.tests',
+        install_requires=['ansicolors>=1.1.8']
     )
