@@ -168,11 +168,12 @@ class FunctionMerge(MetaFunction):
 
 
 class SimpleFunction(MetaFunction):
-    def __init__(self, function, bind=False):
+    def __init__(self, function, bind=False, print_location_in_traceback=False):
         '''A MetaFunction-aware wrapper around a single function'''
         super().__init__()
         self._bind = bind
         self._function = function
+        self._add_location_to_traceback = print_location_in_traceback
 
         # This works!!!!
         functools.wraps(function)(self)
@@ -184,7 +185,10 @@ class SimpleFunction(MetaFunction):
         if self._bind:
             #If we've recieved a higher function's meta, pass it. Else pass self.
             additional_args = (meta, )
-        return self._function(*additional_args, *args, **kwargs)
+        try:
+            return self._function(*additional_args, *args, **kwargs)
+        except Exception as e:
+            self._handle_exception(meta, e)
 
     def __repr__(self):
         return f'{self.__class__.__name__}({self.functions[0]})'
@@ -195,6 +199,15 @@ class SimpleFunction(MetaFunction):
     @property
     def functions(self):
         return (self._function, )
+
+    def _handle_exception(self, meta, e):
+        if self._add_location_to_traceback:
+            from metafunctions.util import highlight_current_function
+            detailed_message = str(e)
+            if meta:
+                detailed_message = f"{str(e)} \n\n Occured in the following function: {highlight_current_function(meta)}"
+            raise type(e)(detailed_message).with_traceback(e.__traceback__)
+        raise
 
 
 class DeferredValue(SimpleFunction):

@@ -25,9 +25,7 @@ def node(_func=None, *, bind=False, modify_tracebacks=True):
        <do something cool>
     '''
     def decorator(function):
-        if modify_tracebacks:
-            newfunc = raise_with_location(function)
-        newfunc = SimpleFunction(newfunc, bind)
+        newfunc = SimpleFunction(function, bind, modify_tracebacks)
         return newfunc
     if not _func:
         return decorator
@@ -92,24 +90,4 @@ def highlight_current_function(meta, color=colors.red, use_color=_system_support
     highlighted_string = re.sub(regex, fr'\1{highlighted_name}\2', str(meta))
     return highlighted_string
 
-
-def raise_with_location(function):
-    '''
-    Wrap the given function in an exception handler that intercepts exceptions to add information
-    about where in the function pipeline they occured. Note that for this to work, the outer
-    function in the function must be present as kwargs['meta'].
-
-    SimpleFunction applies this decorator by default.
-    '''
-    @functools.wraps(function)
-    def new_function(*args, **kwargs):
-        try:
-            return function(*args, **kwargs)
-        except Exception as e:
-            meta = kwargs.get('meta')
-            detailed_message = str(e)
-            if meta:
-                detailed_message = f"{str(e)} \n\n Occured in the following function: {highlight_current_function(meta)}"
-            raise type(e)(detailed_message).with_traceback(e.__traceback__)
-    return new_function
 

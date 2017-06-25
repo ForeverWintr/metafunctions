@@ -136,12 +136,23 @@ class TestIntegration(BaseTestCase):
         @node
         def f(x):
             raise RuntimeError('Something bad happened!')
+        @node(modify_tracebacks=False)
+        def g(x):
+            raise RuntimeError('Something bad happened in g!')
 
         abf = a | b + f
+        abg = a | b + g
 
-        #with self.assertRaises(RuntimeError) as e:
-        abf('_')
-        self.fail()
+        with self.assertRaises(RuntimeError) as ctx:
+            # TODO: assert that tracebacks are correct
+            abf('_')
+
+        self.assertEqual(str(ctx.exception),
+                'Something bad happened! \n\n Occured in the following function: (a | (b + ->f<-))')
+
+        # unprettified exceptions work
+        with self.assertRaises(RuntimeError):
+            abg('_')
 
     def test_consistent_meta(self):
         '''
