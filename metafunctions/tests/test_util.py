@@ -71,9 +71,9 @@ class TestUnit(BaseTestCase):
         def f(meta, x):
             if len(meta._called_functions) == 6:
                 location_string = highlight_current_function(meta, use_color=False)
-                location_strin_color = highlight_current_function(meta, use_color=True)
+                location_string_color = highlight_current_function(meta, use_color=True)
                 self.assertEqual(location_string, '(a | b | ff | f | f | ->f<- | f | f)')
-                self.assertEqual(location_strin_color,
+                self.assertEqual(location_string_color,
                         '(a | b | ff | f | f | \x1b[31m->f<-\x1b[0m | f | f)')
                 self.assertEqual(x, '_abFff')
             return x + 'f'
@@ -83,7 +83,7 @@ class TestUnit(BaseTestCase):
 
         af = a + f
         af('_')
-        curr_f = highlight_current_function(af)
+        curr_f = highlight_current_function(af, use_color=False)
         self.assertEqual(curr_f, '(a + ->f<-)')
 
 @node

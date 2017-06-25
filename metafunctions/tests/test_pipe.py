@@ -1,4 +1,5 @@
 import unittest
+from unittest import mock
 
 from metafunctions.tests.util import BaseTestCase
 from metafunctions.util import node
@@ -132,7 +133,8 @@ class TestIntegration(BaseTestCase):
         self.assertIs(abc_, meta)
         self.assertListEqual(meta._called_functions, [a, b, c, parent_test])
 
-    def test_pretty_exceptions(self):
+    @mock.patch('metafunctions.util._system_supports_color', return_value=False)
+    def test_pretty_exceptions(self, mock_ssc):
         @node
         def f(x):
             raise RuntimeError('Something bad happened!')
