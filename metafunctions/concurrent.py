@@ -15,3 +15,6 @@ class ConcurrentMerge(FunctionMerge):
 
     def __call__(self, *args, **kwargs):
         pool = multiprocessing.Pool(processes=2)
+        async_results = [pool.apply_async(f, args, kwargs) for f in self.functions]
+        results = (r.get() for r in async_results)
+        return self._merge_func(*results)
