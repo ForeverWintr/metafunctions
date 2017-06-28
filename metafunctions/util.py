@@ -35,10 +35,11 @@ def node(_func=None, *, bind=False, modify_tracebacks=True):
 def store(key):
     '''Store the received output in the meta data dictionary under the given key.'''
     @node(bind=True)
-    def f(meta, val):
+    def store(meta, val):
         meta.data[key] = val
         return val
-    return f
+    store.__name__ = f"store('{key}')"
+    return store
 
 
 def recall(key, from_meta:MetaFunction=None):
@@ -46,11 +47,12 @@ def recall(key, from_meta:MetaFunction=None):
     a different metafunction than the current one.
     '''
     @node(bind=True)
-    def f(meta, val):
+    def recall(meta, val):
         if from_meta:
             return from_meta.data[key]
         return meta.data[key]
-    return f
+    recall.__name__ = f"recall('{key}')"
+    return recall
 
 
 def _system_supports_color():

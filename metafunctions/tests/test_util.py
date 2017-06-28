@@ -47,9 +47,12 @@ class TestUnit(BaseTestCase):
 
     def test_store(self):
         abc = a | b | store('output') | c
+        big = (a | b | c + store('ab') + store('ab2') | store('abc') | recall('ab') + recall('ab2') |
+               c + recall('abc'))
 
         self.assertEqual(abc('_'), '_abc')
         self.assertEqual(abc.data['output'], '_ab')
+        self.assertEqual(big('_'), '_ab_abc_abc_ab_ab')
 
     def test_recall(self):
         a.data['k'] = 'secret'
@@ -59,6 +62,13 @@ class TestUnit(BaseTestCase):
 
         cmp = a + b | store('k') | c + recall('k') | recall('k', from_meta=a)
         self.assertEqual(cmp('_'), 'secret')
+
+    def test_str_store(self):
+        #this should be possible
+        self.assertEqual(str(store('key')), "store('key')")
+
+    def test_str_recall(self):
+        self.assertEqual(str(recall('key')), "recall('key')")
 
     def test_highlight_current_function(self):
         fmt_index = 6
