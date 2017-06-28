@@ -15,14 +15,16 @@ class ConcurrentMerge(FunctionMerge):
 
         ConcurrentMerge takes a FunctionMerge object and upgrades it.
         '''
-        self._merge_func = function_merge._merge_func
-        self._functions = function_merge._functions
-        self._join_str = function_merge._join_str
+        super().__init__(
+                function_merge._merge_func,
+                function_merge._functions,
+                function_merge._join_str)
 
     def __call__(self, *args, **kwargs):
         '''We fork here, and execute each function in a child process before joining the results
         with _merge_func
         '''
+        self._modify_kwargs(kwargs)
         result_q = Queue()
         error_q = Queue()
 
