@@ -64,10 +64,11 @@ class TestUnit(BaseTestCase):
         self.assertEqual(cmp('_'), 'secret')
 
     def test_str_store(self):
-        self.fail('Fix store str')
+        #this should be possible
+        self.assertEqual(str(store('key')), "store('key')")
 
     def test_str_recall(self):
-        self.fail('Fix recall str')
+        self.assertEqual(str(recall('key')), "recall('key')")
 
     def test_highlight_current_function(self):
         fmt_index = 6
