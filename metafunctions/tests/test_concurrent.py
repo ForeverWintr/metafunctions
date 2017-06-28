@@ -25,7 +25,8 @@ class TestUnit(BaseTestCase):
         with self.assertRaises(ConcurrentException) as e:
             cmp(0)
         self.assertIsInstance(e.exception.__cause__, ZeroDivisionError)
-
+        self.assertEqual(e.exception.__cause__.args[0],
+                'division by zero \n\n Occured in the following function: concurrent(->fail<- - fail)')
 
     def test_consistent_meta(self):
         '''
