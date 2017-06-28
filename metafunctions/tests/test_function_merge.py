@@ -16,8 +16,8 @@ class TestUnit(BaseTestCase):
         self.assertEqual(c('_'), '_a_b')
 
     def test_format(self):
-        c = FunctionMerge(operator.add, (a, b), format_string='tacos')
-        self.assertEqual(str(c), '(tacos)')
+        c = FunctionMerge(operator.add, (a, b), join_str='tacos')
+        self.assertEqual(str(c), '(a tacos b)')
 
     def test_non_binary(self):
         # I don't currently have any non binary functionMerges, but they're designed to be possible
