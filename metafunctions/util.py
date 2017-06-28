@@ -38,6 +38,7 @@ def store(key):
     def store(meta, val):
         meta.data[key] = val
         return val
+    store.__name__ = f"store('{key}')"
     return store
 
 
@@ -50,6 +51,7 @@ def recall(key, from_meta:MetaFunction=None):
         if from_meta:
             return from_meta.data[key]
         return meta.data[key]
+    recall.__name__ = f"recall('{key}')"
     return recall
 
 
