@@ -20,6 +20,10 @@ class ConcurrentMerge(FunctionMerge):
                 function_merge._functions,
                 function_merge._join_str)
 
+    def __str__(self):
+        joined_funcs = super().__str__()
+        return f"concurrent{joined_funcs}"
+
     def __call__(self, *args, **kwargs):
         '''We fork here, and execute each function in a child process before joining the results
         with _merge_func
@@ -53,10 +57,6 @@ class ConcurrentMerge(FunctionMerge):
         results = [r[1] for r in sorted(iter(result_q.get, None), key=itemgetter(0))]
 
         return self._merge_func(*results)
-
-    def __str__(self):
-        joined_funcs = super().__str__()
-        return f"concurrent{joined_funcs}"
 
     @staticmethod
     def _process_and_die(idx, func, result_q, error_q, args, kwargs):
