@@ -4,18 +4,29 @@ import os
 from metafunctions.tests.util import BaseTestCase
 from metafunctions.util import node
 from metafunctions import concurrent
+from metafunctions.exceptions import ConcurrentException
 
 
 class TestIntegration(BaseTestCase):
     def test_basic(self):
         ab = a + b
         cab = concurrent.ConcurrentMerge(ab)
-
-        #try:
         self.assertEqual(cab('_'), '_a_b')
-        #except SystemExit:
-            ##child processes call systemexit. Stop the test suite from freaking out about it here
-            #os._exit(0)
+
+    def test_exceptions(self):
+        @node
+        def fail(x):
+            if not x:
+                1 / 0
+            return x - 1
+
+        cmp = concurrent.ConcurrentMerge(fail - fail)
+
+        with self.assertRaises(ConcurrentException) as e:
+            cmp(0)
+        self.assertIsInstance(e.exception.__cause__, ZeroDivisionError)
+
+
         # how do pretty tracebacks work in multiprocessing?
 
     def test_str_repr(self):
