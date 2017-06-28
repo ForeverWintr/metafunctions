@@ -60,8 +60,8 @@ class ConcurrentMerge(FunctionMerge):
 
     @staticmethod
     def _process_and_die(idx, func, result_q, error_q, args, kwargs):
-        '''Call the given function with the given args and kwargs, put the result in result_q and
-        sysexit.
+        '''This function is only called by child processes. Call the given function with the given
+        args and kwargs, put the result in result_q, then die.
         '''
         try:
             r = func(*args, **kwargs)
@@ -73,8 +73,8 @@ class ConcurrentMerge(FunctionMerge):
             # it's neccesary to explicitly close the result_q and join its background thread here,
             # because the below os._exit won't allow time for any cleanup.
             result_q.close()
-            result_q.join_thread()
             error_q.close()
+            result_q.join_thread()
             error_q.join_thread()
 
             # This is the one place that the python docs say it's normal to use os._exit. Because
