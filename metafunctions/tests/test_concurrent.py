@@ -1,4 +1,5 @@
 import operator
+import os
 
 from metafunctions.tests.util import BaseTestCase
 from metafunctions.util import node
@@ -10,15 +11,18 @@ class TestIntegration(BaseTestCase):
         ab = a + b
         cab = concurrent.ConcurrentMerge(ab)
 
-        self.assertEqual(cab('_'), '_ab')
-        self.fail()
+        #try:
+        self.assertEqual(cab('_'), '_a_b')
+        #except SystemExit:
+            ##child processes call systemexit. Stop the test suite from freaking out about it here
+            #os._exit(0)
         # how do pretty tracebacks work in multiprocessing?
 
     def test_str_repr(self):
         cab = concurrent.ConcurrentMerge(a + b)
 
         self.assertEqual(repr(cab), f'ConcurrentMerge({operator.add}, ({repr(a)}, {repr(b)}))')
-        self.assertEqual(str(cab), f'parallel(a + b)')
+        self.assertEqual(str(cab), f'concurrent(a + b)')
 
 ### Simple Sample Functions ###
 @node
