@@ -1,7 +1,10 @@
+from unittest import mock
+import functools
 
 from metafunctions.tests.util import BaseTestCase
 from metafunctions.util import store, recall, node, highlight_current_function
 from metafunctions.core import MetaFunction, SimpleFunction
+
 
 class TestUnit(BaseTestCase):
     def test_node_bind(self):
@@ -96,7 +99,9 @@ class TestUnit(BaseTestCase):
         curr_f = highlight_current_function(af, use_color=False)
         self.assertEqual(curr_f, '(a + ->f<-)')
 
-    def test_highlight_current_function_multichar(self):
+    @mock.patch('metafunctions.util.highlight_current_function')
+    def test_highlight_current_function_multichar(self, mock_h):
+        mock_h.side_effect = functools.partial(highlight_current_function, use_color=False)
         # Don't fail on long named functions. This is a regression test
         @node
         def fail(x):
