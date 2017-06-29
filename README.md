@@ -85,5 +85,41 @@ MetaFunctions are also capable of upgrading regular functions to MetaFunctions a
 >>> greet = input | say_hello | print
 >>> greet('Please enter your name: ')
 # Please enter your name: Tom
-# Hello tom!
+# Hello Tom!
 ```
+
+# Features
+
+## Helpful Tracebacks
+
+Errors in composed functions can be confusing. If an exception occurs in a MetaFunction, the exception traceback will tell you which function the exception occurred in. But what if that function appears multiple times in the data pipeline? 
+
+Imagine this function, which downloads stringified numeric data from a web api:
+
+```python
+>>> compute_value = (query_volume | float) * (query_price | float) 
+>>> compute_value('http://prices.com/123')
+```
+
+Here we've assumed that `query_volume` and `query_price` will return strings that convert cleanly to floats, but what if something goes wrong?
+
+```python
+>>> compute_value('http://prices.com/123')
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+  ...
+builtins.ValueError: could not convert string to float: '$800' 
+```
+
+We can deduce that float conversion failed, but *which* float function raised the exception? MetaFunctions address this by adding a locator string to any exception raised within the pipeline:
+
+```python
+>>> compute_value('http://prices.com/123')
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+  ...
+builtins.ValueError: could not convert string to float: '$800' 
+Occured in the following function: ((query_volume | float) + (query_price | ->float<-))
+```
+
+
