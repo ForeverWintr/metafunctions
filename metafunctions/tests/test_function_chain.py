@@ -28,6 +28,7 @@ class TestUnit(BaseTestCase):
         self.assertEqual(str(chain | merge | chain),
                 '(a | b | <lambda> | (a + b) | a | b | <lambda>)')
 
+
 @SimpleFunction
 def a(x):
     return x + 'a'

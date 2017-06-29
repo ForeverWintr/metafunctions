@@ -1,7 +1,10 @@
 import unittest
+from unittest import mock
+import functools
 
 from metafunctions.tests.util import BaseTestCase
-from metafunctions.decorators import node
+from metafunctions.util import node
+from metafunctions.util import highlight_current_function
 
 
 class TestIntegration(BaseTestCase):
@@ -52,7 +55,10 @@ class TestIntegration(BaseTestCase):
         self.assertEqual(cmp('_'), '_ab_ac_ade')
 
         cmp = a + 'f'
-        self.assertEqual(str(cmp), "(a + DeferredValue('f'))")
+        self.assertEqual(str(cmp), "(a + 'f')")
+        self.assertEqual(repr(cmp),
+                "FunctionMerge(<built-in function add>, "
+                f"(SimpleFunction({repr(a._function)}), DeferredValue('f')))")
 
     def test_non_callable_composition(self):
         '''
@@ -112,6 +118,103 @@ class TestIntegration(BaseTestCase):
         cmp = a | b | c | (lambda x: None)
         self.assertEqual(str(cmp), '(a | b | c | <lambda>)')
 
+    def test_called_functions(self):
+        '''
+        Parent refers to the parent MetaFunction.
+        '''
+
+        @node(bind=True)
+        def parent_test(meta, x):
+            return meta
+
+        ab = a | b
+        abc = ab + c
+        abc_ = abc | parent_test
+
+        meta = abc_('_')
+        self.assertIs(abc_, meta)
+        self.assertListEqual(meta._called_functions, [a, b, c, parent_test])
+
+    @mock.patch('metafunctions.util.highlight_current_function')
+    def test_pretty_exceptions(self, mock_h):
+        mock_h.side_effect = functools.partial(highlight_current_function, use_color=False)
+
+        @node
+        def f(x):
+            raise RuntimeError('Something bad happened!')
+        @node(modify_tracebacks=False)
+        def g(x):
+            raise RuntimeError('Something bad happened in g!')
+
+        abf = a | b + f
+        abg = a | b + g
+
+        with self.assertRaises(RuntimeError) as ctx:
+            # TODO: assert that tracebacks are correct
+            abf('_')
+
+        self.assertEqual(str(ctx.exception),
+                'Something bad happened! \n\nOccured in the following function: (a | (b + ->f<-))')
+
+        # unprettified exceptions work
+        with self.assertRaises(RuntimeError):
+            abg('_')
+
+    def test_consistent_meta(self):
+        '''
+        Every function in the pipeline recieves the same meta.
+        '''
+        @node(bind=True)
+        def f(meta, x):
+            self.assertIs(meta, cmp)
+            return 1
+        @node(bind=True)
+        def g(meta, x):
+            self.assertIs(meta, cmp)
+            return 1
+        @node(bind=True)
+        def h(meta, x):
+            self.assertIs(meta, cmp)
+            return 1
+        @node(bind=True)
+        def i(meta, x):
+            self.assertIs(meta, cmp)
+            return 1
+
+        cmp = f | g | i | h + f + f / h + i - g
+        self.assertEqual(cmp(1), 3)
+
+    def test_defaults(self):
+        '''
+        If you specify defaults in nodes, they are respected.
+        '''
+        @node
+        def f(x='F'):
+            return x + 'f'
+        @node(bind=True)
+        def g(meta, x='G'):
+            return x + 'g'
+
+        cmp = f | g | f + g
+        self.assertEqual(cmp(), 'FfgfFfgg')
+        self.assertEqual(cmp('_'), '_fgf_fgg')
+
+        cmp2 = g | f | f + g
+        self.assertEqual(cmp2(), 'GgffGgfg')
+        self.assertEqual(cmp2('_'), '_gff_gfg')
+
+    def test_complex_exceptions(self):
+        @node
+        def query_volume(x):
+            return str(x ** 2)
+        @node
+        def query_price(x):
+            return '$' + str(x ** 3)
+
+        numeric = (query_volume | float) + (query_price | float)
+        with self.assertRaises(ValueError) as e:
+            numeric(2)
+
 
 ### Simple Sample Functions ###
 @node
@@ -129,3 +232,4 @@ def d(x):
 @node
 def e(x):
     return x + 'e'
+
