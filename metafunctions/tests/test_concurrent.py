@@ -67,6 +67,14 @@ class TestUnit(BaseTestCase):
         self.assertIsInstance(c, ConcurrentMerge)
         self.assertEqual(c('_'), '_a_b')
 
+    def test_not_concurrent(self):
+        #can only upgrade FunctionMerges
+
+        with self.assertRaises(AttributeError):
+            concurrent(a)
+        with self.assertRaises(AttributeError):
+            concurrent(a | b)
+
     def test_str_repr(self):
         cab = ConcurrentMerge(a + b)
 
