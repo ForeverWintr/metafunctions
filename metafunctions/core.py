@@ -173,7 +173,7 @@ class SimpleFunction(MetaFunction):
         super().__init__()
         self._bind = bind
         self._function = function
-        self._add_location_to_traceback = print_location_in_traceback
+        self.add_location_to_traceback = print_location_in_traceback
 
         # This works!!!!
         functools.wraps(function)(self)
@@ -201,7 +201,7 @@ class SimpleFunction(MetaFunction):
         return (self._function, )
 
     def _handle_exception(self, meta, e):
-        if self._add_location_to_traceback:
+        if self.add_location_to_traceback:
             from metafunctions.util import highlight_current_function
             detailed_message = str(e)
             if meta:
