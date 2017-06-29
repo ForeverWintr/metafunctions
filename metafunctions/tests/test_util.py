@@ -96,6 +96,21 @@ class TestUnit(BaseTestCase):
         curr_f = highlight_current_function(af, use_color=False)
         self.assertEqual(curr_f, '(a + ->f<-)')
 
+    def test_highlight_current_function_multichar(self):
+        # Don't fail on long named functions. This is a regression test
+        @node
+        def fail(x):
+            if not x:
+                1 / 0
+            return x - 1
+
+        cmp = fail | fail + a
+
+        with self.assertRaises(ZeroDivisionError) as e:
+            cmp(1)
+        self.assertTrue(e.exception.args[0].endswith('(fail | (->fail<- + a))'))
+
+
 @node
 def a(x):
     return x + 'a'

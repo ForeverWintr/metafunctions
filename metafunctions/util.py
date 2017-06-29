@@ -83,7 +83,7 @@ def highlight_current_function(meta, color=colors.red, use_color=_system_support
 
     # There's probably a better regex for this.
     skip = f'.*{current_name}'
-    regex = f"((?:.*?{current_name}.*?){{{num_occurences-1}}}.*?)f(.*$)"
+    regex = f"((?:.*?{current_name}.*?){{{num_occurences-1}}}.*?){current_name}(.*$)"
 
     highlighted_name = f'->{current_name}<-'
     if use_color:
