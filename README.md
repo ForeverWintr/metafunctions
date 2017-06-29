@@ -131,14 +131,13 @@ Consider the following long running MetaFunction:
 ```python
 process_companies = get_company_data | filter | process
 process_customers = get_customer_data | filter | process
+
 do_large_calculation = process_companies + process_customers
 ```
 
 Assuming the component functions in the `do_large_calculation` MetaFunction follow good functional practices and do not have side effects, it's easy to see that `process_companies` and `process_customers` are independent of each other. If that's the case, we can safely execute them in parallel. `metafunctions`' `concurrent` function allows you to specify steps in the function pipeline to execute in parallel:
 
 ```python
-process_companies = get_company_data | filter | process
-process_customers = get_customer_data | filter | process
 do_large_calculation_async = concurrent(process_companies + process_customers)
 ```
 
