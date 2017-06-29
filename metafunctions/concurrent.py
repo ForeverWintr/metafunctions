@@ -5,7 +5,6 @@ from multiprocessing import Queue
 import queue
 
 from metafunctions.core import FunctionMerge
-from metafunctions.util import highlight_current_function
 from metafunctions.exceptions import ConcurrentException
 
 

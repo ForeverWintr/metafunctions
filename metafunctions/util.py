@@ -9,6 +9,8 @@ import colors
 
 from metafunctions.core import MetaFunction
 from metafunctions.core import SimpleFunction
+from metafunctions.core import FunctionMerge
+from metafunctions.concurrent import ConcurrentMerge
 
 
 def node(_func=None, *, bind=False, modify_tracebacks=True):
@@ -53,6 +55,19 @@ def recall(key, from_meta:MetaFunction=None):
         return meta.data[key]
     recall.__name__ = f"recall('{key}')"
     return recall
+
+
+def concurrent(function: FunctionMerge) -> ConcurrentMerge:
+    '''Upgrade the specified FunctionMerge object to a ConcurrentMerge, which runs each of its
+    component functions in separate processes. See ConcurrentMerge documentation for more
+    information.
+
+    Usage:
+
+    c = concurrent(long_running_function + other_long_running_function)
+    c(input_data) # The two functions run in parallel
+    '''
+    return ConcurrentMerge(function)
 
 
 def _system_supports_color():
