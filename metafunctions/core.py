@@ -168,7 +168,7 @@ class FunctionMerge(MetaFunction):
 
 
 class SimpleFunction(MetaFunction):
-    def __init__(self, function, bind=False, print_location_in_traceback=False):
+    def __init__(self, function, bind=False, print_location_in_traceback=True):
         '''A MetaFunction-aware wrapper around a single function'''
         super().__init__()
         self._bind = bind
@@ -205,7 +205,7 @@ class SimpleFunction(MetaFunction):
             from metafunctions.util import highlight_current_function
             detailed_message = str(e)
             if meta:
-                detailed_message = f"{str(e)} \n\n Occured in the following function: {highlight_current_function(meta)}"
+                detailed_message = f"{str(e)} \n\nOccured in the following function: {highlight_current_function(meta)}"
             raise type(e)(detailed_message).with_traceback(e.__traceback__)
         raise
 

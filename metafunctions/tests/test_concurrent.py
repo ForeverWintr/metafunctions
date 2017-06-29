@@ -34,7 +34,7 @@ class TestUnit(BaseTestCase):
             cmp(0)
         self.assertIsInstance(e.exception.__cause__, ZeroDivisionError)
         self.assertEqual(e.exception.__cause__.args[0],
-                f'division by zero \n\n Occured in the following function: '
+                f'division by zero \n\nOccured in the following function: '
                 f'concurrent({colors.red("->fail<-")} - fail)')
 
     def test_consistent_meta(self):

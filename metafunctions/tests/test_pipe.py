@@ -154,7 +154,7 @@ class TestIntegration(BaseTestCase):
             abf('_')
 
         self.assertEqual(str(ctx.exception),
-                'Something bad happened! \n\n Occured in the following function: (a | (b + ->f<-))')
+                'Something bad happened! \n\nOccured in the following function: (a | (b + ->f<-))')
 
         # unprettified exceptions work
         with self.assertRaises(RuntimeError):
@@ -202,6 +202,18 @@ class TestIntegration(BaseTestCase):
         cmp2 = g | f | f + g
         self.assertEqual(cmp2(), 'GgffGgfg')
         self.assertEqual(cmp2('_'), '_gff_gfg')
+
+    def test_complex_exceptions(self):
+        @node
+        def query_volume(x):
+            return str(x ** 2)
+        @node
+        def query_price(x):
+            return '$' + str(x ** 3)
+
+        numeric = (query_volume | float) + (query_price | float)
+        with self.assertRaises(ValueError) as e:
+            numeric(2)
 
 
 ### Simple Sample Functions ###

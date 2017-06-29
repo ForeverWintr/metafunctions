@@ -19,6 +19,7 @@ def node(_func=None, *, bind=False, modify_tracebacks=True):
     Args:
         _func: Internal use. This will be the decorated function if node is used as a decorator with no params.
         bind: If True, the MetaFunction object is passed to the function as its first parameter.
+        modify_tracebacks: If true, exceptions raised in composed functions have a string appended to them describing the location of the function in the function chain.
 
     Usage:
 
