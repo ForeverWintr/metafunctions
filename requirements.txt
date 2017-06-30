@@ -1,1 +1,2 @@
 ansicolors>=1.1.8
+function-pipe>=1.0.3
