@@ -1,6 +1,6 @@
 
-from .base import MetaFunction
-from .base import SimpleFunction
-from .base import DeferredValue
-from .base import FunctionChain
-from .base import FunctionMerge
+from ._base import MetaFunction
+from ._base import SimpleFunction
+from ._base import DeferredValue
+from ._base import FunctionChain
+from ._base import FunctionMerge
