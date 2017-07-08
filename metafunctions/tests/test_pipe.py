@@ -225,11 +225,14 @@ class TestIntegration(BaseTestCase):
             self.assertIs(meta, abcf)
             return x + 'f'
 
-
         fn = node(f+'sup')
         abcf = a | b | c | fn
 
         self.assertEqual(abcf('_'), '_abcfsup')
+
+    def test_recursion(self):
+        # Recursion should work with bind. how?
+        self.fail('thinking')
 
 
     def test_detect_position(self):

@@ -39,7 +39,7 @@ class MetaFunction(metaclass=abc.ABCMeta):
 
     def _modify_kwargs(self, kwargs: dict):
         '''Do pre-call modifications to the kwargs dictionary. Currently this just means adding a
-        meta object if _bind is true.
+        meta object.
         '''
         kwargs.setdefault('meta', self)
 
