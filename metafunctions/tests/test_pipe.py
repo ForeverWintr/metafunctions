@@ -216,17 +216,18 @@ class TestIntegration(BaseTestCase):
             numeric(2)
 
     def test_decoration(self):
-        # It should be possible to decorate a metafunction and have everything still work (as long
-        # as the decorated function gets upgraded to a metafunction. consider a @metadecorator
-        # decorator to facilitate this).
+        # It should be possible to decorate a metafunction with another metafunction and have
+        # everything still work (as long as the decorated function gets upgraded to a metafunction.
+        # consider a @metadecorator decorator to facilitate this).
 
         @node(bind=True)
         def f(meta, x):
-            self.assertIsInstance(meta, abcf)
+            self.assertIs(meta, abcf)
             return x + 'f'
 
-        f = lambda x: f(x)
-        abcf = a | b | c | f
+
+        fn = node(f+'sup')
+        abcf = a | b | c | fn
 
         self.assertEqual(abcf('_'), '_abcf')
 

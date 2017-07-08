@@ -164,7 +164,10 @@ class SimpleFunction(MetaFunction):
         self._function = function
         self.add_location_to_traceback = print_location_in_traceback
 
-        # This works!!!!
+        # An interesting side effect of wraps: it causes simplefunctions to collapse into each
+        # other. Because calling wraps on a function copies all that function's attributes to the
+        # new function, we copy _bind, _function, etc from the wrapped function. Essentially
+        # absorbing it. I'm not sure if that's good or bad.
         functools.wraps(function)(self)
 
     def __call__(self, *args, **kwargs):
