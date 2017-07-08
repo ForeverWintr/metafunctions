@@ -1,5 +1,5 @@
 '''
-Internal decorators
+Internal decorators that are applied to MetaFunction methods, not functions.
 '''
 import functools
 from collections.abc import Callable
@@ -15,3 +15,19 @@ def binary_operation(method):
             new_other = self.defer_value(other)
         return method(self, new_other)
     return binary_operation
+
+
+#def link_child_functions(call_method):
+    #'''
+    #Internal deocrator to initialize links to child functions pre-call, and remove them
+    #post-call.
+    #'''
+    #@functools.wraps(call_method)
+    #def new_call(self, *args, **kwargs):
+        ##call link on each child function
+        #for f in self.functions:
+            #try:
+
+        #pass
+
+
