@@ -215,6 +215,32 @@ class TestIntegration(BaseTestCase):
         with self.assertRaises(ValueError) as e:
             numeric(2)
 
+    def test_decoration(self):
+        # It should be possible to decorate a metafunction and have everything still work (as long
+        # as the decorated function gets upgraded to a metafunction. consider a @metadecorator
+        # decorator to facilitate this).
+
+        @node(bind=True)
+        def f(meta, x):
+            self.assertIsInstance(meta, abcf)
+            return x + 'f'
+
+        f = lambda x: f(x)
+        abcf = a | b | c | f
+
+        self.assertEqual(abcf('_'), '_abcf')
+
+
+    def test_detect_position(self):
+        #metafunctions know if they are top or bottom level
+
+        # A metafunction will never change from top level to bottom level, but a simplefunction
+        # isn't guaranted to be at the bottom
+
+        # If we're the outermost function, we need to provide ourself as meta
+
+        self.fail('Why do I need this again?')
+
 
 ### Simple Sample Functions ###
 @node
