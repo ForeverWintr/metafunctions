@@ -229,7 +229,7 @@ class TestIntegration(BaseTestCase):
         fn = node(f+'sup')
         abcf = a | b | c | fn
 
-        self.assertEqual(abcf('_'), '_abcf')
+        self.assertEqual(abcf('_'), '_abcfsup')
 
 
     def test_detect_position(self):

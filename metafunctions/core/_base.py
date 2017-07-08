@@ -85,7 +85,6 @@ class MetaFunction(metaclass=abc.ABCMeta):
         return FunctionMerge(operator.truediv, (other, self))
 
 
-
 class FunctionChain(MetaFunction):
     def __init__(self, functions:tuple):
         '''A FunctionChain is a metafunction that calls its functions in sequence, passing the
@@ -158,7 +157,9 @@ class FunctionMerge(MetaFunction):
 
 class SimpleFunction(MetaFunction):
     def __init__(self, function, bind=False, print_location_in_traceback=True):
-        '''A MetaFunction-aware wrapper around a single function'''
+        '''A MetaFunction-aware wrapper around a single function
+        The `bind` parameter causes us to pass a meta object as the first argument to our inherited function, but it is only respected if the wrapped function is not another metafunction.
+        '''
         super().__init__()
         self._bind = bind
         self._function = function
@@ -171,12 +172,14 @@ class SimpleFunction(MetaFunction):
         functools.wraps(function)(self)
 
     def __call__(self, *args, **kwargs):
-        meta = kwargs.pop('meta', self)
-        meta._called_functions.append(self)
         additional_args = ()
-        if self._bind:
-            #If we've recieved a higher function's meta, pass it. Else pass self.
-            additional_args = (meta, )
+        if not isinstance(self._function, MetaFunction):
+            meta = kwargs.pop('meta', self)
+            meta._called_functions.append(self)
+            additional_args = ()
+            if self._bind:
+                #If we've recieved a higher function's meta, pass it. Else pass self.
+                additional_args = (meta, )
         try:
             return self._function(*additional_args, *args, **kwargs)
         except Exception as e:
