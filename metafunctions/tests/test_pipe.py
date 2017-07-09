@@ -235,15 +235,6 @@ class TestIntegration(BaseTestCase):
         self.fail('thinking')
 
 
-    def test_detect_position(self):
-        #metafunctions know if they are top or bottom level
-
-        # A metafunction will never change from top level to bottom level, but a simplefunction
-        # isn't guaranted to be at the bottom
-
-        # If we're the outermost function, we need to provide ourself as meta
-
-        self.fail('Why do I need this again?')
 
 
 ### Simple Sample Functions ###

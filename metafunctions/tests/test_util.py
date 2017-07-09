@@ -7,13 +7,10 @@ from metafunctions.core import MetaFunction, SimpleFunction
 
 
 class TestUnit(BaseTestCase):
-    def test_node_bind(self):
+    def test_bind_call_state(self):
         '''
-        Node bind rules:
-        The MetaFunction recieved in a base function when bind is true is the
-        function that was called. E.g., if a SimpleFunction is called directly, meta will be that
-        SimpleFunction itself. However, if the SimpleFunction is contained within a hierarchy of
-        other MetaFunction, meta will be the highest level (i.e., outermost) Metafunction.
+        If decorated with bind_call_state, the function receives the call state dictionary as its
+        first argument.
         '''
         @node(bind=True)
         def a_(meta, x):

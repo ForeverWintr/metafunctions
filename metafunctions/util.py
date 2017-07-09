@@ -37,6 +37,12 @@ def node(_func=None, *, bind=False, modify_tracebacks=True):
     return decorator(_func)
 
 
+def bind_call_state(_func):
+    def call_state_provider(*args, **kwargs):
+        call_state = kwargs.pop('call_state')
+        return _func(call_state, *args)
+
+
 def store(key):
     '''Store the received output in the meta data dictionary under the given key.'''
     @node(bind=True)
