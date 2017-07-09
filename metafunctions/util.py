@@ -92,16 +92,16 @@ def _system_supports_color():
     return True
 
 
-def highlight_current_function(meta, color=colors.red, use_color=_system_supports_color()):
-    '''Return a formatted string showing the location of the currently active function in meta.
+def highlight_current_function(call_state, color=colors.red, use_color=_system_supports_color()):
+    '''Return a formatted string showing the location of the currently active function in call_state.
 
     Consider this a 'you are here' when called from within a function pipeline.
     '''
-    current_name = str(meta._called_functions[-1])
+    current_name = str(call_state._called_functions[-1])
 
-    # how many times will current_name appear in str(meta)?
+    # how many times will current_name appear in str(call_state._meta_entry)?
     # Bearing in mind that pervious function names may contain current_name
-    num_occurences = sum(str(f).count(current_name) for f in meta._called_functions)
+    num_occurences = sum(str(f).count(current_name) for f in call_state._called_functions)
 
     # There's probably a better regex for this.
     skip = f'.*{current_name}'
@@ -111,7 +111,7 @@ def highlight_current_function(meta, color=colors.red, use_color=_system_support
     if use_color:
         highlighted_name = color(highlighted_name)
 
-    highlighted_string = re.sub(regex, fr'\1{highlighted_name}\2', str(meta))
+    highlighted_string = re.sub(regex, fr'\1{highlighted_name}\2', str(call_state._meta_entry))
     return highlighted_string
 
 

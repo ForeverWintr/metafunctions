@@ -190,12 +190,12 @@ class SimpleFunction(MetaFunction):
     def functions(self):
         return (self._function, )
 
-    def _handle_exception(self, meta, e):
+    def _handle_exception(self, call_state, e):
         if self.add_location_to_traceback:
             from metafunctions.util import highlight_current_function
             detailed_message = str(e)
-            if meta:
-                detailed_message = f"{str(e)} \n\nOccured in the following function: {highlight_current_function(meta)}"
+            if call_state:
+                detailed_message = f"{str(e)} \n\nOccured in the following function: {highlight_current_function(call_state)}"
             raise type(e)(detailed_message).with_traceback(e.__traceback__)
         raise
 
