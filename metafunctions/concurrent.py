@@ -5,7 +5,7 @@ from multiprocessing import Queue
 import queue
 
 from metafunctions.core import FunctionMerge
-from metafunctions.core._decorators import inject_call_state
+from metafunctions.core import inject_call_state
 from metafunctions.exceptions import ConcurrentException
 
 

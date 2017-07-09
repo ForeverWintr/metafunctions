@@ -41,19 +41,19 @@ class TestUnit(BaseTestCase):
         '''
         Every function in the pipeline recieves the same meta.
         '''
-        @node(bind=True)
+        @node()
         def f(meta, x):
             self.assertIs(meta, cmp)
             return 1
-        @node(bind=True)
+        @node
         def g(meta, x):
             self.assertIs(meta, cmp)
             return 1
-        @node(bind=True)
+        @node
         def h(meta, x):
             self.assertIs(meta, cmp)
             return 1
-        @node(bind=True)
+        @node
         def i(meta, x):
             self.assertIs(meta, cmp)
             return 1

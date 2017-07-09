@@ -230,6 +230,26 @@ class TestIntegration(BaseTestCase):
 
         self.assertEqual(abcf('_'), '_abcfsup')
 
+    def test_kwargs(self):
+        #Kwargs are passed to all functions
+
+        @node
+        def k(x, k='k'):
+            return x + k
+
+        self.assertEqual(k('_'), '_k')
+        self.assertEqual(k('_', k='_'), '__')
+
+        kk = k + k
+        self.assertEqual(kk('_'), '_k_k')
+        self.assertEqual(kk('_', k='_'), '____')
+
+        klen = k | len
+        self.assertEqual(klen('_'), 2)
+        with self.assertRaises(TypeError):
+            #passing a kwarg to len causes an error
+            klen('_', k=5)
+
     def test_recursion(self):
         # Recursion should work with bind. how?
         self.fail('thinking')
