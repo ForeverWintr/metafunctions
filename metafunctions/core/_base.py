@@ -6,6 +6,7 @@ import functools
 
 from metafunctions.core._decorators import binary_operation
 from metafunctions.core._decorators import inject_call_state
+from metafunctions.core._call_state import CallState
 
 
 class MetaFunction(metaclass=abc.ABCMeta):
@@ -40,7 +41,7 @@ class MetaFunction(metaclass=abc.ABCMeta):
 
     @staticmethod
     def new_call_state():
-        return {}
+        return CallState()
 
     ### Operator overloads ###
     @binary_operation
