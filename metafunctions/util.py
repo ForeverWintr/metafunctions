@@ -10,6 +10,7 @@ import colors
 from metafunctions.core import MetaFunction
 from metafunctions.core import SimpleFunction
 from metafunctions.core import FunctionMerge
+from metafunctions.core import CallState
 from metafunctions.concurrent import ConcurrentMerge
 
 
@@ -43,23 +44,25 @@ def bind_call_state(func):
 
 def store(key):
     '''Store the received output in the meta data dictionary under the given key.'''
-    @node(bind=True)
-    def store(meta, val):
-        meta.data[key] = val
+    @node
+    @bind_call_state
+    def store(call_state, val):
+        call_state.data[key] = val
         return val
     store.__name__ = f"store('{key}')"
     return store
 
 
-def recall(key, from_meta:MetaFunction=None):
-    '''Retrieve the given key from the meta data dictionary. Optionally, use `from_meta` to specify
-    a different metafunction than the current one.
+def recall(key, from_call_state:CallState=None):
+    '''Retrieve the given key from the meta data dictionary. Optionally, use `from_call_state` to
+    specify a different call_state than the current one.
     '''
-    @node(bind=True)
-    def recall(meta, val):
-        if from_meta:
-            return from_meta.data[key]
-        return meta.data[key]
+    @node
+    @bind_call_state
+    def recall(call_state, val):
+        if from_call_state:
+            return from_call_state.data[key]
+        return call_state.data[key]
     recall.__name__ = f"recall('{key}')"
     return recall
 
