@@ -201,8 +201,9 @@ class TestIntegration(BaseTestCase):
         @node
         def f(x='F'):
             return x + 'f'
-        @node()
-        def g(meta, x='G'):
+        @node
+        @bind_call_state
+        def g(call_state, x='G'):
             return x + 'g'
 
         cmp = f | g | f + g
