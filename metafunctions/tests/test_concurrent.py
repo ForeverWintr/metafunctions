@@ -7,6 +7,7 @@ import colors
 
 from metafunctions.tests.util import BaseTestCase
 from metafunctions.util import node
+from metafunctions.util import bind_call_state
 from metafunctions.util import highlight_current_function
 from metafunctions.util import concurrent
 from metafunctions.concurrent import ConcurrentMerge
@@ -41,25 +42,32 @@ class TestUnit(BaseTestCase):
         '''
         Every function in the pipeline recieves the same meta.
         '''
+        @node
+        @bind_call_state
+        def f(call_state, x):
+            self.assertIs(call_state._meta_entry, cmp)
+            return 1
         @node()
-        def f(meta, x):
-            self.assertIs(meta, cmp)
+        @bind_call_state
+        def g(call_state, x):
+            self.assertIs(call_state._meta_entry, cmp)
             return 1
         @node
-        def g(meta, x):
-            self.assertIs(meta, cmp)
+        @bind_call_state
+        def h(call_state, x):
+            self.assertIs(call_state._meta_entry, cmp)
             return 1
         @node
-        def h(meta, x):
-            self.assertIs(meta, cmp)
-            return 1
-        @node
-        def i(meta, x):
-            self.assertIs(meta, cmp)
+        @bind_call_state
+        def i(call_state, x):
+            self.assertIs(call_state._meta_entry, cmp)
             return 1
 
         cmp = ConcurrentMerge(h + f + f / h + i - g)
         self.assertEqual(cmp(1), 3)
+
+        self.assertEqual(cmp(1, call_state=cmp.new_call_state()), 3)
+
         # how do pretty tracebacks work in multiprocessing?
 
     def test_concurrent(self):
