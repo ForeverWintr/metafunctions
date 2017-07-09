@@ -2,7 +2,7 @@ from unittest import mock
 import functools
 
 from metafunctions.tests.util import BaseTestCase
-from metafunctions.util import store, recall, node, highlight_current_function
+from metafunctions.util import store, recall, node, highlight_current_function, bind_call_state
 from metafunctions.core import MetaFunction, SimpleFunction
 
 
@@ -12,14 +12,16 @@ class TestUnit(BaseTestCase):
         If decorated with bind_call_state, the function receives the call state dictionary as its
         first argument.
         '''
-        @node(bind=True)
-        def a_(meta, x):
-            self.assertIsInstance(meta, MetaFunction)
-            meta.data['a'] = 'b'
+        @node
+        @bind_call_state
+        def a_(call_state, x):
+            self.assertIsInstance(call_state, dict)
+            call_state['a'] = 'b'
             return x + 'a'
-        @node(bind=True)
-        def f(meta, x):
-            return x + meta.data.get('a', 'f')
+        @node
+        @bind_call_state
+        def f(call_state, x):
+            return x + call_state.get('a', 'f')
 
         self.assertEqual(a('_'), '_a')
         self.assertEqual(f('_'), '_f')

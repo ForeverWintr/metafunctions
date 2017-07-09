@@ -13,34 +13,32 @@ from metafunctions.core import FunctionMerge
 from metafunctions.concurrent import ConcurrentMerge
 
 
-def node(_func=None, *, bind=False, modify_tracebacks=True):
+def node(_func=None, *, modify_tracebacks=True):
     '''Turn the decorated function into a MetaFunction.
 
     Args:
         _func: Internal use. This will be the decorated function if node is used as a decorator
         with no params.
-        bind: If True, the MetaFunction object is passed to the function as its first parameter.
         modify_tracebacks: If true, exceptions raised in composed functions have a string appended
         to them describing the location of the function in the function chain.
 
     Usage:
 
-    @node(bind=True)
-    def f(metafunc, x):
+    @node
+    def f(x):
        <do something cool>
     '''
     def decorator(function):
-        newfunc = SimpleFunction(function, bind, modify_tracebacks)
+        newfunc = SimpleFunction(function, modify_tracebacks)
         return newfunc
     if not _func:
         return decorator
     return decorator(_func)
 
 
-def bind_call_state(_func):
-    def call_state_provider(*args, **kwargs):
-        call_state = kwargs.pop('call_state')
-        return _func(call_state, *args)
+def bind_call_state(func):
+    func._receives_call_state = True
+    return func
 
 
 def store(key):
