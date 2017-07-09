@@ -4,7 +4,9 @@ import functools
 
 from metafunctions.tests.util import BaseTestCase
 from metafunctions.util import node
+from metafunctions.util import bind_call_state
 from metafunctions.util import highlight_current_function
+from metafunctions.core import CallState
 
 
 class TestIntegration(BaseTestCase):
@@ -123,17 +125,18 @@ class TestIntegration(BaseTestCase):
         Parent refers to the parent MetaFunction.
         '''
 
-        @node(bind=True)
-        def parent_test(meta, x):
-            return meta
+        @node
+        @bind_call_state
+        def parent_test(call_state, x):
+            return call_state
 
         ab = a | b
         abc = ab + c
         abc_ = abc | parent_test
 
-        meta = abc_('_')
-        self.assertIs(abc_, meta)
-        self.assertListEqual(meta._called_functions, [a, b, c, parent_test])
+        call_state = abc_('_')
+        self.assertIsInstance(call_state, CallState)
+        self.assertListEqual(call_state._called_functions, [a, b, c, parent_test])
 
     @mock.patch('metafunctions.util.highlight_current_function')
     def test_pretty_exceptions(self, mock_h):

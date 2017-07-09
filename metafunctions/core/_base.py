@@ -172,6 +172,7 @@ class SimpleFunction(MetaFunction):
 
     @inject_call_state
     def __call__(self, *args, call_state, **kwargs):
+        call_state._called_functions.append(self)
         if getattr(self._function, '_receives_call_state', False):
             args = (call_state, ) + args
         try:
