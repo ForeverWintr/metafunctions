@@ -167,25 +167,32 @@ class TestIntegration(BaseTestCase):
         '''
         Every function in the pipeline recieves the same meta.
         '''
-        @node(bind=True)
-        def f(meta, x):
-            self.assertIs(meta, cmp)
+        @node
+        @bind_call_state
+        def f(call_state, x):
+            self.assertIs(call_state._meta_entry, cmp)
             return 1
-        @node(bind=True)
-        def g(meta, x):
-            self.assertIs(meta, cmp)
+        @node()
+        @bind_call_state
+        def g(call_state, x):
+            self.assertIs(call_state._meta_entry, cmp)
             return 1
-        @node(bind=True)
-        def h(meta, x):
-            self.assertIs(meta, cmp)
+        @node
+        @bind_call_state
+        def h(call_state, x):
+            self.assertIs(call_state._meta_entry, cmp)
             return 1
-        @node(bind=True)
-        def i(meta, x):
-            self.assertIs(meta, cmp)
+        @node
+        @bind_call_state
+        def i(call_state, x):
+            self.assertIs(call_state._meta_entry, cmp)
             return 1
 
         cmp = f | g | i | h + f + f / h + i - g
         self.assertEqual(cmp(1), 3)
+
+        #this works if we provide our own call_state too.
+        self.assertEqual(cmp(1, call_state=CallState()), 3)
 
     def test_defaults(self):
         '''
@@ -194,7 +201,7 @@ class TestIntegration(BaseTestCase):
         @node
         def f(x='F'):
             return x + 'f'
-        @node(bind=True)
+        @node()
         def g(meta, x='G'):
             return x + 'g'
 
@@ -223,7 +230,7 @@ class TestIntegration(BaseTestCase):
         # everything still work (as long as the decorated function gets upgraded to a metafunction.
         # consider a @metadecorator decorator to facilitate this).
 
-        @node(bind=True)
+        @node()
         def f(meta, x):
             self.assertIs(meta, abcf)
             return x + 'f'

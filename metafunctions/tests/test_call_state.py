@@ -28,7 +28,6 @@ class TestUnit(BaseTestCase):
         fg = f | g | h
         self.assertEqual(fg('_'), '_fgb')
 
-
     def test_provide_call_state(self):
         # A call state you provide is passed to all functions
         @node
