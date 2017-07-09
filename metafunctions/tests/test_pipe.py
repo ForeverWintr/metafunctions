@@ -263,11 +263,27 @@ class TestIntegration(BaseTestCase):
             #passing a kwarg to len causes an error
             klen('_', k=5)
 
-    def test_recursion(self):
-        # Recursion should work with bind. how?
-        self.fail('thinking')
+    def test_multi_call_immutability(self):
+        #Unless you manually supply the same call_state, mutliple calls do not share state.
+        @node
+        @bind_call_state
+        def f(call_state, x):
+            if 'f' not in call_state.data:
+                call_state.data['f'] = x
+            return x
 
+        @node
+        @bind_call_state
+        def g(call_state, x):
+            return x + call_state.data.get('f', 'g')
 
+        cmp = a | b | c | d | e | f | g
+        self.assertEqual(cmp('_'), '_abcde_abcde')
+        self.assertEqual(cmp('*'), '*abcde*abcde')
+
+        state = CallState()
+        self.assertEqual(cmp('_', call_state=state), '_abcde_abcde')
+        self.assertEqual(cmp('*', call_state=state), '*abcde_abcde')
 
 
 ### Simple Sample Functions ###
