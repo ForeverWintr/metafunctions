@@ -226,12 +226,11 @@ class TestIntegration(BaseTestCase):
         with self.assertRaises(ValueError) as e:
             numeric(2)
 
-    @unittest.skip('this is a TODO')
     def test_decoration(self):
         # It should be possible to decorate a metafunction with another metafunction and have
-        # everything still work (as long as the decorated function gets upgraded to a metafunction.
-        # consider a @metadecorator decorator to facilitate this).
-
+        # everything still work (as long as the decorated function gets upgraded to a metafunction).
+        # I don't think this is something that will happen, but I want to enforce that it is
+        # possible, for purposes of conceptual purity.
         @node()
         @bind_call_state
         def f(call_state, x):
@@ -239,6 +238,7 @@ class TestIntegration(BaseTestCase):
             return x + 'f'
 
         fn = node(f+'sup')
+        repr(fn)
         abcf = a | b | c | fn
 
         self.assertEqual(abcf('_'), '_abcfsup')

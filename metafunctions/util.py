@@ -38,8 +38,12 @@ def node(_func=None, *, modify_tracebacks=True):
 
 
 def bind_call_state(func):
-    func._receives_call_state = True
-    return func
+    @functools.wraps(func)
+    def provides_call_state(*args, **kwargs):
+        call_state = kwargs.pop('call_state')
+        return func(call_state, *args, **kwargs)
+    provides_call_state._receives_call_state = True
+    return provides_call_state
 
 
 def store(key):

@@ -11,6 +11,9 @@ from metafunctions.core._call_state import CallState
 
 class MetaFunction(metaclass=abc.ABCMeta):
 
+    # Metafunctions will pass call state to any function with this attribute set to true
+    _receives_call_state = True
+
     @abc.abstractmethod
     def __init__(self, *args, **kwargs):
         '''A MetaFunction is a function that contains other functions. When executed, it calls the
@@ -160,21 +163,22 @@ class SimpleFunction(MetaFunction):
         '''A MetaFunction-aware wrapper around a single function
         The `bind` parameter causes us to pass a meta object as the first argument to our inherited function, but it is only respected if the wrapped function is not another metafunction.
         '''
-        super().__init__()
-        self._function = function
-        self.add_location_to_traceback = print_location_in_traceback
-
         # An interesting side effect of wraps: it causes simplefunctions to collapse into each
         # other. Because calling wraps on a function copies all that function's attributes to the
         # new function, we copy _function, etc from the wrapped function. Essentially
         # absorbing it. I'm not sure if that's good or bad.
         functools.wraps(function)(self)
 
+        super().__init__()
+        self._function = function
+        self.add_location_to_traceback = print_location_in_traceback
+
+
     @inject_call_state
     def __call__(self, *args, call_state, **kwargs):
         call_state._called_functions.append(self)
         if getattr(self._function, '_receives_call_state', False):
-            args = (call_state, ) + args
+            kwargs['call_state'] = call_state
         try:
             return self._function(*args, **kwargs)
         except Exception as e:
@@ -184,7 +188,12 @@ class SimpleFunction(MetaFunction):
         return f'{self.__class__.__name__}({self.functions[0]})'
 
     def __str__(self):
-        return self.__name__
+        try:
+            return self.__name__
+        except AttributeError:
+            # We're usually wrapping a function, but it's possible we're wrapping another
+            # metafunction
+            return str(self.functions[0])
 
     @property
     def functions(self):
