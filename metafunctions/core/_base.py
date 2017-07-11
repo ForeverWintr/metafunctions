@@ -7,6 +7,7 @@ import functools
 from metafunctions.core._decorators import binary_operation
 from metafunctions.core._decorators import inject_call_state
 from metafunctions.core._call_state import CallState
+from metafunctions.operators import concat
 
 
 class MetaFunction(metaclass=abc.ABCMeta):
@@ -56,6 +57,14 @@ class MetaFunction(metaclass=abc.ABCMeta):
         return FunctionChain.combine(other, self)
 
     @binary_operation
+    def __and__(self, other):
+        return FunctionMerge.combine(concat, self, other)
+
+    @binary_operation
+    def __rand__(self, other):
+        return FunctionMerge.combine(concat, other, self)
+
+    @binary_operation
     def __add__(self, other):
         return FunctionMerge(operator.add, (self, other))
 
@@ -96,18 +105,6 @@ class FunctionChain(MetaFunction):
         super().__init__()
         self._functions = functions
 
-    @classmethod
-    def combine(cls, *funcs):
-        '''Merge chains; i.e., combine all FunctionChains in `funcs` into a single FunctionChain.
-        '''
-        new_funcs = []
-        for f in funcs:
-            if isinstance(f, FunctionChain):
-                new_funcs.extend(f.functions)
-            else:
-                new_funcs.append(f)
-        return cls(tuple(new_funcs))
-
     @inject_call_state
     def __call__(self, *args, **kwargs):
         f_iter = iter(self._functions)
@@ -122,6 +119,18 @@ class FunctionChain(MetaFunction):
     def __str__(self):
         return f'({" | ".join(str(f) for f in self.functions)})'
 
+    @classmethod
+    def combine(cls, *funcs):
+        '''Merge chains; i.e., combine all FunctionChains in `funcs` into a single FunctionChain.
+        '''
+        new_funcs = []
+        for f in funcs:
+            if isinstance(f, cls):
+                new_funcs.extend(f.functions)
+            else:
+                new_funcs.append(f)
+        return cls(tuple(new_funcs))
+
 
 class FunctionMerge(MetaFunction):
     _character_to_operator = {
@@ -129,6 +138,7 @@ class FunctionMerge(MetaFunction):
         '-': operator.sub,
         '*': operator.mul,
         '/': operator.truediv,
+        '&': concat,
     }
     _operator_to_character = {v: k for k, v in _character_to_operator.items()}
 
@@ -157,6 +167,22 @@ class FunctionMerge(MetaFunction):
         func_str = f' {self._join_str} '.join(str(f) for f in self.functions)
         return f"({func_str})"
 
+    @classmethod
+    def combine(cls, merge_func: tp.Callable, *funcs, join_str=None):
+        '''Combine FunctionMerges. If consecutive FunctionMerges have the same merge_funcs, combine
+        them into a single FunctionMerge.
+
+        NOTE: combine does not check to make sure the merge_func can accept the new number of
+        arguments.
+        '''
+        new_funcs = []
+        for f in funcs:
+            if isinstance(f, cls) and f._merge_func == merge_func:
+                new_funcs.extend(f.functions)
+            else:
+                new_funcs.append(f)
+        return cls(merge_func, tuple(new_funcs), join_str=join_str)
+
 
 class SimpleFunction(MetaFunction):
     def __init__(self, function, print_location_in_traceback=True):
@@ -172,7 +198,6 @@ class SimpleFunction(MetaFunction):
         super().__init__()
         self._function = function
         self.add_location_to_traceback = print_location_in_traceback
-
 
     @inject_call_state
     def __call__(self, *args, call_state, **kwargs):
