@@ -42,6 +42,11 @@ class TestUnit(BaseTestCase):
         self.assertEqual(str(cmp), "(a & a & 'sweet as')")
         self.assertEqual(repr(cmp), f"FunctionMerge({concat}, {(a, a, cmp._functions[-1])})")
 
+        #__rand__ works too
+        a = 'sweet as' & a
+        self.assertEqual(a('+'), ('sweet as', '+a'))
+
+
     def test_combine(self):
         # Only combine FunctionMerges that have the same MergeFunc
         add = a + b
