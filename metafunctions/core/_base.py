@@ -7,6 +7,7 @@ import functools
 from metafunctions.core._decorators import binary_operation
 from metafunctions.core._decorators import inject_call_state
 from metafunctions.core._call_state import CallState
+from metafunctions.operators import concat
 
 
 class MetaFunction(metaclass=abc.ABCMeta):
@@ -57,11 +58,11 @@ class MetaFunction(metaclass=abc.ABCMeta):
 
     @binary_operation
     def __and__(self, other):
-        return FunctionMerge.combine
+        return FunctionMerge.combine(concat, self, other)
 
     @binary_operation
     def __rand__(self, other):
-        pass
+        return FunctionMerge.combine(concat, other, self)
 
     @binary_operation
     def __add__(self, other):
@@ -137,6 +138,7 @@ class FunctionMerge(MetaFunction):
         '-': operator.sub,
         '*': operator.mul,
         '/': operator.truediv,
+        '&': concat,
     }
     _operator_to_character = {v: k for k, v in _character_to_operator.items()}
 

@@ -3,6 +3,7 @@ import operator
 from metafunctions.core import FunctionMerge
 from metafunctions.core import SimpleFunction
 from metafunctions.tests.util import BaseTestCase
+from metafunctions.operators import concat
 
 
 class TestUnit(BaseTestCase):
@@ -39,7 +40,7 @@ class TestUnit(BaseTestCase):
 
         self.assertTupleEqual(cmp('_'), ('_a', '_a', 'sweet as'))
         self.assertEqual(str(cmp), "(a & a & 'sweet as')")
-        self.assertEqual(repr(cmp), f"FunctionMerge()")
+        self.assertEqual(repr(cmp), f"FunctionMerge({concat}, {(a, a, cmp._functions[-1])})")
 
     def test_combine(self):
         # Only combine FunctionMerges that have the same MergeFunc
