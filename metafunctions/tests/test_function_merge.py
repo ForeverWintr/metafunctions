@@ -41,6 +41,41 @@ class TestUnit(BaseTestCase):
         self.assertEqual(str(cmp), "(a & a & 'sweet as')")
         self.assertEqual(repr(cmp), f"FunctionMerge()")
 
+    def test_combine(self):
+        # Only combine FunctionMerges that have the same MergeFunc
+        add = a + b
+        also_add = b + a
+        div = a / b
+
+        #This combined FunctionMerge will fail if called (because addition is binary,
+        #operator.add only takes two args). I'm just using to combine for test purposes.
+        abba = FunctionMerge.combine(operator.add, add, also_add)
+        self.assertEqual(str(abba), '(a + b + b + a)')
+        self.assertEqual(repr(abba), f"FunctionMerge({operator.add}, {(a, b, b, a)})")
+
+        ab_ba = FunctionMerge.combine(operator.sub, add, also_add)
+        self.assertEqual(str(ab_ba), '((a + b) - (b + a))')
+        self.assertEqual(repr(ab_ba), f"FunctionMerge({operator.sub}, {(add, also_add)})")
+
+        abab = FunctionMerge.combine(operator.add, add, div)
+        self.assertEqual(str(abab), '(a + b + (a / b))')
+        self.assertEqual(repr(abab), f"FunctionMerge({operator.add}, {(a, b, div)})")
+
+        def custom():
+            pass
+        abba_ = FunctionMerge.combine(custom, add, also_add, join_str='<>')
+        self.assertEqual(str(abba_), '((a + b) <> (b + a))')
+        self.assertEqual(repr(abba_), f"FunctionMerge({custom}, {(add, also_add)})")
+
+        def concat(*args):
+            return ''.join(args)
+        bb = FunctionMerge(concat, (b, b), join_str='q')
+        aa = FunctionMerge(concat, (a, a), join_str='q')
+        bbaa = FunctionMerge.combine(concat, bb, aa, join_str='q')
+        self.assertEqual(str(bbaa), '(b q b q a q a)')
+        self.assertEqual(repr(bbaa), f"FunctionMerge({concat}, {(b, b, a, a)})")
+
+
 @SimpleFunction
 def a(x):
     return x + 'a'
