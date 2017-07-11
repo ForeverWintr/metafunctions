@@ -185,7 +185,7 @@ class SimpleFunction(MetaFunction):
             self._handle_exception(call_state, e)
 
     def __repr__(self):
-        return f'{self.__class__.__name__}({self.functions[0]})'
+        return f'{self.__class__.__name__}({self.functions[0]!r})'
 
     def __str__(self):
         try:
@@ -218,6 +218,9 @@ class DeferredValue(SimpleFunction):
 
     def __call__(self, *args, **kwargs):
         return self._value
+
+    def __repr__(self):
+        return f'{self.__class__.__name__}({self._value!r})'
 
     @property
     def functions(self):

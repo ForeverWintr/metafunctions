@@ -238,7 +238,8 @@ class TestIntegration(BaseTestCase):
             return x + 'f'
 
         fn = node(f+'sup')
-        repr(fn)
+        self.assertEqual(repr(fn), f"SimpleFunction({(f+'sup')!r})")
+        self.assertEqual(str(fn), "(f + 'sup')")
         abcf = a | b | c | fn
 
         self.assertEqual(abcf('_'), '_abcfsup')
