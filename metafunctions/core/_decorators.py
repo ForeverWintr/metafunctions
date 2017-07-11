@@ -1,13 +1,13 @@
 '''
 Internal decorators that are applied to MetaFunction methods, not functions.
 '''
-import functools
+from functools import wraps
 from collections.abc import Callable
 
 
 def binary_operation(method):
     '''Internal decorator to apply common type checking for binary operations'''
-    @functools.wraps(method)
+    @wraps(method)
     def binary_operation(self, other):
         if isinstance(other, Callable):
             new_other = self.make_meta(other)
@@ -17,17 +17,16 @@ def binary_operation(method):
     return binary_operation
 
 
-#def link_child_functions(call_method):
-    #'''
-    #Internal deocrator to initialize links to child functions pre-call, and remove them
-    #post-call.
-    #'''
-    #@functools.wraps(call_method)
-    #def new_call(self, *args, **kwargs):
-        ##call link on each child function
-        #for f in self.functions:
-            #try:
-
-        #pass
+def inject_call_state(call_method):
+    '''Decorates the call method to insure call_state is present in kwargs, or create a new one.
+    If the call state doesn't have a meta entry point set, we assume we are the meta entry point.
+    '''
+    @wraps(call_method)
+    def with_call_state(self, *args, **kwargs):
+        call_state = kwargs.setdefault('call_state', self.new_call_state())
+        if call_state._meta_entry is None:
+            call_state._meta_entry = self
+        return call_method(self, *args, **kwargs)
+    return with_call_state
 
 

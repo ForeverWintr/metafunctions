@@ -5,9 +5,14 @@ import functools
 
 
 from metafunctions.core._decorators import binary_operation
+from metafunctions.core._decorators import inject_call_state
+from metafunctions.core._call_state import CallState
 
 
 class MetaFunction(metaclass=abc.ABCMeta):
+
+    # Metafunctions will pass call state to any function with this attribute set to true
+    _receives_call_state = True
 
     @abc.abstractmethod
     def __init__(self, *args, **kwargs):
@@ -18,7 +23,7 @@ class MetaFunction(metaclass=abc.ABCMeta):
         self._called_functions = []
 
     @abc.abstractmethod
-    def __call__(self, arg):
+    def __call__(self, *args, call_state=None, **kwargs):
         '''Call the functions contained in this MetaFunction'''
 
     @property
@@ -37,11 +42,9 @@ class MetaFunction(metaclass=abc.ABCMeta):
         '''Wrap the given value in a DeferredValue object, (which returns its value when called).'''
         return DeferredValue(value)
 
-    def _modify_kwargs(self, kwargs: dict):
-        '''Do pre-call modifications to the kwargs dictionary. Currently this just means adding a
-        meta object.
-        '''
-        kwargs.setdefault('meta', self)
+    @staticmethod
+    def new_call_state():
+        return CallState()
 
     ### Operator overloads ###
     @binary_operation
@@ -105,8 +108,8 @@ class FunctionChain(MetaFunction):
                 new_funcs.append(f)
         return cls(tuple(new_funcs))
 
+    @inject_call_state
     def __call__(self, *args, **kwargs):
-        self._modify_kwargs(kwargs)
         f_iter = iter(self._functions)
         result = next(f_iter)(*args, **kwargs)
         for f in f_iter:
@@ -142,8 +145,8 @@ class FunctionMerge(MetaFunction):
         self._join_str = join_str or self._operator_to_character.get(
                 merge_func, str(merge_func))
 
+    @inject_call_state
     def __call__(self, *args, **kwargs):
-        self._modify_kwargs(kwargs)
         results = (f(*args, **kwargs) for f in self.functions)
         return self._merge_func(*results)
 
@@ -156,51 +159,52 @@ class FunctionMerge(MetaFunction):
 
 
 class SimpleFunction(MetaFunction):
-    def __init__(self, function, bind=False, print_location_in_traceback=True):
+    def __init__(self, function, print_location_in_traceback=True):
         '''A MetaFunction-aware wrapper around a single function
         The `bind` parameter causes us to pass a meta object as the first argument to our inherited function, but it is only respected if the wrapped function is not another metafunction.
         '''
-        super().__init__()
-        self._bind = bind
-        self._function = function
-        self.add_location_to_traceback = print_location_in_traceback
-
         # An interesting side effect of wraps: it causes simplefunctions to collapse into each
         # other. Because calling wraps on a function copies all that function's attributes to the
-        # new function, we copy _bind, _function, etc from the wrapped function. Essentially
+        # new function, we copy _function, etc from the wrapped function. Essentially
         # absorbing it. I'm not sure if that's good or bad.
         functools.wraps(function)(self)
 
-    def __call__(self, *args, **kwargs):
-        additional_args = ()
-        if not isinstance(self._function, MetaFunction):
-            meta = kwargs.pop('meta', self)
-            meta._called_functions.append(self)
-            additional_args = ()
-            if self._bind:
-                #If we've recieved a higher function's meta, pass it. Else pass self.
-                additional_args = (meta, )
+        super().__init__()
+        self._function = function
+        self.add_location_to_traceback = print_location_in_traceback
+
+
+    @inject_call_state
+    def __call__(self, *args, call_state, **kwargs):
+        call_state._called_functions.append(self)
+        if getattr(self._function, '_receives_call_state', False):
+            kwargs['call_state'] = call_state
         try:
-            return self._function(*additional_args, *args, **kwargs)
+            return self._function(*args, **kwargs)
         except Exception as e:
-            self._handle_exception(meta, e)
+            self._handle_exception(call_state, e)
 
     def __repr__(self):
-        return f'{self.__class__.__name__}({self.functions[0]})'
+        return f'{self.__class__.__name__}({self.functions[0]!r})'
 
     def __str__(self):
-        return self.__name__
+        try:
+            return self.__name__
+        except AttributeError:
+            # We're usually wrapping a function, but it's possible we're wrapping another
+            # metafunction
+            return str(self.functions[0])
 
     @property
     def functions(self):
         return (self._function, )
 
-    def _handle_exception(self, meta, e):
+    def _handle_exception(self, call_state, e):
         if self.add_location_to_traceback:
             from metafunctions.util import highlight_current_function
             detailed_message = str(e)
-            if meta:
-                detailed_message = f"{str(e)} \n\nOccured in the following function: {highlight_current_function(meta)}"
+            if call_state:
+                detailed_message = f"{str(e)} \n\nOccured in the following function: {highlight_current_function(call_state)}"
             raise type(e)(detailed_message).with_traceback(e.__traceback__)
         raise
 
@@ -214,6 +218,9 @@ class DeferredValue(SimpleFunction):
 
     def __call__(self, *args, **kwargs):
         return self._value
+
+    def __repr__(self):
+        return f'{self.__class__.__name__}({self._value!r})'
 
     @property
     def functions(self):
