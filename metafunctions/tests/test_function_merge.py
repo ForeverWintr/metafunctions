@@ -43,8 +43,8 @@ class TestUnit(BaseTestCase):
         self.assertEqual(repr(cmp), f"FunctionMerge({concat}, {(a, a, cmp._functions[-1])})")
 
         #__rand__ works too
-        a = 'sweet as' & a
-        self.assertEqual(a('+'), ('sweet as', '+a'))
+        a_ = 'sweet as' & a
+        self.assertEqual(a_('+'), ('sweet as', '+a'))
 
 
     def test_combine(self):
