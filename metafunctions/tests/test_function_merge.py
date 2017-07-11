@@ -32,7 +32,14 @@ class TestUnit(BaseTestCase):
         d = FunctionMerge(concat, (b, b), join_str='q')
         self.assertEqual(str(d), '(b q b)')
 
+    def test_join(self):
+        # The first real non-binary function! Like the example above.
 
+        cmp = a & a & 'sweet as'
+
+        self.assertTupleEqual(cmp('_'), ('_a', '_a', 'sweet as'))
+        self.assertEqual(str(cmp), "(a & a & 'sweet as')")
+        self.assertEqual(repr(cmp), f"FunctionMerge()")
 
 @SimpleFunction
 def a(x):

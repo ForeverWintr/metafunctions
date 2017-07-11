@@ -56,6 +56,14 @@ class MetaFunction(metaclass=abc.ABCMeta):
         return FunctionChain.combine(other, self)
 
     @binary_operation
+    def __and__(self, other):
+        pass
+
+    @binary_operation
+    def __rand__(self, other):
+        pass
+
+    @binary_operation
     def __add__(self, other):
         return FunctionMerge(operator.add, (self, other))
 
@@ -172,7 +180,6 @@ class SimpleFunction(MetaFunction):
         super().__init__()
         self._function = function
         self.add_location_to_traceback = print_location_in_traceback
-
 
     @inject_call_state
     def __call__(self, *args, call_state, **kwargs):
