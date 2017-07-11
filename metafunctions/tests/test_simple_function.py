@@ -15,6 +15,11 @@ class TestUnit(BaseTestCase):
         self.assertEqual(repr(a), f'SimpleFunction({repr(a._function)})')
         self.assertEqual(str(a), 'a')
 
+    def test_combine(self):
+        # SimpleFunctions have no combine
+        with self.assertRaises(NotImplementedError):
+            SimpleFunction.combine()
+
 
 @SimpleFunction
 def a(x):

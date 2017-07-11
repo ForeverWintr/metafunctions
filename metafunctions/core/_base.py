@@ -46,6 +46,18 @@ class MetaFunction(metaclass=abc.ABCMeta):
     def new_call_state():
         return CallState()
 
+    @classmethod
+    def combine(cls, *funcs):
+        '''Merge chains; i.e., combine all FunctionChains in `funcs` into a single FunctionChain.
+        '''
+        new_funcs = []
+        for f in funcs:
+            if isinstance(f, cls):
+                new_funcs.extend(f.functions)
+            else:
+                new_funcs.append(f)
+        return cls(tuple(new_funcs))
+
     ### Operator overloads ###
     @binary_operation
     def __or__(self, other):
@@ -103,18 +115,6 @@ class FunctionChain(MetaFunction):
         '''
         super().__init__()
         self._functions = functions
-
-    @classmethod
-    def combine(cls, *funcs):
-        '''Merge chains; i.e., combine all FunctionChains in `funcs` into a single FunctionChain.
-        '''
-        new_funcs = []
-        for f in funcs:
-            if isinstance(f, FunctionChain):
-                new_funcs.extend(f.functions)
-            else:
-                new_funcs.append(f)
-        return cls(tuple(new_funcs))
 
     @inject_call_state
     def __call__(self, *args, **kwargs):
@@ -201,6 +201,13 @@ class SimpleFunction(MetaFunction):
             # We're usually wrapping a function, but it's possible we're wrapping another
             # metafunction
             return str(self.functions[0])
+
+    @classmethod
+    def combine(cls, *funcs):
+        '''SimpleFunctions cannot be combined'''
+        raise NotImplementedError((
+                f'combine on {cls.__name__} is not implemented. '
+                f'You should use another MetaFunction to join {cls.__name__}s'))
 
     @property
     def functions(self):
