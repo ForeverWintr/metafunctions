@@ -96,8 +96,16 @@ class MetaFunction(metaclass=abc.ABCMeta):
     def __rtruediv__(self, other):
         return FunctionMerge(operator.truediv, (other, self))
 
+    @binary_operation
+    def __matmul__(self, other):
+        asdf
+
+    @binary_operation
+    def __rmatmul__(self, other):
+        asdf
 
 class FunctionChain(MetaFunction):
+    _sep = '|'
     def __init__(self, functions:tuple):
         '''A FunctionChain is a metafunction that calls its functions in sequence, passing the
         results of the first function subsequent functions.
@@ -117,7 +125,7 @@ class FunctionChain(MetaFunction):
         return f'{self.__class__.__name__}({self.functions})'
 
     def __str__(self):
-        return f'({" | ".join(str(f) for f in self.functions)})'
+        return f'({f" {self._sep} ".join(str(f) for f in self.functions)})'
 
     @classmethod
     def combine(cls, *funcs):
@@ -125,7 +133,7 @@ class FunctionChain(MetaFunction):
         '''
         new_funcs = []
         for f in funcs:
-            if isinstance(f, cls):
+            if type(f) is cls:
                 new_funcs.extend(f.functions)
             else:
                 new_funcs.append(f)
