@@ -14,18 +14,21 @@ class MetaFunction(metaclass=abc.ABCMeta):
 
     # Metafunctions will pass call state to any function with this attribute set to true
     _receives_call_state = True
+    _function_join_str = ''
 
     @abc.abstractmethod
     def __init__(self, *args, **kwargs):
         '''A MetaFunction is a function that contains other functions. When executed, it calls the
         functions it contains.
         '''
-        self.data = {}
-        self._called_functions = []
+        self._functions = []
 
     @abc.abstractmethod
     def __call__(self, *args, call_state=None, **kwargs):
         '''Call the functions contained in this MetaFunction'''
+
+    def __str__(self):
+        return f'({f" {self._function_join_str} ".join(str(f) for f in self.functions)})'
 
     @property
     def functions(self):
@@ -96,9 +99,18 @@ class MetaFunction(metaclass=abc.ABCMeta):
     def __rtruediv__(self, other):
         return FunctionMerge(operator.truediv, (other, self))
 
+    @binary_operation
+    def __matmul__(self, other):
+        return BroadcastChain.combine(self, other)
+
+    @binary_operation
+    def __rmatmul__(self, other):
+        return BroadcastChain.combine(other, self)
+
 
 class FunctionChain(MetaFunction):
-    def __init__(self, functions:tuple):
+    _function_join_str = '|'
+    def __init__(self, *functions):
         '''A FunctionChain is a metafunction that calls its functions in sequence, passing the
         results of the first function subsequent functions.
         '''
@@ -114,10 +126,7 @@ class FunctionChain(MetaFunction):
         return result
 
     def __repr__(self):
-        return f'{self.__class__.__name__}({self.functions})'
-
-    def __str__(self):
-        return f'({" | ".join(str(f) for f in self.functions)})'
+        return f'{self.__class__.__name__}{self.functions}'
 
     @classmethod
     def combine(cls, *funcs):
@@ -125,11 +134,23 @@ class FunctionChain(MetaFunction):
         '''
         new_funcs = []
         for f in funcs:
-            if isinstance(f, cls):
+            if type(f) is cls:
                 new_funcs.extend(f.functions)
             else:
                 new_funcs.append(f)
-        return cls(tuple(new_funcs))
+        return cls(*new_funcs)
+
+
+class BroadcastChain(FunctionChain):
+    _function_join_str = '@'
+
+    @inject_call_state
+    def __call__(self, *args, **kwargs):
+        f_iter = iter(self._functions)
+        result = next(f_iter)(*args, **kwargs)
+        for f in f_iter:
+            result = f(*result, **kwargs)
+        return result
 
 
 class FunctionMerge(MetaFunction):
@@ -142,17 +163,17 @@ class FunctionMerge(MetaFunction):
     }
     _operator_to_character = {v: k for k, v in _character_to_operator.items()}
 
-    def __init__(self, merge_func:tp.Callable, functions:tuple, join_str=None):
+    def __init__(self, merge_func:tp.Callable, functions:tuple, function_join_str=''):
         '''A FunctionMerge merges its functions by executing all of them and passing their results to `merge_func`
 
         Args:
-            join_str: If you're using a `merge_func` that is not one of the standard operator
+            function_join_str: If you're using a `merge_func` that is not one of the standard operator
             functions, use this argument to provide a custom character to use in string formatting. If not provided, we default to using str(merge_func).
         '''
         super().__init__()
         self._merge_func = merge_func
         self._functions = functions
-        self._join_str = join_str or self._operator_to_character.get(
+        self._function_join_str = function_join_str or self._operator_to_character.get(
                 merge_func, str(merge_func))
 
     @inject_call_state
@@ -163,12 +184,8 @@ class FunctionMerge(MetaFunction):
     def __repr__(self):
         return f'{self.__class__.__name__}({self._merge_func}, {self.functions})'
 
-    def __str__(self):
-        func_str = f' {self._join_str} '.join(str(f) for f in self.functions)
-        return f"({func_str})"
-
     @classmethod
-    def combine(cls, merge_func: tp.Callable, *funcs, join_str=None):
+    def combine(cls, merge_func: tp.Callable, *funcs, function_join_str=None):
         '''Combine FunctionMerges. If consecutive FunctionMerges have the same merge_funcs, combine
         them into a single FunctionMerge.
 
@@ -181,7 +198,7 @@ class FunctionMerge(MetaFunction):
                 new_funcs.extend(f.functions)
             else:
                 new_funcs.append(f)
-        return cls(merge_func, tuple(new_funcs), join_str=join_str)
+        return cls(merge_func, tuple(new_funcs), function_join_str=function_join_str)
 
 
 class SimpleFunction(MetaFunction):
