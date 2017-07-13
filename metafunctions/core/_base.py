@@ -101,11 +101,12 @@ class MetaFunction(metaclass=abc.ABCMeta):
 
     @binary_operation
     def __matmul__(self, other):
-        asdf
+        return BroadcastChain.combine(self, other)
 
     @binary_operation
     def __rmatmul__(self, other):
-        asdf
+        return BroadcastChain.combine(other, self)
+
 
 class FunctionChain(MetaFunction):
     _function_join_str = '|'
@@ -138,6 +139,18 @@ class FunctionChain(MetaFunction):
             else:
                 new_funcs.append(f)
         return cls(tuple(new_funcs))
+
+
+class BroadcastChain(FunctionChain):
+    _function_join_str = '@'
+
+    @inject_call_state
+    def __call__(self, *args, **kwargs):
+        f_iter = iter(self._functions)
+        result = next(f_iter)(*args, **kwargs)
+        for f in f_iter:
+            result = f(*result, **kwargs)
+        return result
 
 
 class FunctionMerge(MetaFunction):
