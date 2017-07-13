@@ -18,7 +18,7 @@ class ConcurrentMerge(FunctionMerge):
         super().__init__(
                 function_merge._merge_func,
                 function_merge._functions,
-                function_merge._join_str)
+                function_merge._function_join_str)
 
     def __str__(self):
         joined_funcs = super().__str__()
