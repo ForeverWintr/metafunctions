@@ -17,6 +17,13 @@ class TestUnit(BaseTestCase):
         self.assertEqual(str(c), '(a @ b)')
         self.assertEqual(repr(c), f"BroadcastChain{(a, b)}")
 
+        c = a | a @ b * 5 / 7 | b & b @ a
+        self.assertEqual(str(c), '(a | (((a @ b) * 5) / 7) | (b & (b @ a)))')
+
+        c = (1, 2, 3) @ a
+        self.assertEqual(str(c), '((1, 2, 3) @ a)')
+
+
 
 @node
 def a(x):
