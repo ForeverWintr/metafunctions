@@ -58,12 +58,13 @@ class TestUnit(BaseTestCase):
         self.assertEqual(big('_'), '_ab_abc_abc_ab_ab')
 
     def test_recall(self):
-        a.data['k'] = 'secret'
+        state = a.new_call_state()
+        state.data['k'] = 'secret'
 
         cmp = a + b | store('k') | c + recall('k')
         self.assertEqual(cmp('_'), '_a_bc_a_b')
 
-        cmp = a + b | store('k') | c + recall('k') | recall('k', from_call_state=a)
+        cmp = a + b | store('k') | c + recall('k') | recall('k', from_call_state=state)
         self.assertEqual(cmp('_'), 'secret')
 
     def test_str_store(self):
