@@ -110,7 +110,7 @@ class MetaFunction(metaclass=abc.ABCMeta):
 
 class FunctionChain(MetaFunction):
     _function_join_str = '|'
-    def __init__(self, functions:tuple):
+    def __init__(self, *functions):
         '''A FunctionChain is a metafunction that calls its functions in sequence, passing the
         results of the first function subsequent functions.
         '''
@@ -126,7 +126,7 @@ class FunctionChain(MetaFunction):
         return result
 
     def __repr__(self):
-        return f'{self.__class__.__name__}({self.functions})'
+        return f'{self.__class__.__name__}{self.functions}'
 
     @classmethod
     def combine(cls, *funcs):
@@ -138,7 +138,7 @@ class FunctionChain(MetaFunction):
                 new_funcs.extend(f.functions)
             else:
                 new_funcs.append(f)
-        return cls(tuple(new_funcs))
+        return cls(*new_funcs)
 
 
 class BroadcastChain(FunctionChain):

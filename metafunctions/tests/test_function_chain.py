@@ -8,17 +8,17 @@ from metafunctions.tests.util import BaseTestCase
 
 class TestUnit(BaseTestCase):
     def test_str(self):
-        c = FunctionChain((a, b, l))
+        c = FunctionChain(a, b, l)
         self.assertEqual(str(c), '(a | b | <lambda>)')
-        self.assertEqual(repr(c), f'FunctionChain({(a,b,l)})')
+        self.assertEqual(repr(c), f'FunctionChain{(a,b,l)}')
 
     def test_call(self):
-        c = FunctionChain((a, b, l))
+        c = FunctionChain(a, b, l)
         self.assertEqual(c('_'), '_abl')
 
     def test_combine(self):
         '''Avoid nesting chains'''
-        chain = FunctionChain((a, b, l))
+        chain = FunctionChain(a, b, l)
         merge = FunctionMerge(operator.add, (a, b))
 
         self.assertEqual(str(FunctionChain.combine(chain, chain)),

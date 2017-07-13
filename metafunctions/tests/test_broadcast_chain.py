@@ -12,6 +12,11 @@ class TestUnit(BaseTestCase):
         cmp = (a | b) @ f
         self.assertEqual(cmp('_'), ('_', 'a', 'b'))
 
+    def test_str_repr(self):
+        c = a @ b
+        self.assertEqual(str(c), '(a @ b)')
+        self.assertEqual(repr(c), f"BroadcastChain{(a, b)}")
+
 
 @node
 def a(x):
