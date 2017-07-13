@@ -15,3 +15,10 @@ class TestUnit(BaseTestCase):
         self.assertEqual(repr(b), f'DeferredValue({repr(a)})')
         self.assertEqual(str(DeferredValue(5)), '5')
         self.assertEqual(repr(DeferredValue('a')), "DeferredValue('a')")
+
+    def test_functions(self):
+        # To fulfil the metafunction interface, DefferedValue.functions is a tuple containing self
+        # This lets you access the deffered value with (f() for f in x.functions)
+        a = object()
+        b = DeferredValue(a)
+        self.assertIs(b, b.functions[0])

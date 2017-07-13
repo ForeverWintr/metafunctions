@@ -4,7 +4,7 @@ from metafunctions.tests.util import BaseTestCase
 
 
 class TestUnit(BaseTestCase):
-    def test_split(self):
+    def test_broadcast(self):
         @node
         def f(*args):
             return args
