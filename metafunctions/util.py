@@ -4,6 +4,7 @@ Utility functions for use in function pipelines.
 import sys
 import re
 import functools
+import typing as tp
 
 import colors
 
@@ -48,21 +49,20 @@ def bind_call_state(func):
     return provides_call_state
 
 
-def star(meta_function: MetaFunction) -> MetaFunction:
+def star(function: tp.Callable) -> BroadcastMerge:
     '''
-    star updates a MergeFunction to a BroadcastMerge, which gives one argument to each function. If
+    star updates a function to a BroadcastMerge, which gives one argument to each function. If
     star is passed a FunctionMerge:
 
     * If len(inputs) <= len(functions), call remaining functions with `None`.
-
     * if len(functions) == 1, call function once per input.
-
     * if len(inputs) > len(functions), fail.
     '''
-    if isinstance(meta_function, SimpleFunction):
+    function = MetaFunction.make_meta(function)
+    if isinstance(function, SimpleFunction):
         #Upgrade to a single function FunctionMerge
-        meta_function = FunctionMerge(operators.concat, (meta_function, ))
-    return BroadcastMerge(meta_function)
+        function = FunctionMerge(operators.concat, (function, ))
+    return BroadcastMerge(function)
 
 def store(key):
     '''Store the received output in the meta data dictionary under the given key.'''

@@ -31,7 +31,7 @@ class TestUnit(BaseTestCase):
 
     def test_loop_with_non_meta(self):
         cmp = (b & c & 'stoke') @ star(len)
-        self.assertEqual(cmp('_'), (3, 3, 7))
+        self.assertEqual(cmp('_'), (2, 2, 5))
 
     def test_concurrent(self):
         # Concurrent and star can work together
