@@ -46,6 +46,19 @@ def bind_call_state(func):
     return provides_call_state
 
 
+def star(meta_function: MetaFunction) -> MetaFunction:
+    '''
+    star updates a MergeFunction to a BroadcastMerge, which gives one argument to each function. If
+    star is passed a FunctionMerge:
+
+    * If len(inputs) <= len(functions), call remaining functions with `None`.
+
+    * if len(functions) == 1, call function once per input.
+
+    * if len(inputs) > len(functions), fail.
+    '''
+    pass
+
 def store(key):
     '''Store the received output in the meta data dictionary under the given key.'''
     @node
