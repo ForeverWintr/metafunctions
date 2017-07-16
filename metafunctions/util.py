@@ -11,6 +11,7 @@ from metafunctions.core import MetaFunction
 from metafunctions.core import SimpleFunction
 from metafunctions.core import FunctionMerge
 from metafunctions.core import CallState
+from metafunctions.broadcast import BroadcastMerge
 from metafunctions.concurrent import ConcurrentMerge
 
 
@@ -57,7 +58,7 @@ def star(meta_function: MetaFunction) -> MetaFunction:
 
     * if len(inputs) > len(functions), fail.
     '''
-    pass
+    return BroadcastMerge(meta_function)
 
 def store(key):
     '''Store the received output in the meta data dictionary under the given key.'''
