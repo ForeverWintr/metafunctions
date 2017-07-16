@@ -164,11 +164,15 @@ class FunctionMerge(MetaFunction):
     _operator_to_character = {v: k for k, v in _character_to_operator.items()}
 
     def __init__(self, merge_func:tp.Callable, functions:tuple, function_join_str=''):
-        '''A FunctionMerge merges its functions by executing all of them and passing their results to `merge_func`
+        '''
+        A FunctionMerge merges its functions by executing all of them and passing their results to
+        `merge_func`
 
         Args:
-            function_join_str: If you're using a `merge_func` that is not one of the standard operator
-            functions, use this argument to provide a custom character to use in string formatting. If not provided, we default to using str(merge_func).
+
+            function_join_str: If you're using a `merge_func` that is not one of the standard
+            operator functions, use this argument to provide a custom character to use in string
+            formatting. If not provided, we default to using str(merge_func).
         '''
         super().__init__()
         self._merge_func = merge_func
@@ -190,7 +194,8 @@ class FunctionMerge(MetaFunction):
         them into a single FunctionMerge.
 
         NOTE: combine does not check to make sure the merge_func can accept the new number of
-        arguments.
+        arguments, or that combining is appropriate for the operator. (e.g., it is inappropriate to
+        combine FunctionMerges where order of operations matter. 5 / 2 / 3 != 5 / (2 / 3))
         '''
         new_funcs = []
         for f in funcs:
