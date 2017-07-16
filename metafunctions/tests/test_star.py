@@ -11,7 +11,7 @@ class TestUnit(BaseTestCase):
 
     ## Interface tests
     def test_upgrade_merge(self):
-        aabbcc = a & b & c @ star(a+b+c)
+        aabbcc = (a & b & c) @ star(a+b+c)
         self.assertEqual(aabbcc('_'), '_aa_bb_cc')
 
     def test_str_repr(self):
@@ -45,20 +45,20 @@ class TestUnit(BaseTestCase):
                 return x + 'f'
             return 'F'
 
-        cmp = a & b @ star(f+f+f+f)
+        cmp = (a & b) @ star(f+f+f+f)
         self.assertEqual(cmp('_'), '_af_bfFF')
 
         # if len(functions) == 1, call function once per input.
-        cmp = a & b @ star(f)
+        cmp = (a & b) @ star(f)
         self.assertEqual(cmp('_'), '_af_bf')
 
         # if len(inputs) > len(functions), fail.
-        cmp = a & b & c @ star(f+f)
+        cmp = (a & b & c) @ star(f+f)
         with self.assertRaises(BroadcastError):
             cmp('_')
 
         #TODO: Using pipe instead of broadcast has the potential to be confusing
-        cmp = a & b | star(f+f)
+        cmp = (a & b) | star(f+f)
         with self.assertRaises(BroadcastError):
             cmp('_')
 
