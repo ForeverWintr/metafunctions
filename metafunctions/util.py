@@ -13,6 +13,7 @@ from metafunctions.core import FunctionMerge
 from metafunctions.core import CallState
 from metafunctions.broadcast import BroadcastMerge
 from metafunctions.concurrent import ConcurrentMerge
+from metafunctions import operators
 
 
 def node(_func=None, *, modify_tracebacks=True):
@@ -58,6 +59,9 @@ def star(meta_function: MetaFunction) -> MetaFunction:
 
     * if len(inputs) > len(functions), fail.
     '''
+    if isinstance(meta_function, SimpleFunction):
+        #Upgrade to a single function FunctionMerge
+        meta_function = FunctionMerge(operators.concat, (meta_function, ))
     return BroadcastMerge(meta_function)
 
 def store(key):

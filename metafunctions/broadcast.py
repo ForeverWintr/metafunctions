@@ -25,7 +25,7 @@ class BroadcastMerge(FunctionMerge):
     def __call__(self, *args, **kwargs):
         #length checks
         if len(self.functions) == 1:
-            func_iter = itertools.repeat(self.functions[0])
+            func_iter = itertools.repeat(self.functions[0], times=len(args))
         elif len(args) > len(self.functions):
             raise BroadcastError(f'not enough functions to broadcast input ({len(args)} inputs,'
                                  f' {len(self.functions)} functions)')

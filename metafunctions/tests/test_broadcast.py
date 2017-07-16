@@ -27,7 +27,7 @@ class TestUnit(BaseTestCase):
 
     def test_loop(self):
         cmp = (b & c & 'stoke') @ star(a)
-        self.assertEqual(cmp('_'), ('_ba', '_ca', '_stokea'))
+        self.assertEqual(cmp('_'), ('_ba', '_ca', 'stokea'))
 
     def test_loop_with_non_meta(self):
         cmp = (b & c & 'stoke') @ star(len)
