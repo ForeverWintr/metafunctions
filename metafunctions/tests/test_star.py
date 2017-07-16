@@ -1,3 +1,4 @@
+import unittest
 
 from metafunctions.util import node
 from metafunctions.util import star
@@ -11,6 +12,11 @@ class TestUnit(BaseTestCase):
 
     ## Interface tests
     def test_upgrade_merge(self):
+        aabbcc = (a & b & c) @ star(a&b&c)
+        self.assertEqual(aabbcc('_'), ('_aa', '_bb', '_cc'))
+
+    @unittest.skip('TODO')
+    def test_recursive_upgrade(self):
         aabbcc = (a & b & c) @ star(a+b+c)
         self.assertEqual(aabbcc('_'), '_aa_bb_cc')
 

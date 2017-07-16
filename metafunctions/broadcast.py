@@ -1,6 +1,8 @@
+import itertools
 
 from metafunctions.core import FunctionMerge
 from metafunctions.core import inject_call_state
+from metafunctions.exceptions import BroadcastError
 
 
 class BroadcastMerge(FunctionMerge):
@@ -21,4 +23,15 @@ class BroadcastMerge(FunctionMerge):
 
     @inject_call_state
     def __call__(self, *args, **kwargs):
-        pass
+        #length checks
+        if len(self.functions) == 1:
+            func_iter = itertools.repeat(self.functions[0])
+        elif len(args) > len(self.functions):
+            raise BroadcastError(f'not enough functions to broadcast input ({len(args)} inputs,'
+                                 f' {len(self.functions)} functions)')
+        else:
+            func_iter = iter(self.functions)
+
+        results = (f(a, **kwargs) for f, a in itertools.zip_longest(func_iter, args))
+        return self._merge_func(*results)
+
