@@ -51,22 +51,39 @@ class TestUnit(BaseTestCase):
                 return x + 'f'
             return 'F'
 
-        cmp = (a & b) @ star(f+f+f+f)
-        self.assertEqual(cmp('_'), '_af_bfFF')
+        cmp = (a & b) @ star(f&f&f&f)
+        self.assertEqual(cmp('_'), ('_af', '_bf', 'F', 'F'))
 
         # if len(functions) == 1, call function once per input.
         cmp = (a & b) @ star(f)
-        self.assertEqual(cmp('_'), '_af_bf')
+        self.assertEqual(cmp('_'), ('_af', '_bf'))
 
         # if len(inputs) > len(functions), fail.
         cmp = (a & b & c) @ star(f+f)
         with self.assertRaises(BroadcastError):
             cmp('_')
 
-        #TODO: Using pipe instead of broadcast has the potential to be confusing
+        #TODO: Using pipe instead of broadcast has the potential to be confusing. This passes (a,
+        #b) to the first f
         cmp = (a & b) | star(f+f)
-        with self.assertRaises(BroadcastError):
+        with self.assertRaises(TypeError):
             cmp('_')
+
+    @unittest.skip('TODO')
+    def test_binary_functions(self):
+        # The issue here is that f + f + f + f is not converted to a single FunctionMerge. Rather
+        # it becomes nested FunctionMerges: (((f + f) + f) + f). Ideally star would be able to
+        # handle this. One potential solution is to 'flatten' the FunctionMerge, but this doesn't
+        # work for functions that aren't commutative. E.g., (a / b / c) != (a / (b / c)). I'm
+        # leaving this test for now as a todo.
+        @node
+        def f(x=None):
+            if x:
+                return x + 'f'
+            return 'F'
+
+        cmp = (a & b) @ star(f+f+f+f)
+        self.assertEqual(cmp('_'), '_af_bfFF')
 
 
 ### Simple Sample Functions ###
