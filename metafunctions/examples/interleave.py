@@ -22,6 +22,9 @@ def interleave(pred, chars):
         post.append(chars[i % len(chars)])
     return ''.join(post)
 
+
+
+
 #h = init | cat('@@') | cat('__') * 2
 h = cat('@@') | cat('__') * 2
 
@@ -30,4 +33,9 @@ f = store('input') | a | cat('b') | cat('c') * 3 | (replace_init('+') & (recall(
 
 #assert f['*'] == '+*a@b@c_+_a*b@c@+_a_b*c@'
 assert f('*') == '+*a@b@c_+_a*b@c@+_a_b*c@'
-asdf
+
+# Or perhaps more clearly
+g =  a | cat('b') | cat('c') * 3 | replace_init('+')
+f2 =  (g & h) @ interleave
+
+assert f2('*') == '+*a@b@c_+_a*b@c@+_a_b*c@'
