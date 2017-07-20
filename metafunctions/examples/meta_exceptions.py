@@ -3,23 +3,13 @@ import random
 from metafunctions.util import node
 
 
-
 @node
-def a(x):
-    1 / random.choice((0, 1, 2, 3, 4))
-    return x + 'a'
-
-@node
-def b(x):
-    1 / random.choice((0, 1, 2, 3, 4))
-    return x + 'b'
-
-@node
-def c(x):
-    1 / random.choice((0, 1, 2, 3, 4))
-    return x + 'c'
+def often_numeric(x=None):
+    return random.choice(('1', '2', '3', 'potato'))
 
 
-f = a | b | c | (c + c + c) | b * 10 | (a & a & a & a)
+to_float = often_numeric | float
 
-print(f('x'))
+f = to_float + to_float + to_float * to_float
+
+print(f())
