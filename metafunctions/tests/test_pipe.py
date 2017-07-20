@@ -4,7 +4,9 @@ import functools
 
 from metafunctions.tests.util import BaseTestCase
 from metafunctions.util import node
+from metafunctions.util import bind_call_state
 from metafunctions.util import highlight_current_function
+from metafunctions.core import CallState
 
 
 class TestIntegration(BaseTestCase):
@@ -123,17 +125,18 @@ class TestIntegration(BaseTestCase):
         Parent refers to the parent MetaFunction.
         '''
 
-        @node(bind=True)
-        def parent_test(meta, x):
-            return meta
+        @node
+        @bind_call_state
+        def parent_test(call_state, x):
+            return call_state
 
         ab = a | b
         abc = ab + c
         abc_ = abc | parent_test
 
-        meta = abc_('_')
-        self.assertIs(abc_, meta)
-        self.assertListEqual(meta._called_functions, [a, b, c, parent_test])
+        call_state = abc_('_')
+        self.assertIsInstance(call_state, CallState)
+        self.assertListEqual(call_state._called_functions, [a, b, c, parent_test])
 
     @mock.patch('metafunctions.util.highlight_current_function')
     def test_pretty_exceptions(self, mock_h):
@@ -164,25 +167,32 @@ class TestIntegration(BaseTestCase):
         '''
         Every function in the pipeline recieves the same meta.
         '''
-        @node(bind=True)
-        def f(meta, x):
-            self.assertIs(meta, cmp)
+        @node
+        @bind_call_state
+        def f(call_state, x):
+            self.assertIs(call_state._meta_entry, cmp)
             return 1
-        @node(bind=True)
-        def g(meta, x):
-            self.assertIs(meta, cmp)
+        @node()
+        @bind_call_state
+        def g(call_state, x):
+            self.assertIs(call_state._meta_entry, cmp)
             return 1
-        @node(bind=True)
-        def h(meta, x):
-            self.assertIs(meta, cmp)
+        @node
+        @bind_call_state
+        def h(call_state, x):
+            self.assertIs(call_state._meta_entry, cmp)
             return 1
-        @node(bind=True)
-        def i(meta, x):
-            self.assertIs(meta, cmp)
+        @node
+        @bind_call_state
+        def i(call_state, x):
+            self.assertIs(call_state._meta_entry, cmp)
             return 1
 
         cmp = f | g | i | h + f + f / h + i - g
         self.assertEqual(cmp(1), 3)
+
+        #this works if we provide our own call_state too.
+        self.assertEqual(cmp(1, call_state=CallState()), 3)
 
     def test_defaults(self):
         '''
@@ -191,8 +201,9 @@ class TestIntegration(BaseTestCase):
         @node
         def f(x='F'):
             return x + 'f'
-        @node(bind=True)
-        def g(meta, x='G'):
+        @node
+        @bind_call_state
+        def g(call_state, x='G'):
             return x + 'g'
 
         cmp = f | g | f + g
@@ -214,6 +225,66 @@ class TestIntegration(BaseTestCase):
         numeric = (query_volume | float) + (query_price | float)
         with self.assertRaises(ValueError) as e:
             numeric(2)
+
+    def test_decoration(self):
+        # It should be possible to decorate a metafunction with another metafunction and have
+        # everything still work (as long as the decorated function gets upgraded to a metafunction).
+        # I don't think this is something that will happen, but I want to enforce that it is
+        # possible, for purposes of conceptual purity.
+        @node()
+        @bind_call_state
+        def f(call_state, x):
+            self.assertIs(call_state._meta_entry, abcf)
+            return x + 'f'
+
+        fn = node(f+'sup')
+        self.assertEqual(repr(fn), f"SimpleFunction({(f+'sup')!r})")
+        self.assertEqual(str(fn), "(f + 'sup')")
+        abcf = a | b | c | fn
+
+        self.assertEqual(abcf('_'), '_abcfsup')
+
+    def test_kwargs(self):
+        #Kwargs are passed to all functions
+
+        @node
+        def k(x, k='k'):
+            return x + k
+
+        self.assertEqual(k('_'), '_k')
+        self.assertEqual(k('_', k='_'), '__')
+
+        kk = k + k
+        self.assertEqual(kk('_'), '_k_k')
+        self.assertEqual(kk('_', k='_'), '____')
+
+        klen = k | len
+        self.assertEqual(klen('_'), 2)
+        with self.assertRaises(TypeError):
+            #passing a kwarg to len causes an error
+            klen('_', k=5)
+
+    def test_multi_call_immutability(self):
+        #Unless you manually supply the same call_state, mutliple calls do not share state.
+        @node
+        @bind_call_state
+        def f(call_state, x):
+            if 'f' not in call_state.data:
+                call_state.data['f'] = x
+            return x
+
+        @node
+        @bind_call_state
+        def g(call_state, x):
+            return x + call_state.data.get('f', 'g')
+
+        cmp = a | b | c | d | e | f | g
+        self.assertEqual(cmp('_'), '_abcde_abcde')
+        self.assertEqual(cmp('*'), '*abcde*abcde')
+
+        state = CallState()
+        self.assertEqual(cmp('_', call_state=state), '_abcde_abcde')
+        self.assertEqual(cmp('*', call_state=state), '*abcde_abcde')
 
 
 ### Simple Sample Functions ###

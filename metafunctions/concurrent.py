@@ -5,6 +5,7 @@ from multiprocessing import Queue
 import queue
 
 from metafunctions.core import FunctionMerge
+from metafunctions.core import inject_call_state
 from metafunctions.exceptions import ConcurrentException
 
 
@@ -17,17 +18,17 @@ class ConcurrentMerge(FunctionMerge):
         super().__init__(
                 function_merge._merge_func,
                 function_merge._functions,
-                function_merge._join_str)
+                function_merge._function_join_str)
 
     def __str__(self):
         joined_funcs = super().__str__()
         return f"concurrent{joined_funcs}"
 
+    @inject_call_state
     def __call__(self, *args, **kwargs):
         '''We fork here, and execute each function in a child process before joining the results
         with _merge_func
         '''
-        self._modify_kwargs(kwargs)
         result_q = Queue()
         error_q = Queue()
 
