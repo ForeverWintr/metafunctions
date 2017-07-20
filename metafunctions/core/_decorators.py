@@ -26,6 +26,7 @@ def inject_call_state(call_method):
         call_state = kwargs.setdefault('call_state', self.new_call_state())
         if call_state._meta_entry is None:
             call_state._meta_entry = self
+            call_state.call_args = args
         return call_method(self, *args, **kwargs)
     return with_call_state
 
