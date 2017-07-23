@@ -28,11 +28,17 @@ class TestUnit(BaseTestCase):
 
         cmp = (a | b) | star(f)
         star_a = star(a)
+        merge_star = star(a+b)
+        chain_star = star(a|b)
 
         self.assertEqual(str(cmp), '(a | b | star(f))')
         self.assertEqual(str(star_a), 'star(a)')
         self.assertEqual(str(g), 'star(g)')
         self.assertEqual(str(h), 'h')
+        self.assertEqual(str(merge_star), 'star(a + b)')
+        self.assertEqual(str(h), 'star(a | b)')
+
+
 
 @node
 def a(x):
