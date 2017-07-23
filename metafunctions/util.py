@@ -59,6 +59,7 @@ def star(meta_function: MetaFunction) -> BroadcastMerge:
         return meta_function(*args, **kwargs)
     return wrapper
 
+
 def store(key):
     '''Store the received output in the meta data dictionary under the given key.'''
     @node(name=f"store('{key}')")
