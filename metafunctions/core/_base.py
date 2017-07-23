@@ -207,7 +207,7 @@ class FunctionMerge(MetaFunction):
 
 
 class SimpleFunction(MetaFunction):
-    def __init__(self, function, print_location_in_traceback=True):
+    def __init__(self, function, name=None, print_location_in_traceback=True):
         '''A MetaFunction-aware wrapper around a single function
         The `bind` parameter causes us to pass a meta object as the first argument to our inherited function, but it is only respected if the wrapped function is not another metafunction.
         '''
@@ -220,6 +220,7 @@ class SimpleFunction(MetaFunction):
         super().__init__()
         self._function = function
         self.add_location_to_traceback = print_location_in_traceback
+        self._name = name or getattr(function, '__name__', False) or str(function)
 
     @inject_call_state
     def __call__(self, *args, call_state, **kwargs):
@@ -235,12 +236,7 @@ class SimpleFunction(MetaFunction):
         return f'{self.__class__.__name__}({self.functions[0]!r})'
 
     def __str__(self):
-        try:
-            return self.__name__
-        except AttributeError:
-            # We're usually wrapping a function, but it's possible we're wrapping another
-            # metafunction
-            return str(self.functions[0])
+        return self._name
 
     @property
     def functions(self):
@@ -261,7 +257,7 @@ class DeferredValue(SimpleFunction):
         '''A simple Deferred Value. Returns `value` when called. Equivalent to lambda x: x.
         '''
         self._value = value
-        self.__name__ = repr(value)
+        self._name = repr(value)
 
     def __call__(self, *args, **kwargs):
         return self._value

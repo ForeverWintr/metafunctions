@@ -17,7 +17,7 @@ from metafunctions.concurrent import ConcurrentMerge
 from metafunctions import operators
 
 
-def node(_func=None, *, modify_tracebacks=True):
+def node(_func=None, *, name=None, modify_tracebacks=True):
     '''Turn the decorated function into a MetaFunction.
 
     Args:
@@ -33,7 +33,7 @@ def node(_func=None, *, modify_tracebacks=True):
        <do something cool>
     '''
     def decorator(function):
-        newfunc = SimpleFunction(function, modify_tracebacks)
+        newfunc = SimpleFunction(function, name=name, print_location_in_traceback=modify_tracebacks)
         return newfunc
     if not _func:
         return decorator
@@ -53,7 +53,7 @@ def star(meta_function: MetaFunction) -> BroadcastMerge:
     '''
     star calls its Metafunction with *x instead of x.
     '''
-    @node
+    @node(name=f'star({meta_function!s})')
     @functools.wraps(meta_function)
     def wrapper(args, **kwargs):
         return meta_function(*args, **kwargs)
@@ -61,12 +61,11 @@ def star(meta_function: MetaFunction) -> BroadcastMerge:
 
 def store(key):
     '''Store the received output in the meta data dictionary under the given key.'''
-    @node
+    @node(name=f"store('{key}')")
     @bind_call_state
     def store(call_state, val):
         call_state.data[key] = val
         return val
-    store.__name__ = f"store('{key}')"
     return store
 
 
@@ -74,13 +73,12 @@ def recall(key, from_call_state:CallState=None):
     '''Retrieve the given key from the meta data dictionary. Optionally, use `from_call_state` to
     specify a different call_state than the current one.
     '''
-    @node
+    @node(name=f"recall('{key}')")
     @bind_call_state
     def recall(call_state, val):
         if from_call_state:
             return from_call_state.data[key]
         return call_state.data[key]
-    recall.__name__ = f"recall('{key}')"
     return recall
 
 
