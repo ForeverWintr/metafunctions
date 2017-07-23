@@ -49,20 +49,15 @@ def bind_call_state(func):
     return provides_call_state
 
 
-def star(function: tp.Callable) -> BroadcastMerge:
+def star(meta_function: MetaFunction) -> BroadcastMerge:
     '''
-    star updates a function to a BroadcastMerge, which gives one argument to each function. If
-    star is passed a FunctionMerge:
-
-    * If len(inputs) <= len(functions), call remaining functions with `None`.
-    * if len(functions) == 1, call function once per input.
-    * if len(inputs) > len(functions), fail.
+    star calls its Metafunction with *x instead of x.
     '''
-    function = MetaFunction.make_meta(function)
-    if isinstance(function, SimpleFunction):
-        #Upgrade to a single function FunctionMerge
-        function = FunctionMerge(operators.concat, (function, ))
-    return BroadcastMerge(function)
+    @node
+    @functools.wraps(meta_function)
+    def wrapper(args, **kwargs):
+        return meta_function(*args, **kwargs)
+    return wrapper
 
 def store(key):
     '''Store the received output in the meta data dictionary under the given key.'''
