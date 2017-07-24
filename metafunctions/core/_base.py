@@ -166,11 +166,24 @@ class FunctionMerge(MetaFunction):
     _operator_to_character = {v: k for k, v in _character_to_operator.items()}
 
     def __init__(self, merge_func:tp.Callable, functions:tuple, function_join_str=''):
-        '''A FunctionMerge merges its functions by executing all of them and passing their results to `merge_func`
+        '''
+        A FunctionMerge merges its functions by executing all of them and passing their results to
+        `merge_func`.
+
+        Behaviour of __call__:
+
+        FunctionMerge does not pass all positional arguments to all of its functions. Rather, given
+        `f=FunctionMerge()` when f is called with `f(*args)`,
+
+        * if len(args) == 1, each component function is called with args[0]
+        * if len(args) > 1 <= len(functions), function n is called with arg n. Any remaining
+        functions after all args have been exhausted are called with no args.
+        * if len(args) < len(functions), a MetaFunction CallError is raised.
 
         Args:
             function_join_str: If you're using a `merge_func` that is not one of the standard operator
-            functions, use this argument to provide a custom character to use in string formatting. If not provided, we default to using str(merge_func).
+            functions, use this argument to provide a custom character to use in string formatting. If
+            not provided, we default to using str(merge_func).
         '''
         super().__init__()
         self._merge_func = merge_func
