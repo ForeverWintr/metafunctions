@@ -5,3 +5,6 @@ class MetaFunctionError(Exception):
 
 class ConcurrentException(MetaFunctionError):
     pass
+
+class CompositionError(MetaFunctionError, TypeError):
+    pass

@@ -1,6 +1,7 @@
 import operator
 import typing as tp
 import abc
+import itertools
 import functools
 
 
@@ -8,6 +9,7 @@ from metafunctions.core._decorators import binary_operation
 from metafunctions.core._decorators import inject_call_state
 from metafunctions.core._call_state import CallState
 from metafunctions.operators import concat
+from metafunctions import exceptions
 
 
 class MetaFunction(metaclass=abc.ABCMeta):
@@ -178,7 +180,25 @@ class FunctionMerge(MetaFunction):
 
     @inject_call_state
     def __call__(self, *args, **kwargs):
-        results = (f(*args, **kwargs) for f in self.functions)
+        args_iter = iter(args)
+        func_iter = iter(self.functions)
+        if len(args) > len(self.functions):
+            raise exceptions.CompositionError(
+                    f'{self} takes 1 or <= {len(self.functions)} '
+                    f'arguments, but {len(args)} were given')
+        if len(args) == 1:
+            args_iter = itertools.repeat(next(args_iter))
+
+        results = []
+        # Note that args_iter appears first in the zip. This is because I know its len is <=
+        # len(func_iter) (I asserted so above). In zip, if the first iterator is longer than the
+        # second, the first will be advanced one extra time (because zip has already called next()
+        # the first iterator before discovering that the second has been exhausted.)
+        for arg, f in zip(args_iter, func_iter):
+            results.append(f(arg))
+
+        #Any extra functions are called with no input
+        results.extend([f() for f in func_iter])
         return self._merge_func(*results)
 
     def __repr__(self):
