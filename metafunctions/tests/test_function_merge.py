@@ -4,6 +4,7 @@ from metafunctions.core import FunctionMerge
 from metafunctions.core import SimpleFunction
 from metafunctions.tests.util import BaseTestCase
 from metafunctions.operators import concat
+from metafunctions import exceptions
 
 
 class TestUnit(BaseTestCase):
@@ -15,13 +16,22 @@ class TestUnit(BaseTestCase):
     def test_call(self):
         c = FunctionMerge(operator.add, (a, b))
         self.assertEqual(c('_'), '_a_b')
+        self.assertEqual(c('-', '_'), '-a_b')
+        with self.assertRaises(exceptions.CallError):
+            c('_', '_', '_')
+
+        @SimpleFunction
+        def d():
+            return 'd'
+        abd = a & b & d
+        self.assertEqual(abd('-', '_'), ('-a', '_b', 'd'))
+
 
     def test_format(self):
         c = FunctionMerge(operator.add, (a, b), function_join_str='tacos')
         self.assertEqual(str(c), '(a tacos b)')
 
     def test_non_binary(self):
-        # I don't currently have any non binary functionMerges, but they're designed to be possible
         def concat(*args):
             return ''.join(args)
 
