@@ -4,6 +4,7 @@ from metafunctions.core import FunctionMerge
 from metafunctions.core import SimpleFunction
 from metafunctions.tests.util import BaseTestCase
 from metafunctions.operators import concat
+from metafunctions import exceptions
 
 
 class TestUnit(BaseTestCase):
@@ -16,7 +17,7 @@ class TestUnit(BaseTestCase):
         c = FunctionMerge(operator.add, (a, b))
         self.assertEqual(c('_'), '_a_b')
         self.assertEqual(c('-', '_'), '-a_b')
-        with self.assertRaises(TypeError):
+        with self.assertRaises(exceptions.CallError):
             c('_', '_', '_')
 
         @SimpleFunction

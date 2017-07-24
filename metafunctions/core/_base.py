@@ -183,7 +183,7 @@ class FunctionMerge(MetaFunction):
         args_iter = iter(args)
         func_iter = iter(self.functions)
         if len(args) > len(self.functions):
-            raise exceptions.CompositionError(
+            raise exceptions.CallError(
                     f'{self} takes 1 or <= {len(self.functions)} '
                     f'arguments, but {len(args)} were given')
         if len(args) == 1:
