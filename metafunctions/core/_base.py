@@ -192,13 +192,13 @@ class FunctionMerge(MetaFunction):
         results = []
         # Note that args_iter appears first in the zip. This is because I know its len is <=
         # len(func_iter) (I asserted so above). In zip, if the first iterator is longer than the
-        # second, the first will be advanced one extra time (because zip has already called next()
-        # the first iterator before discovering that the second has been exhausted.)
+        # second, the first will be advanced one extra time, because zip has already called next()
+        # on the first iterator before discovering that the second has been exhausted.
         for arg, f in zip(args_iter, func_iter):
-            results.append(f(arg))
+            results.append(f(arg, **kwargs))
 
         #Any extra functions are called with no input
-        results.extend([f() for f in func_iter])
+        results.extend([f(**kwargs) for f in func_iter])
         return self._merge_func(*results)
 
     def __repr__(self):
