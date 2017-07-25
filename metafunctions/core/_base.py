@@ -103,11 +103,13 @@ class MetaFunction(metaclass=abc.ABCMeta):
 
     @binary_operation
     def __matmul__(self, other):
-        return BroadcastChain.combine(self, other)
+        from metafunctions.util import star
+        return FunctionChain.combine(self, star(other))
 
     @binary_operation
     def __rmatmul__(self, other):
-        return BroadcastChain.combine(other, self)
+        from metafunctions.util import star
+        return BroadcastChain.combine(other, star(self))
 
 
 class FunctionChain(MetaFunction):

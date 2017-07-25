@@ -12,7 +12,6 @@ from metafunctions.core import MetaFunction
 from metafunctions.core import SimpleFunction
 from metafunctions.core import FunctionMerge
 from metafunctions.core import CallState
-from metafunctions.broadcast import BroadcastMerge
 from metafunctions.concurrent import ConcurrentMerge
 from metafunctions import operators
 
