@@ -1,6 +1,7 @@
 import operator
 import typing as tp
 import abc
+import itertools
 import functools
 
 
@@ -8,6 +9,7 @@ from metafunctions.core._decorators import binary_operation
 from metafunctions.core._decorators import inject_call_state
 from metafunctions.core._call_state import CallState
 from metafunctions.operators import concat
+from metafunctions import exceptions
 
 
 class MetaFunction(metaclass=abc.ABCMeta):
@@ -166,13 +168,22 @@ class FunctionMerge(MetaFunction):
     def __init__(self, merge_func:tp.Callable, functions:tuple, function_join_str=''):
         '''
         A FunctionMerge merges its functions by executing all of them and passing their results to
-        `merge_func`
+        `merge_func`.
+
+        Behaviour of __call__:
+
+        FunctionMerge does not pass all positional arguments to all of its functions. Rather, given
+        `f=FunctionMerge()` when f is called with `f(*args)`,
+
+        * if len(args) == 1, each component function is called with args[0]
+        * if len(args) > 1 <= len(functions), function n is called with arg n. Any remaining
+        functions after all args have been exhausted are called with no args.
+        * if len(args) < len(functions), a MetaFunction CallError is raised.
 
         Args:
-
-            function_join_str: If you're using a `merge_func` that is not one of the standard
-            operator functions, use this argument to provide a custom character to use in string
-            formatting. If not provided, we default to using str(merge_func).
+            function_join_str: If you're using a `merge_func` that is not one of the standard operator
+            functions, use this argument to provide a custom character to use in string formatting. If
+            not provided, we default to using str(merge_func).
         '''
         super().__init__()
         self._merge_func = merge_func
@@ -182,7 +193,25 @@ class FunctionMerge(MetaFunction):
 
     @inject_call_state
     def __call__(self, *args, **kwargs):
-        results = (f(*args, **kwargs) for f in self.functions)
+        args_iter = iter(args)
+        func_iter = iter(self.functions)
+        if len(args) > len(self.functions):
+            raise exceptions.CallError(
+                    f'{self} takes 1 or <= {len(self.functions)} '
+                    f'arguments, but {len(args)} were given')
+        if len(args) == 1:
+            args_iter = itertools.repeat(next(args_iter))
+
+        results = []
+        # Note that args_iter appears first in the zip. This is because I know its len is <=
+        # len(func_iter) (I asserted so above). In zip, if the first iterator is longer than the
+        # second, the first will be advanced one extra time, because zip has already called next()
+        # on the first iterator before discovering that the second has been exhausted.
+        for arg, f in zip(args_iter, func_iter):
+            results.append(f(arg, **kwargs))
+
+        #Any extra functions are called with no input
+        results.extend([f(**kwargs) for f in func_iter])
         return self._merge_func(*results)
 
     def __repr__(self):

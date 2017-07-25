@@ -6,6 +6,10 @@ class MetaFunctionError(Exception):
 class ConcurrentException(MetaFunctionError):
     pass
 
-class BroadcastError(MetaFunctionError, ValueError):
-    #e.g., trying to broadcast more inputs than can be recieved by functions
+class CompositionError(MetaFunctionError, TypeError):
+    "An exception that occureds when MetaFunctions are composed incorrectly"
+    pass
+
+class CallError(MetaFunctionError, TypeError):
+    "An exception that occures when a MetaFunction is called incorrectly"
     pass
