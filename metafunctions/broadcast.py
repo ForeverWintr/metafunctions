@@ -2,7 +2,7 @@ import itertools
 
 from metafunctions.core import FunctionMerge
 from metafunctions.core import inject_call_state
-from metafunctions.exceptions import BroadcastError
+#from metafunctions.exceptions import BroadcastError
 
 
 class BroadcastMerge(FunctionMerge):
