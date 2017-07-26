@@ -11,7 +11,7 @@ from metafunctions.util import bind_call_state
 from metafunctions.util import highlight_current_function
 from metafunctions.util import concurrent
 from metafunctions.concurrent import ConcurrentMerge
-from metafunctions.exceptions import ConcurrentException
+from metafunctions.exceptions import ConcurrentException, CompositionError, CallError
 
 
 class TestUnit(BaseTestCase):
@@ -70,6 +70,19 @@ class TestUnit(BaseTestCase):
 
         # how do pretty tracebacks work in multiprocessing?
 
+    def test_call(self):
+        c = concurrent(a+b)
+        self.assertEqual(c('_'), '_a_b')
+        self.assertEqual(c('-', '_'), '-a_b')
+        with self.assertRaises(CallError):
+            c('_', '_', '_')
+
+        @node
+        def d():
+            return 'd'
+        abd = concurrent(a & b & d)
+        self.assertEqual(abd('-', '_'), ('-a', '_b', 'd'))
+
     def test_concurrent(self):
         c = concurrent(a + b)
         self.assertIsInstance(c, ConcurrentMerge)
@@ -78,9 +91,9 @@ class TestUnit(BaseTestCase):
     def test_not_concurrent(self):
         #can only upgrade FunctionMerges
 
-        with self.assertRaises(AttributeError):
+        with self.assertRaises(CompositionError):
             concurrent(a)
-        with self.assertRaises(AttributeError):
+        with self.assertRaises(CompositionError):
             concurrent(a | b)
 
     def test_str_repr(self):

@@ -4,6 +4,7 @@ Utility functions for use in function pipelines.
 import sys
 import re
 import functools
+import typing as tp
 
 import colors
 
@@ -12,9 +13,10 @@ from metafunctions.core import SimpleFunction
 from metafunctions.core import FunctionMerge
 from metafunctions.core import CallState
 from metafunctions.concurrent import ConcurrentMerge
+from metafunctions import operators
 
 
-def node(_func=None, *, modify_tracebacks=True):
+def node(_func=None, *, name=None, modify_tracebacks=True):
     '''Turn the decorated function into a MetaFunction.
 
     Args:
@@ -30,7 +32,7 @@ def node(_func=None, *, modify_tracebacks=True):
        <do something cool>
     '''
     def decorator(function):
-        newfunc = SimpleFunction(function, modify_tracebacks)
+        newfunc = SimpleFunction(function, name=name, print_location_in_traceback=modify_tracebacks)
         return newfunc
     if not _func:
         return decorator
@@ -46,14 +48,26 @@ def bind_call_state(func):
     return provides_call_state
 
 
+def star(meta_function: MetaFunction) -> MetaFunction:
+    '''
+    star calls its Metafunction with *x instead of x.
+    '''
+    fname = str(meta_function)
+    #This convoluted inline `if` just decides whether we should add brackets or not.
+    @node(name=f'star{fname}' if fname.startswith('(') else f'star({meta_function!s})')
+    @functools.wraps(meta_function)
+    def wrapper(args, **kwargs):
+        return meta_function(*args, **kwargs)
+    return wrapper
+
+
 def store(key):
     '''Store the received output in the meta data dictionary under the given key.'''
-    @node
+    @node(name=f"store('{key}')")
     @bind_call_state
     def store(call_state, val):
         call_state.data[key] = val
         return val
-    store.__name__ = f"store('{key}')"
     return store
 
 
@@ -61,13 +75,12 @@ def recall(key, from_call_state:CallState=None):
     '''Retrieve the given key from the meta data dictionary. Optionally, use `from_call_state` to
     specify a different call_state than the current one.
     '''
-    @node
+    @node(name=f"recall('{key}')")
     @bind_call_state
     def recall(call_state, val):
         if from_call_state:
             return from_call_state.data[key]
         return call_state.data[key]
-    recall.__name__ = f"recall('{key}')"
     return recall
 
 

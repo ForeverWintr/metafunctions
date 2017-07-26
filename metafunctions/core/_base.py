@@ -103,11 +103,13 @@ class MetaFunction(metaclass=abc.ABCMeta):
 
     @binary_operation
     def __matmul__(self, other):
-        return BroadcastChain.combine(self, other)
+        from metafunctions.util import star
+        return FunctionChain.combine(self, star(other))
 
     @binary_operation
     def __rmatmul__(self, other):
-        return BroadcastChain.combine(other, self)
+        from metafunctions.util import star
+        return FunctionChain.combine(other, star(self))
 
 
 class FunctionChain(MetaFunction):
@@ -141,18 +143,6 @@ class FunctionChain(MetaFunction):
             else:
                 new_funcs.append(f)
         return cls(*new_funcs)
-
-
-class BroadcastChain(FunctionChain):
-    _function_join_str = '@'
-
-    @inject_call_state
-    def __call__(self, *args, **kwargs):
-        f_iter = iter(self._functions)
-        result = next(f_iter)(*args, **kwargs)
-        for f in f_iter:
-            result = f(*result, **kwargs)
-        return result
 
 
 class FunctionMerge(MetaFunction):
@@ -193,14 +183,7 @@ class FunctionMerge(MetaFunction):
 
     @inject_call_state
     def __call__(self, *args, **kwargs):
-        args_iter = iter(args)
-        func_iter = iter(self.functions)
-        if len(args) > len(self.functions):
-            raise exceptions.CallError(
-                    f'{self} takes 1 or <= {len(self.functions)} '
-                    f'arguments, but {len(args)} were given')
-        if len(args) == 1:
-            args_iter = itertools.repeat(next(args_iter))
+        args_iter, func_iter = self._get_call_iterators(args)
 
         results = []
         # Note that args_iter appears first in the zip. This is because I know its len is <=
@@ -223,7 +206,8 @@ class FunctionMerge(MetaFunction):
         them into a single FunctionMerge.
 
         NOTE: combine does not check to make sure the merge_func can accept the new number of
-        arguments.
+        arguments, or that combining is appropriate for the operator. (e.g., it is inappropriate to
+        combine FunctionMerges where order of operations matter. 5 / 2 / 3 != 5 / (2 / 3))
         '''
         new_funcs = []
         for f in funcs:
@@ -233,9 +217,25 @@ class FunctionMerge(MetaFunction):
                 new_funcs.append(f)
         return cls(merge_func, tuple(new_funcs), function_join_str=function_join_str)
 
+    def _get_call_iterators(self, args):
+        '''Do length checking and return (`args_iter`, `call_iter`), iterables of arguments and
+        self.functions. Call them using zip. Note that len(args) can be less than
+        len(self.functions), and remaining functions should be called with no argument.
+        '''
+        args_iter = iter(args)
+        func_iter = iter(self.functions)
+        if len(args) > len(self.functions):
+            raise exceptions.CallError(
+                    f'{self} takes 1 or <= {len(self.functions)} '
+                    f'arguments, but {len(args)} were given')
+        if len(args) == 1:
+            args_iter = itertools.repeat(next(args_iter))
+
+        return args_iter, func_iter
+
 
 class SimpleFunction(MetaFunction):
-    def __init__(self, function, print_location_in_traceback=True):
+    def __init__(self, function, name=None, print_location_in_traceback=True):
         '''A MetaFunction-aware wrapper around a single function
         The `bind` parameter causes us to pass a meta object as the first argument to our inherited function, but it is only respected if the wrapped function is not another metafunction.
         '''
@@ -248,6 +248,7 @@ class SimpleFunction(MetaFunction):
         super().__init__()
         self._function = function
         self.add_location_to_traceback = print_location_in_traceback
+        self._name = name or getattr(function, '__name__', False) or str(function)
 
     @inject_call_state
     def __call__(self, *args, call_state, **kwargs):
@@ -263,12 +264,7 @@ class SimpleFunction(MetaFunction):
         return f'{self.__class__.__name__}({self.functions[0]!r})'
 
     def __str__(self):
-        try:
-            return self.__name__
-        except AttributeError:
-            # We're usually wrapping a function, but it's possible we're wrapping another
-            # metafunction
-            return str(self.functions[0])
+        return self._name
 
     @property
     def functions(self):
@@ -278,8 +274,7 @@ class SimpleFunction(MetaFunction):
         if self.add_location_to_traceback:
             from metafunctions.util import highlight_current_function
             detailed_message = str(e)
-            if call_state:
-                detailed_message = f"{str(e)} \n\nOccured in the following function: {highlight_current_function(call_state)}"
+            detailed_message = f"{str(e)} \n\nOccured in the following function: {highlight_current_function(call_state)}"
             raise type(e)(detailed_message).with_traceback(e.__traceback__)
         raise
 
@@ -289,7 +284,7 @@ class DeferredValue(SimpleFunction):
         '''A simple Deferred Value. Returns `value` when called. Equivalent to lambda x: x.
         '''
         self._value = value
-        self.__name__ = repr(value)
+        self._name = repr(value)
 
     def __call__(self, *args, **kwargs):
         return self._value
