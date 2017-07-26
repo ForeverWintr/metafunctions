@@ -109,7 +109,7 @@ class MetaFunction(metaclass=abc.ABCMeta):
     @binary_operation
     def __rmatmul__(self, other):
         from metafunctions.util import star
-        return BroadcastChain.combine(other, star(self))
+        return FunctionChain.combine(other, star(self))
 
 
 class FunctionChain(MetaFunction):
@@ -143,18 +143,6 @@ class FunctionChain(MetaFunction):
             else:
                 new_funcs.append(f)
         return cls(*new_funcs)
-
-
-class BroadcastChain(FunctionChain):
-    _function_join_str = '@'
-
-    @inject_call_state
-    def __call__(self, *args, **kwargs):
-        f_iter = iter(self._functions)
-        result = next(f_iter)(*args, **kwargs)
-        for f in f_iter:
-            result = f(*result, **kwargs)
-        return result
 
 
 class FunctionMerge(MetaFunction):
