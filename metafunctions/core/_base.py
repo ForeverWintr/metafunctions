@@ -183,14 +183,7 @@ class FunctionMerge(MetaFunction):
 
     @inject_call_state
     def __call__(self, *args, **kwargs):
-        args_iter = iter(args)
-        func_iter = iter(self.functions)
-        if len(args) > len(self.functions):
-            raise exceptions.CallError(
-                    f'{self} takes 1 or <= {len(self.functions)} '
-                    f'arguments, but {len(args)} were given')
-        if len(args) == 1:
-            args_iter = itertools.repeat(next(args_iter))
+        args_iter, func_iter = self._get_call_iterators(args)
 
         results = []
         # Note that args_iter appears first in the zip. This is because I know its len is <=
@@ -223,6 +216,22 @@ class FunctionMerge(MetaFunction):
             else:
                 new_funcs.append(f)
         return cls(merge_func, tuple(new_funcs), function_join_str=function_join_str)
+
+    def _get_call_iterators(self, args):
+        '''Do length checking and return (`args_iter`, `call_iter`), iterables of arguments and
+        self.functions. Call them using zip. Note that len(args) can be less than
+        len(self.functions), and remaining functions should be called with no argument.
+        '''
+        args_iter = iter(args)
+        func_iter = iter(self.functions)
+        if len(args) > len(self.functions):
+            raise exceptions.CallError(
+                    f'{self} takes 1 or <= {len(self.functions)} '
+                    f'arguments, but {len(args)} were given')
+        if len(args) == 1:
+            args_iter = itertools.repeat(next(args_iter))
+
+        return args_iter, func_iter
 
 
 class SimpleFunction(MetaFunction):

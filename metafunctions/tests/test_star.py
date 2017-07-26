@@ -49,7 +49,7 @@ class TestUnit(BaseTestCase):
             aabbcc = a & b & c | concurrent(star(a&b&c))
         #self.assertEqual(aabbcc('_'), '_aa_bb_cc')
 
-        aabbcc = a & b & c @ star(concurrent(a&b&c))
+        aabbcc = (a & b & c) | star(concurrent(a&b&c))
         self.assertEqual(aabbcc('_'), '_aa_bb_cc')
 
 @node
