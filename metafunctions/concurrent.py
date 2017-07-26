@@ -8,7 +8,7 @@ from metafunctions.core import FunctionMerge
 from metafunctions.core import inject_call_state
 from metafunctions import exceptions
 
-_sentinel = object()
+_no_value = object()
 
 class ConcurrentMerge(FunctionMerge):
     def __init__(self, function_merge: FunctionMerge):
@@ -46,7 +46,7 @@ class ConcurrentMerge(FunctionMerge):
             pid = os.fork()
             if not pid:
                 #we are the child
-                self._process_and_die(i, f, result_q, error_q, arg, kwargs)
+                self._process_and_die(i, f, result_q, error_q, kwargs, arg)
             children.append(pid)
 
         #iterate over any remaining functions for which we have no args
@@ -54,7 +54,7 @@ class ConcurrentMerge(FunctionMerge):
             pid = os.fork()
             if not pid:
                 #we are the child
-                self._process_and_die(i, f, result_q, error_q, arg, kwargs)
+                self._process_and_die(i, f, result_q, error_q, kwargs)
             children.append(pid)
 
         #the parent waits for all children to complete
@@ -75,12 +75,15 @@ class ConcurrentMerge(FunctionMerge):
         return self._merge_func(*results)
 
     @staticmethod
-    def _process_and_die(idx, func, result_q, error_q, arg, kwargs):
+    def _process_and_die(idx, func, result_q, error_q, kwargs, arg=_no_value):
         '''This function is only called by child processes. Call the given function with the given
         args and kwargs, put the result in result_q, then die.
         '''
         try:
-            r = func(arg, **kwargs)
+            if arg is _no_value:
+                r = func(**kwargs)
+            else:
+                r = func(arg, **kwargs)
         except Exception as e:
             error_q.put(e)
         else:

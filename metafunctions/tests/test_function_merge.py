@@ -28,7 +28,6 @@ class TestUnit(BaseTestCase):
         abd = a & b & d
         self.assertEqual(abd('-', '_'), ('-a', '_b', 'd'))
 
-
     def test_format(self):
         c = FunctionMerge(operator.add, (a, b), function_join_str='tacos')
         self.assertEqual(str(c), '(a tacos b)')
