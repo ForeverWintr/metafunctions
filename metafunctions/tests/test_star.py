@@ -50,7 +50,7 @@ class TestUnit(BaseTestCase):
         #self.assertEqual(aabbcc('_'), '_aa_bb_cc')
 
         aabbcc = (a & b & c) | star(concurrent(a&b&c))
-        self.assertEqual(aabbcc('_'), '_aa_bb_cc')
+        self.assertEqual(aabbcc('_'), ('_aa','_bb','_cc'))
 
 @node
 def a(x):

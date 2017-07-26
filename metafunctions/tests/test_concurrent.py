@@ -11,7 +11,7 @@ from metafunctions.util import bind_call_state
 from metafunctions.util import highlight_current_function
 from metafunctions.util import concurrent
 from metafunctions.concurrent import ConcurrentMerge
-from metafunctions.exceptions import ConcurrentException
+from metafunctions.exceptions import ConcurrentException, CompositionError
 
 
 class TestUnit(BaseTestCase):
@@ -78,9 +78,9 @@ class TestUnit(BaseTestCase):
     def test_not_concurrent(self):
         #can only upgrade FunctionMerges
 
-        with self.assertRaises(AttributeError):
+        with self.assertRaises(CompositionError):
             concurrent(a)
-        with self.assertRaises(AttributeError):
+        with self.assertRaises(CompositionError):
             concurrent(a | b)
 
     def test_str_repr(self):

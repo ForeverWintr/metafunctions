@@ -6,8 +6,9 @@ import queue
 
 from metafunctions.core import FunctionMerge
 from metafunctions.core import inject_call_state
-from metafunctions.exceptions import ConcurrentException
+from metafunctions import exceptions
 
+_sentinel = object()
 
 class ConcurrentMerge(FunctionMerge):
     def __init__(self, function_merge: FunctionMerge):
@@ -15,6 +16,12 @@ class ConcurrentMerge(FunctionMerge):
 
         ConcurrentMerge takes a FunctionMerge object and upgrades it.
         '''
+        if not isinstance(function_merge, FunctionMerge):
+            #This check is necessary because functools.wraps will copy FunctionMerge attributes to
+            #objects that are not FunctionMerges, so this init will succeed, then result in errors
+            #at call time.
+            raise exceptions.CompositionError(f'{type(self)} can only upgrade FunctionMerges')
+
         super().__init__(
                 function_merge._merge_func,
                 function_merge._functions,
@@ -29,16 +36,25 @@ class ConcurrentMerge(FunctionMerge):
         '''We fork here, and execute each function in a child process before joining the results
         with _merge_func
         '''
+        arg_iter, func_iter = self._get_call_iterators(args)
         result_q = Queue()
         error_q = Queue()
 
         #spawn a child for each function
         children = []
-        for i, f in enumerate(self.functions):
+        for i, (arg, f) in enumerate(zip(arg_iter, func_iter)):
             pid = os.fork()
             if not pid:
                 #we are the child
-                self._process_and_die(i, f, result_q, error_q, args, kwargs)
+                self._process_and_die(i, f, result_q, error_q, arg, kwargs)
+            children.append(pid)
+
+        #iterate over any remaining functions for which we have no args
+        for i, f in enumerate(func_iter, i):
+            pid = os.fork()
+            if not pid:
+                #we are the child
+                self._process_and_die(i, f, result_q, error_q, arg, kwargs)
             children.append(pid)
 
         #the parent waits for all children to complete
@@ -51,7 +67,7 @@ class ConcurrentMerge(FunctionMerge):
         except queue.Empty:
             pass
         else:
-            raise ConcurrentException('Caught exception in child process') from error
+            raise exceptions.ConcurrentException('Caught exception in child process') from error
 
         result_q.put(None)
         results = [r[1] for r in sorted(iter(result_q.get, None), key=itemgetter(0))]
@@ -59,12 +75,12 @@ class ConcurrentMerge(FunctionMerge):
         return self._merge_func(*results)
 
     @staticmethod
-    def _process_and_die(idx, func, result_q, error_q, args, kwargs):
+    def _process_and_die(idx, func, result_q, error_q, arg, kwargs):
         '''This function is only called by child processes. Call the given function with the given
         args and kwargs, put the result in result_q, then die.
         '''
         try:
-            r = func(*args, **kwargs)
+            r = func(arg, **kwargs)
         except Exception as e:
             error_q.put(e)
         else:
