@@ -6,6 +6,7 @@ from metafunctions.core import SimpleFunction
 from metafunctions.tests.util import BaseTestCase
 from metafunctions.operators import concat
 from metafunctions import exceptions
+from metafunctions.util import node, star
 
 
 class TestUnit(BaseTestCase):
@@ -103,10 +104,6 @@ class TestUnit(BaseTestCase):
         cmp = (a & b) | star(f&f&f&f)
         self.assertEqual(cmp('_'), ('_af', '_bf', 'F', 'F'))
 
-        # if len(functions) == 1, call function once per input.
-        cmp = (a & b) | star(f)
-        self.assertEqual(cmp('_'), ('_af', '_bf'))
-
         # if len(inputs) > len(functions), fail.
         cmp = (a & b & c) | star(f+f)
         with self.assertRaises(exceptions.CallError):
@@ -127,10 +124,15 @@ class TestUnit(BaseTestCase):
 
         cmp = (a & b) | star(f+f+f+f)
         self.assertEqual(cmp('_'), '_af_bfFF')
+
+
 @SimpleFunction
 def a(x):
     return x + 'a'
 @SimpleFunction
 def b(x):
     return x + 'b'
+@node
+def c(x):
+    return x + 'c'
 l = SimpleFunction(lambda x: x + 'l')
