@@ -1,4 +1,5 @@
-from metafunctions.util import node, star
+from metafunctions.util import node, star, concurrent
+from metafunctions import exceptions
 from metafunctions.tests.util import BaseTestCase
 
 
@@ -42,6 +43,14 @@ class TestUnit(BaseTestCase):
         #reprs remain the same
         self.assertEqual(repr(star_a), f'SimpleFunction({star_a._function})')
 
+    def test_concurrent(self):
+        # Concurrent and star can work together, although this organization no longer makes sense
+        with self.assertRaises(exceptions.CompositionError):
+            aabbcc = a & b & c | concurrent(star(a&b&c))
+        #self.assertEqual(aabbcc('_'), '_aa_bb_cc')
+
+        aabbcc = a & b & c @ star(concurrent(a&b&c))
+        self.assertEqual(aabbcc('_'), '_aa_bb_cc')
 
 @node
 def a(x):
@@ -49,3 +58,7 @@ def a(x):
 @node
 def b(x):
     return x + 'b'
+
+@node
+def c(x):
+    return x + 'c'

@@ -1,4 +1,5 @@
 import operator
+import unittest
 
 from metafunctions.core import FunctionMerge
 from metafunctions.core import SimpleFunction
@@ -91,7 +92,41 @@ class TestUnit(BaseTestCase):
         self.assertEqual(str(bbaa), '(b q b q a q a)')
         self.assertEqual(repr(bbaa), f"FunctionMerge({concat}, {(b, b, a, a)})")
 
+    def test_len_mismatch(self):
+        # If len(inputs) <= len(functions), call remaining functions with  no args.
+        @node
+        def f(x=None):
+            if x:
+                return x + 'f'
+            return 'F'
 
+        cmp = (a & b) | star(f&f&f&f)
+        self.assertEqual(cmp('_'), ('_af', '_bf', 'F', 'F'))
+
+        # if len(functions) == 1, call function once per input.
+        cmp = (a & b) | star(f)
+        self.assertEqual(cmp('_'), ('_af', '_bf'))
+
+        # if len(inputs) > len(functions), fail.
+        cmp = (a & b & c) | star(f+f)
+        with self.assertRaises(exceptions.CallError):
+            cmp('_')
+
+    @unittest.skip('TODO')
+    def test_binary_functions(self):
+        # The issue here is that f + f + f + f is not converted to a single FunctionMerge. Rather
+        # it becomes nested FunctionMerges: (((f + f) + f) + f). Ideally we would be able to
+        # handle this. One potential solution is to 'flatten' the FunctionMerge, but this doesn't
+        # work for functions that aren't commutative. E.g., (a / b / c) != (a / (b / c)). I'm
+        # leaving this test for now as a todo.
+        @node
+        def f(x=None):
+            if x:
+                return x + 'f'
+            return 'F'
+
+        cmp = (a & b) | star(f+f+f+f)
+        self.assertEqual(cmp('_'), '_af_bfFF')
 @SimpleFunction
 def a(x):
     return x + 'a'
