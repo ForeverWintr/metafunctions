@@ -57,6 +57,9 @@ class TestUnit(BaseTestCase):
         a_ = 'sweet as' & a
         self.assertEqual(a_('+'), ('sweet as', '+a'))
 
+        abc = (a & (b & c)) | ''.join
+        self.assertEqual(abc('_'), '_a_b_c')
+
 
     def test_combine(self):
         # Only combine FunctionMerges that have the same MergeFunc
