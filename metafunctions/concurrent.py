@@ -50,7 +50,7 @@ class ConcurrentMerge(FunctionMerge):
             children.append(pid)
 
         #iterate over any remaining functions for which we have no args
-        for i, f in enumerate(func_iter, i):
+        for j, f in enumerate(func_iter, i+1):
             pid = os.fork()
             if not pid:
                 #we are the child
