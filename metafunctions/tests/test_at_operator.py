@@ -13,6 +13,9 @@ class TestUnit(BaseTestCase):
         cmp = (a | b) @ f
         self.assertEqual(cmp('_'), ('_', 'a', 'b'))
 
+        rcmp = (1, 2, 3) @ f
+        self.assertEqual(rcmp(), (1, 2, 3))
+
     def test_str_repr(self):
         c = a @ b
         self.assertEqual(str(c), '(a | star(b))')
