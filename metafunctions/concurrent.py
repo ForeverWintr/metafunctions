@@ -54,7 +54,7 @@ class ConcurrentMerge(FunctionMerge):
             pid = os.fork()
             if not pid:
                 #we are the child
-                self._process_and_die(i, f, result_q, error_q, kwargs)
+                self._process_and_die(j, f, result_q, error_q, kwargs)
             children.append(pid)
 
         #the parent waits for all children to complete
