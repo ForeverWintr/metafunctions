@@ -14,14 +14,15 @@ class TestUnit(BaseTestCase):
 
     def test_str_repr(self):
         c = a @ b
-        self.assertEqual(str(c), '(a @ b)')
-        self.assertEqual(repr(c), f"BroadcastChain{(a, b)}")
+        self.assertEqual(str(c), '(a | star(b))')
+        self.assertEqual(repr(c),
+                f"FunctionChain{(a, c.functions[1])}")
 
         c = a | a @ b * 5 / 7 | b & b @ a
-        self.assertEqual(str(c), '(a | (((a @ b) * 5) / 7) | (b & (b @ a)))')
+        self.assertEqual(str(c), '(a | (((a | star(b)) * 5) / 7) | (b & (b | star(a))))')
 
         c = (1, 2, 3) @ a
-        self.assertEqual(str(c), '((1, 2, 3) @ a)')
+        self.assertEqual(str(c), '((1, 2, 3) | star(a))')
 
 
 
