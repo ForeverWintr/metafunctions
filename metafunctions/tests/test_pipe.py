@@ -1,6 +1,7 @@
 import unittest
 from unittest import mock
 import functools
+import itertools
 
 from metafunctions.tests.util import BaseTestCase
 from metafunctions.util import node
@@ -285,6 +286,26 @@ class TestIntegration(BaseTestCase):
         state = CallState()
         self.assertEqual(cmp('_', call_state=state), '_abcde_abcde')
         self.assertEqual(cmp('*', call_state=state), '*abcde_abcde')
+
+    def test_generators(self):
+        # Can you use Metafunctions with generators?
+
+        @node
+        def gen_a():
+            yield from itertools.repeat('a')
+
+        @node
+        def gen_b(pred):
+            yield from (x + 'b' for x in pred)
+
+        @node
+        def gen_c(pred):
+            return (x + 'c' for x in pred)
+
+        cmp = gen_a | gen_c | gen_b
+        gen = cmp()
+        for i in range(5):
+            self.assertEqual(next(gen), 'acb')
 
 
 ### Simple Sample Functions ###
