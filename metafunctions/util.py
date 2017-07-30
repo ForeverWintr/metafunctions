@@ -13,6 +13,7 @@ from metafunctions.core import SimpleFunction
 from metafunctions.core import FunctionMerge
 from metafunctions.core import CallState
 from metafunctions.concurrent import ConcurrentMerge
+from metafunctions.map import MergeMap
 from metafunctions import operators
 
 
@@ -85,7 +86,8 @@ def recall(key, from_call_state:CallState=None):
 
 
 def concurrent(function: FunctionMerge) -> ConcurrentMerge:
-    '''Upgrade the specified FunctionMerge object to a ConcurrentMerge, which runs each of its
+    '''
+    Upgrade the specified FunctionMerge object to a ConcurrentMerge, which runs each of its
     component functions in separate processes. See ConcurrentMerge documentation for more
     information.
 
@@ -96,6 +98,13 @@ def concurrent(function: FunctionMerge) -> ConcurrentMerge:
     '''
     return ConcurrentMerge(function)
 
+
+def mmap(function: tp.Callable, operator: tp.Callable=operators.concat) -> MergeMap:
+    '''
+    Upgrade the specified function to a MergeMap, which calls its single function once per input,
+    as per the builtin `map` (https://docs.python.org/3.6/library/functions.html#map)
+    '''
+    return MergeMap(function, operator)
 
 def _system_supports_color():
     """

@@ -239,6 +239,7 @@ class FunctionMerge(MetaFunction):
         '''
         return f(*args, **kwargs)
 
+
 class SimpleFunction(MetaFunction):
     def __init__(self, function, name=None, print_location_in_traceback=True):
         '''A MetaFunction-aware wrapper around a single function
