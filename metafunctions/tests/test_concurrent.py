@@ -10,7 +10,10 @@ from metafunctions.util import node
 from metafunctions.util import bind_call_state
 from metafunctions.util import highlight_current_function
 from metafunctions.util import concurrent
+from metafunctions.util import mmap
+from metafunctions.util import star
 from metafunctions.concurrent import ConcurrentMerge
+from metafunctions import operators
 from metafunctions.exceptions import ConcurrentException, CompositionError, CallError
 
 
@@ -98,9 +101,47 @@ class TestUnit(BaseTestCase):
 
     def test_str_repr(self):
         cab = ConcurrentMerge(a + b)
+        cmap = concurrent(mmap(a))
 
         self.assertEqual(repr(cab), f'ConcurrentMerge({operator.add}, ({repr(a)}, {repr(b)}))')
         self.assertEqual(str(cab), f'concurrent(a + b)')
+        self.assertEqual(str(cmap), f'concurrent(mmap(a))')
+
+    def test_basic_map(self):
+        # We can upgrade maps to run in parallel
+        banana = 'bnn' | concurrent(mmap(a)) | ''.join
+        str_concat = operators.concat | node(''.join)
+        batman = concurrent(mmap(a, operator=str_concat))
+        self.assertEqual(banana(), 'banana')
+        self.assertEqual(batman('nnnn'), 'nananana')
+
+    def test_multi_arg_map(self):
+        @node
+        def f(*args):
+            return args
+
+        m = concurrent(mmap(f))
+
+        with self.assertRaises(CompositionError):
+            #Because star returns a simple function, we can't upgrade it.
+            starmap = concurrent(star(mmap(f)))
+        #we have to wrap concurrent in star instead.
+        starmap = star(concurrent(mmap(f)))
+
+        mapstar = concurrent(mmap(star(f)))
+
+        self.assertEqual(m([1, 2, 3], [4, 5, 6]), ((1, 4), (2, 5), (3, 6)))
+        self.assertEqual(m([1, 2, 3]), ((1, ), (2, ), (3, )))
+
+        with self.assertRaises(TypeError):
+            self.assertEqual(starmap([1, 2, 3]))
+        self.assertEqual(starmap([[1, 2, 3]]), m([1, 2, 3]))
+
+        cmp = ([1, 2, 3], [4, 5, 6]) | starmap
+        self.assertEqual(cmp(), ((1, 4), (2, 5), (3, 6)))
+
+        cmp = ([1, 2, 3], [4, 5, 6]) | mapstar
+        self.assertEqual(cmp(), ((1, 2, 3), (4, 5, 6)))
 
 ### Simple Sample Functions ###
 @node

@@ -1,4 +1,3 @@
-import operator
 import typing as tp
 import abc
 import itertools
@@ -8,7 +7,7 @@ import functools
 from metafunctions.core._decorators import binary_operation
 from metafunctions.core._decorators import inject_call_state
 from metafunctions.core._call_state import CallState
-from metafunctions.operators import concat
+from metafunctions import operators
 from metafunctions import exceptions
 
 
@@ -63,43 +62,43 @@ class MetaFunction(metaclass=abc.ABCMeta):
 
     @binary_operation
     def __and__(self, other):
-        return FunctionMerge.combine(concat, self, other)
+        return FunctionMerge.combine(operators.concat, self, other)
 
     @binary_operation
     def __rand__(self, other):
-        return FunctionMerge.combine(concat, other, self)
+        return FunctionMerge.combine(operators.concat, other, self)
 
     @binary_operation
     def __add__(self, other):
-        return FunctionMerge(operator.add, (self, other))
+        return FunctionMerge(operators.add, (self, other))
 
     @binary_operation
     def __radd__(self, other):
-        return FunctionMerge(operator.add, (other, self))
+        return FunctionMerge(operators.add, (other, self))
 
     @binary_operation
     def __sub__(self, other):
-        return FunctionMerge(operator.sub, (self, other))
+        return FunctionMerge(operators.sub, (self, other))
 
     @binary_operation
     def __rsub__(self, other):
-        return FunctionMerge(operator.sub, (other, self))
+        return FunctionMerge(operators.sub, (other, self))
 
     @binary_operation
     def __mul__(self, other):
-        return FunctionMerge(operator.mul, (self, other))
+        return FunctionMerge(operators.mul, (self, other))
 
     @binary_operation
     def __rmul__(self, other):
-        return FunctionMerge(operator.mul, (other, self))
+        return FunctionMerge(operators.mul, (other, self))
 
     @binary_operation
     def __truediv__(self, other):
-        return FunctionMerge(operator.truediv, (self, other))
+        return FunctionMerge(operators.truediv, (self, other))
 
     @binary_operation
     def __rtruediv__(self, other):
-        return FunctionMerge(operator.truediv, (other, self))
+        return FunctionMerge(operators.truediv, (other, self))
 
     @binary_operation
     def __matmul__(self, other):
@@ -147,11 +146,11 @@ class FunctionChain(MetaFunction):
 
 class FunctionMerge(MetaFunction):
     _character_to_operator = {
-        '+': operator.add,
-        '-': operator.sub,
-        '*': operator.mul,
-        '/': operator.truediv,
-        '&': concat,
+        '+': operators.add,
+        '-': operators.sub,
+        '*': operators.mul,
+        '/': operators.truediv,
+        '&': operators.concat,
     }
     _operator_to_character = {v: k for k, v in _character_to_operator.items()}
 
@@ -191,10 +190,10 @@ class FunctionMerge(MetaFunction):
         # second, the first will be advanced one extra time, because zip has already called next()
         # on the first iterator before discovering that the second has been exhausted.
         for arg, f in zip(args_iter, func_iter):
-            results.append(f(arg, **kwargs))
+            results.append(self._call_function(f, (arg, ), kwargs))
 
         #Any extra functions are called with no input
-        results.extend([f(**kwargs) for f in func_iter])
+        results.extend([self._call_function(f, (), kwargs) for f in func_iter])
         return self._merge_func(*results)
 
     def __repr__(self):
@@ -211,7 +210,7 @@ class FunctionMerge(MetaFunction):
         '''
         new_funcs = []
         for f in funcs:
-            if isinstance(f, cls) and f._merge_func == merge_func:
+            if isinstance(f, cls) and f._merge_func is merge_func:
                 new_funcs.extend(f.functions)
             else:
                 new_funcs.append(f)
@@ -232,6 +231,13 @@ class FunctionMerge(MetaFunction):
             args_iter = itertools.repeat(next(args_iter))
 
         return args_iter, func_iter
+
+    def _call_function(self, f, args:tuple, kwargs:dict):
+        '''This function receives one function, and the args and kwargs that should be used to call
+        that function. It returns the result of the function call. This gets its own method so that
+        subclasses can customize its behaviour.
+        '''
+        return f(*args, **kwargs)
 
 
 class SimpleFunction(MetaFunction):
