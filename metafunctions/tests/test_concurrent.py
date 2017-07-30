@@ -158,9 +158,21 @@ class TestUnit(BaseTestCase):
         # If call_state.data contains something that isn't pickleable, fail gracefully
         bad = [lambda: None] | store('o')
         cmp = concurrent(bad & bad)
-        with self.assertRaises(AttributeError):
+        with self.assertRaises(ConcurrentException):
             cmp()
 
+    def test_unpickleable_exception(self):
+        # Don't let child processes crash, even if they do weird things like raise unpickleable
+        # exceptions
+        @node
+        def f():
+            class BadException(Exception):
+                pass
+            raise BadException()
+
+        cmp = concurrent(f+f)
+        with self.assertRaises(ConcurrentException):
+            cmp()
 
 ### Simple Sample Functions ###
 @node

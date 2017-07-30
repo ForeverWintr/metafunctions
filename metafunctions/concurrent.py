@@ -67,8 +67,9 @@ class ConcurrentMerge(FunctionMerge):
         result_q.put(None)
         for r in sorted(iter(result_q.get, None), key=itemgetter(0)):
             if r.exception:
-                raise exceptions.ConcurrentException('Caught exception in child process') from r.exception
-            kwargs['call_state'].data.update(r.call_state_data)
+                raise exceptions.ConcurrentException(
+                        'Caught exception in child process') from pickle.loads(r.exception)
+            kwargs['call_state'].data.update(pickle.loads(r.call_state_data))
             results.append(r.result)
         return self._merge_func(*results)
 
@@ -103,7 +104,13 @@ class ConcurrentMerge(FunctionMerge):
             data = pickle.dumps(kwargs['call_state'].data)
             result = make_result(result=r, call_state_data=data)
         except Exception as e:
-            result = make_result(exception=e)
+            try:
+                # In case func does something stupid like raising an unpicklable exception
+                pickled_exception = pickle.dumps(e)
+            except AttributeError:
+                pickled_exception = pickle.dumps(
+                        AttributeError(f'Unplicklable exception raised in {func}'))
+            result = make_result(exception=pickled_exception)
         finally:
             result_q.put(result)
             # it's necessary to explicitly close the result_q and join its background thread here,
