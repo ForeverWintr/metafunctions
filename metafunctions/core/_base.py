@@ -190,10 +190,10 @@ class FunctionMerge(MetaFunction):
         # second, the first will be advanced one extra time, because zip has already called next()
         # on the first iterator before discovering that the second has been exhausted.
         for arg, f in zip(args_iter, func_iter):
-            results.append(f(arg, **kwargs))
+            results.append(self._call_function(f, (arg, ), kwargs))
 
         #Any extra functions are called with no input
-        results.extend([f(**kwargs) for f in func_iter])
+        results.extend([self._call_function(f, (), kwargs) for f in func_iter])
         return self._merge_func(*results)
 
     def __repr__(self):
@@ -232,6 +232,12 @@ class FunctionMerge(MetaFunction):
 
         return args_iter, func_iter
 
+    def _call_function(self, f, args:tuple, kwargs:dict):
+        '''This function receives one function, and the args and kwargs that should be used to call
+        that function. It returns the result of the function call. This gets its own method so that
+        subclasses can customize its behaviour.
+        '''
+        return f(*args, **kwargs)
 
 class SimpleFunction(MetaFunction):
     def __init__(self, function, name=None, print_location_in_traceback=True):
