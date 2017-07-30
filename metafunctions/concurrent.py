@@ -43,19 +43,13 @@ class ConcurrentMerge(FunctionMerge):
         #spawn a child for each function
         children = []
         for arg, (i, f) in zip(arg_iter, enumerated_funcs):
-            pid = os.fork()
-            if not pid:
-                #we are the child
-                self._process_and_die(i, f, result_q, error_q, (arg, ), kwargs)
-            children.append(pid)
+            child_pid = self._process_in_fork(i, f, result_q, error_q, (arg, ), kwargs)
+            children.append(child_pid)
 
         #iterate over any remaining functions for which we have no args
         for i, f in enumerated_funcs:
-            pid = os.fork()
-            if not pid:
-                #we are the child
-                self._process_and_die(i, f, result_q, error_q, (), kwargs)
-            children.append(pid)
+            child_pid = self._process_in_fork(i, f, result_q, error_q, (), kwargs)
+            children.append(child_pid)
 
         #the parent waits for all children to complete
         for pid in children:
@@ -80,10 +74,16 @@ class ConcurrentMerge(FunctionMerge):
     def _call_function(self, f, args:tuple, kwargs:dict):
         return self._function_merge._call_function(f, args, kwargs)
 
-    def _process_and_die(self, idx, func, result_q, error_q, args, kwargs):
-        '''This function is only called by child processes. Call the given function with the given
-        args and kwargs, put the result in result_q, then die.
+    def _process_in_fork(self, idx, func, result_q, error_q, args, kwargs):
+        '''Call self._call_function in a child process. This function returns the ID of the child
+        in the parent process, while the child process calls _call_function, puts the results in
+        the provided queues, then exits.
         '''
+        pid = os.fork()
+        if pid:
+            return pid
+
+        #here we are the child
         try:
             r = self._call_function(func, args, kwargs)
         except Exception as e:
