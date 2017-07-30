@@ -10,7 +10,9 @@ from metafunctions.util import node
 from metafunctions.util import bind_call_state
 from metafunctions.util import highlight_current_function
 from metafunctions.util import concurrent
+from metafunctions.util import mmap
 from metafunctions.concurrent import ConcurrentMerge
+from metafunctions import operators
 from metafunctions.exceptions import ConcurrentException, CompositionError, CallError
 
 
@@ -101,6 +103,14 @@ class TestUnit(BaseTestCase):
 
         self.assertEqual(repr(cab), f'ConcurrentMerge({operator.add}, ({repr(a)}, {repr(b)}))')
         self.assertEqual(str(cab), f'concurrent(a + b)')
+
+    def test_basic_map(self):
+        # We can upgrade maps to run in parallel
+        banana = 'bnn' | concurrent(mmap(a)) | ''.join
+        str_concat = operators.concat | node(''.join)
+        batman = concurrent(mmap(a, operator=str_concat))
+        self.assertEqual(banana(), 'banana')
+        self.assertEqual(batman('nnnn'), 'nananana')
 
 ### Simple Sample Functions ###
 @node
