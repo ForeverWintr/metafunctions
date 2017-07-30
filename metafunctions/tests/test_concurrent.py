@@ -155,6 +155,12 @@ class TestUnit(BaseTestCase):
         self.assertEqual(cmp('_', call_state=state), ('_ab', '_ba'))
         self.assertDictEqual(state.data, {'ab': '_ab', 'ba': '_ba'})
 
+        # If call_state.data contains something that isn't pickleable, fail gracefully
+        bad = [lambda: None] | store('o')
+        cmp = concurrent(bad & bad)
+        with self.assertRaises(AttributeError):
+            cmp()
+
 
 ### Simple Sample Functions ###
 @node

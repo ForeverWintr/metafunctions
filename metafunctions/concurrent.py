@@ -5,6 +5,7 @@ from multiprocessing import Queue
 import queue
 from collections import namedtuple
 import functools
+import pickle
 
 from metafunctions.core import FunctionMerge
 from metafunctions.core import inject_call_state
@@ -91,16 +92,18 @@ class ConcurrentMerge(FunctionMerge):
                 result=None,
                 exception=None,
                 index=idx,
-                call_state_data=kwargs['call_state'].data
+                call_state_data=None
         )
 
         result = None
         try:
             r = self._call_function(func, args, kwargs)
+
+            #pickle data here, so that we can't crash with pickle errors in the finally clause
+            data = pickle.dumps(kwargs['call_state'].data)
+            result = make_result(result=r, call_state_data=data)
         except Exception as e:
             result = make_result(exception=e)
-        else:
-            result = make_result(result=r)
         finally:
             result_q.put(result)
             # it's necessary to explicitly close the result_q and join its background thread here,
