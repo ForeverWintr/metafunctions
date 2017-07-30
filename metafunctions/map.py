@@ -7,6 +7,10 @@ from metafunctions.operators import concat
 
 class MergeMap(FunctionMerge):
     def __init__(self, function:tp.Callable, merge_function:tp.Callable=concat):
+        '''
+        MergeMap is a FunctionMerge with only one function. When called, it behaves like the
+        builtin `map` function and calls its function once per item in the iterable(s) it receives.
+        '''
         super().__init__(merge_function, (function, ))
 
     def _get_call_iterators(self, args):
