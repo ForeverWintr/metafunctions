@@ -210,7 +210,7 @@ class FunctionMerge(MetaFunction):
         '''
         new_funcs = []
         for f in funcs:
-            if isinstance(f, cls) and f._merge_func == merge_func:
+            if isinstance(f, cls) and f._merge_func is merge_func:
                 new_funcs.extend(f.functions)
             else:
                 new_funcs.append(f)

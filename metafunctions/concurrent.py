@@ -8,7 +8,6 @@ from metafunctions.core import FunctionMerge
 from metafunctions.core import inject_call_state
 from metafunctions import exceptions
 
-_no_value = object()
 
 class ConcurrentMerge(FunctionMerge):
     def __init__(self, function_merge: FunctionMerge):
@@ -26,10 +25,10 @@ class ConcurrentMerge(FunctionMerge):
                 function_merge._merge_func,
                 function_merge._functions,
                 function_merge._function_join_str)
+        self._function_merge = function_merge
 
     def __str__(self):
-        joined_funcs = super().__str__()
-        return f"concurrent{joined_funcs}"
+        return f"concurrent{self._function_merge!s}"
 
     @inject_call_state
     def __call__(self, *args, **kwargs):
@@ -37,24 +36,25 @@ class ConcurrentMerge(FunctionMerge):
         with _merge_func
         '''
         arg_iter, func_iter = self._get_call_iterators(args)
+        enumerated_funcs = enumerate(func_iter)
         result_q = Queue()
         error_q = Queue()
 
         #spawn a child for each function
         children = []
-        for i, (arg, f) in enumerate(zip(arg_iter, func_iter)):
+        for arg, (i, f) in zip(arg_iter, enumerated_funcs):
             pid = os.fork()
             if not pid:
                 #we are the child
-                self._process_and_die(i, f, result_q, error_q, kwargs, arg)
+                self._process_and_die(i, f, result_q, error_q, (arg, ), kwargs)
             children.append(pid)
 
         #iterate over any remaining functions for which we have no args
-        for j, f in enumerate(func_iter, i+1):
+        for i, f in enumerated_funcs:
             pid = os.fork()
             if not pid:
                 #we are the child
-                self._process_and_die(j, f, result_q, error_q, kwargs)
+                self._process_and_die(i, f, result_q, error_q, (), kwargs)
             children.append(pid)
 
         #the parent waits for all children to complete
@@ -74,16 +74,18 @@ class ConcurrentMerge(FunctionMerge):
 
         return self._merge_func(*results)
 
-    @staticmethod
-    def _process_and_die(idx, func, result_q, error_q, kwargs, arg=_no_value):
+    def _get_call_iterators(self, args):
+        return self._function_merge._get_call_iterators(args)
+
+    def _call_function(self, f, args:tuple, kwargs:dict):
+        return self._function_merge._call_function(f, args, kwargs)
+
+    def _process_and_die(self, idx, func, result_q, error_q, args, kwargs):
         '''This function is only called by child processes. Call the given function with the given
         args and kwargs, put the result in result_q, then die.
         '''
         try:
-            if arg is _no_value:
-                r = func(**kwargs)
-            else:
-                r = func(arg, **kwargs)
+            r = self._call_function(func, args, kwargs)
         except Exception as e:
             error_q.put(e)
         else:
