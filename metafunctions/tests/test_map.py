@@ -15,7 +15,6 @@ class TestIntegration(BaseTestCase):
         self.assertEqual(batman('nnnn'), 'nananana')
 
     def test_multi_arg(self):
-        # If a map is called with multiple args, what happens?
         @node
         def f(*args):
             return args
@@ -30,6 +29,12 @@ class TestIntegration(BaseTestCase):
         with self.assertRaises(TypeError):
             self.assertEqual(starmap([1, 2, 3]))
         self.assertEqual(starmap([[1, 2, 3]]), m([1, 2, 3]))
+
+        cmp = ([1, 2, 3], [4, 5, 6]) | starmap
+        self.assertEqual(cmp(), ((1, 4), (2, 5), (3, 6)))
+
+        cmp = ([1, 2, 3], [4, 5, 6]) | mapstar
+        self.assertEqual(cmp(), ((1, 2, 3), (4, 5, 6)))
 
     def test_str_repr(self):
         m = MergeMap(a)
