@@ -55,7 +55,7 @@ def star(meta_function: MetaFunction) -> MetaFunction:
     '''
     fname = str(meta_function)
     #This convoluted inline `if` just decides whether we should add brackets or not.
-    @node(name=f'star{fname}' if fname.startswith('(') else f'star({meta_function!s})')
+    @node(name=f'star{fname}' if fname.startswith('(') else f'star({fname})')
     @functools.wraps(meta_function)
     def wrapper(args, **kwargs):
         return meta_function(*args, **kwargs)

@@ -28,7 +28,8 @@ class ConcurrentMerge(FunctionMerge):
         self._function_merge = function_merge
 
     def __str__(self):
-        return f"concurrent{self._function_merge!s}"
+        merge_name = str(self._function_merge)
+        return f'concurrent{merge_name}' if merge_name.startswith('(') else f'concurrent({merge_name})'
 
     @inject_call_state
     def __call__(self, *args, **kwargs):

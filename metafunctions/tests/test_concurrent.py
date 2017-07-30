@@ -101,9 +101,11 @@ class TestUnit(BaseTestCase):
 
     def test_str_repr(self):
         cab = ConcurrentMerge(a + b)
+        cmap = concurrent(mmap(a))
 
         self.assertEqual(repr(cab), f'ConcurrentMerge({operator.add}, ({repr(a)}, {repr(b)}))')
         self.assertEqual(str(cab), f'concurrent(a + b)')
+        self.assertEqual(str(cmap), f'concurrent(mmap(a))')
 
     def test_basic_map(self):
         # We can upgrade maps to run in parallel
