@@ -25,3 +25,9 @@ class MergeMap(FunctionMerge):
         '''In MergeMap, args will be a single element tuple containing the args for this function.
         '''
         return f(*args[0], **kwargs)
+
+    def __str__(self):
+        return f'mmap({self.functions[0]!s})'
+
+    def __repr__(self):
+        return f'{self.__class__.__name__}({self.functions[0]}, merge_function={self._merge_func})'

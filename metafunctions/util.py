@@ -102,9 +102,11 @@ def concurrent(function: FunctionMerge) -> ConcurrentMerge:
 def mmap(function: tp.Callable, operator: tp.Callable=operators.concat) -> MergeMap:
     '''
     Upgrade the specified function to a MergeMap, which calls its single function once per input,
-    as per the builtin `map` (https://docs.python.org/3.6/library/functions.html#map)
+    as per the builtin `map` (https://docs.python.org/3.6/library/functions.html#map).
+
+    Consider the name 'mmap' to be a placeholder for now.
     '''
-    return MergeMap(function, operator)
+    return MergeMap(MetaFunction.make_meta(function), operator)
 
 def _system_supports_color():
     """
