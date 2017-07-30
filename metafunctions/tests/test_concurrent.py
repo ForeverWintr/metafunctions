@@ -11,9 +11,11 @@ from metafunctions.util import bind_call_state
 from metafunctions.util import highlight_current_function
 from metafunctions.util import concurrent
 from metafunctions.util import mmap
+from metafunctions.util import store, recall
 from metafunctions.util import star
 from metafunctions.concurrent import ConcurrentMerge
 from metafunctions import operators
+from metafunctions.core import CallState
 from metafunctions.exceptions import ConcurrentException, CompositionError, CallError
 
 
@@ -142,6 +144,19 @@ class TestUnit(BaseTestCase):
 
         cmp = ([1, 2, 3], [4, 5, 6]) | mapstar
         self.assertEqual(cmp(), ((1, 2, 3), (4, 5, 6)))
+
+    def test_call_state(self):
+        # Call state should be usable in concurrent chains
+        chain_a = a | b | store('ab')
+        chain_b = b | a | store('ba')
+        cmp = concurrent(chain_a & chain_b)
+        state = CallState()
+
+        self.assertEqual(cmp('_', call_state=state), ('_ab', '_ba'))
+        self.assertDictEqual(state.data, {'ab': '_ab', 'ba': '_ba'})
+
+        called_funcs = state._called_functions
+        self.assertListEqual(called_funcs, [a, b, store, b, a, store])
 
 ### Simple Sample Functions ###
 @node
