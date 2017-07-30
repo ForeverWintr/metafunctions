@@ -11,7 +11,7 @@ from metafunctions.core import inject_call_state
 from metafunctions import exceptions
 
 # Result tuple to be sent back from workers. Defined at module level for eas of pickling
-_ConcurrentResult = namedtuple('_ConcurrentResult', 'index result exception')
+_ConcurrentResult = namedtuple('_ConcurrentResult', 'index result call_state_data exception')
 
 class ConcurrentMerge(FunctionMerge):
 
@@ -67,6 +67,7 @@ class ConcurrentMerge(FunctionMerge):
         for r in sorted(iter(result_q.get, None), key=itemgetter(0)):
             if r.exception:
                 raise exceptions.ConcurrentException('Caught exception in child process') from r.exception
+            kwargs['call_state'].data.update(r.call_state_data)
             results.append(r.result)
         return self._merge_func(*results)
 
@@ -90,6 +91,7 @@ class ConcurrentMerge(FunctionMerge):
                 result=None,
                 exception=None,
                 index=idx,
+                call_state_data=kwargs['call_state'].data
         )
 
         result = None
@@ -101,7 +103,7 @@ class ConcurrentMerge(FunctionMerge):
             result = make_result(result=r)
         finally:
             result_q.put(result)
-            # it's neccesary to explicitly close the result_q and join its background thread here,
+            # it's necessary to explicitly close the result_q and join its background thread here,
             # because the below os._exit won't allow time for any cleanup.
             result_q.close()
             result_q.join_thread()

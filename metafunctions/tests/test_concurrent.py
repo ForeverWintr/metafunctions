@@ -155,8 +155,6 @@ class TestUnit(BaseTestCase):
         self.assertEqual(cmp('_', call_state=state), ('_ab', '_ba'))
         self.assertDictEqual(state.data, {'ab': '_ab', 'ba': '_ba'})
 
-        called_funcs = state._called_functions
-        self.assertListEqual(called_funcs, [a, b, store, b, a, store])
 
 ### Simple Sample Functions ###
 @node
