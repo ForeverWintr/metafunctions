@@ -161,7 +161,7 @@ class TestUnit(BaseTestCase):
         with self.assertRaises(ConcurrentException):
             cmp()
 
-    def test_unpickleable_exception(self):
+    def test_unpicklable_exception(self):
         # Don't let child processes crash, even if they do weird things like raise unpickleable
         # exceptions
         @node
