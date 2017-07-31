@@ -124,24 +124,7 @@ Occured in the following function: ((query_volume | float) + (query_price | ->fl
 
 *Note:* This behavior can be disabled by specifying `modify_tracebacks=False` in the `node` decorator.
 
-### Concurrency (*experimental, requires an os that provides `os.fork()`*)
-
-Consider the following long running MetaFunction:
-
-```python
-process_companies = get_company_data | filter | process
-process_customers = get_customer_data | filter | process
-
-do_large_calculation = process_companies + process_customers
-```
-
-Assuming the component functions in the `do_large_calculation` MetaFunction follow good functional practices and do not have side effects, it's easy to see that `process_companies` and `process_customers` are independent of each other. If that's the case, we can safely execute them in parallel. `metafunctions`' `concurrent` function allows you to specify steps in the function pipeline to execute in parallel:
-
-```python
-do_large_calculation_async = concurrent(process_companies + process_customers)
-```
-
-### Pipeline Construction Tools
+### Advanced Pipeline Construction Tools
 
 Metafunctions provides utilities for constructing advanced function pipelines.
 
@@ -169,11 +152,18 @@ Metafunctions provides utilities for constructing advanced function pipelines.
   # When cmp is called, f will receive the results of both a and b as positional args
   cmp = (a & b) | star(f)
   ```
-  `star` can be combined with the above `mmap` to duplicate the behaviour of [`itertools.starmap`](https://docs.python.org/3/library/itertools.html#itertools.starmap): `starmap = star(map(f))`.
+  `star` can be combined with the above `mmap` to duplicate the behaviour of [`itertools.starmap`](https://docs.python.org/3/library/itertools.html#itertools.starmap): 
+
+  ```python
+  starmap = star(map(f))
+  ```
 
   For more discussion of `star`, see [this pull request](https://github.com/ForeverWintr/metafunctions/pull/9)
 
-* **concurrent** (*experimental, requires an os that provides `os.fork()`*): Consider the following long running MetaFunction:
+* **concurrent**:
+  *experimental, requires an os that provides `os.fork()`*
+
+  Consider the following long running MetaFunction:
 
   ```python
   process_companies = get_company_data | filter | process
@@ -188,5 +178,8 @@ Metafunctions provides utilities for constructing advanced function pipelines.
   do_large_calculation_async = concurrent(process_companies + process_customers)
   ```
 
-  `concurrent` can be combined with `mmap` to create an asynchronous map, similar to [`multiprocessing.pool.map`](https://docs.python.org/3/library/multiprocessing.html#multiprocessing.pool.Pool.map): `map_async = concurrent(mmap(f))`
+  `concurrent` can be combined with `mmap` to create an asynchronous map, similar to [`multiprocessing.pool.map`](https://docs.python.org/3/library/multiprocessing.html#multiprocessing.pool.Pool.map): 
   
+  ```python
+  map_async = concurrent(mmap(f))
+  ```
