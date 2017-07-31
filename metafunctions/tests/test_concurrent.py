@@ -1,5 +1,4 @@
 import operator
-import os
 from unittest import mock
 import functools
 
@@ -11,7 +10,7 @@ from metafunctions.util import bind_call_state
 from metafunctions.util import highlight_current_function
 from metafunctions.util import concurrent
 from metafunctions.util import mmap
-from metafunctions.util import store, recall
+from metafunctions.util import store
 from metafunctions.util import star
 from metafunctions.concurrent import ConcurrentMerge
 from metafunctions import operators
@@ -136,7 +135,7 @@ class TestIntegration(BaseTestCase):
         self.assertEqual(m([1, 2, 3]), ((1, ), (2, ), (3, )))
 
         with self.assertRaises(TypeError):
-            self.assertEqual(starmap([1, 2, 3]))
+            starmap([1, 2, 3])
         self.assertEqual(starmap([[1, 2, 3]]), m([1, 2, 3]))
 
         cmp = ([1, 2, 3], [4, 5, 6]) | starmap

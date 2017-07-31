@@ -1,5 +1,4 @@
 import os
-import sys
 from operator import itemgetter
 from multiprocessing import Queue
 from collections import namedtuple

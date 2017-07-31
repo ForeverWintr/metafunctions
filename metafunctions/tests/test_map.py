@@ -27,7 +27,7 @@ class TestIntegration(BaseTestCase):
         self.assertEqual(m([1, 2, 3]), ((1, ), (2, ), (3, )))
 
         with self.assertRaises(TypeError):
-            self.assertEqual(starmap([1, 2, 3]))
+            starmap([1, 2, 3])
         self.assertEqual(starmap([[1, 2, 3]]), m([1, 2, 3]))
 
         cmp = ([1, 2, 3], [4, 5, 6]) | starmap
@@ -46,6 +46,13 @@ class TestIntegration(BaseTestCase):
         self.assertEqual(str(m), 'mmap(a)')
         self.assertEqual(repr(m), f'MergeMap(a, merge_function={operators.concat})')
 
+    def test_loop(self):
+        cmp = (b & c & 'stoke') | mmap(a)
+        self.assertEqual(cmp('_'), ('_ba', '_ca', 'stokea'))
+
+    def test_loop_with_non_meta(self):
+        cmp = (b & c & 'stoke') | mmap(len)
+        self.assertEqual(cmp('_'), (2, 2, 5))
 
 @node
 def a(x):

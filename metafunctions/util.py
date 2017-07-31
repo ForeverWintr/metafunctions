@@ -5,6 +5,7 @@ import sys
 import re
 import functools
 import typing as tp
+import os
 
 import colors
 
@@ -66,10 +67,10 @@ def store(key):
     '''Store the received output in the meta data dictionary under the given key.'''
     @node(name=f"store('{key}')")
     @bind_call_state
-    def store(call_state, val):
+    def storer(call_state, val):
         call_state.data[key] = val
         return val
-    return store
+    return storer
 
 
 def recall(key, from_call_state:CallState=None):
@@ -78,11 +79,11 @@ def recall(key, from_call_state:CallState=None):
     '''
     @node(name=f"recall('{key}')")
     @bind_call_state
-    def recall(call_state, val):
+    def recaller(call_state, val):
         if from_call_state:
             return from_call_state.data[key]
         return call_state.data[key]
-    return recall
+    return recaller
 
 
 def concurrent(function: FunctionMerge) -> ConcurrentMerge:
@@ -114,8 +115,7 @@ def _system_supports_color():
     otherwise.
     """
     plat = sys.platform
-    supported_platform = plat != 'Pocket PC' and (plat != 'win32' or
-                                                  'ANSICON' in os.environ)
+    supported_platform = plat != 'Pocket PC' and (plat != 'win32' or 'ANSICON' in os.environ)
     # isatty is not always implemented, #6223.
     is_a_tty = hasattr(sys.stdout, 'isatty') and sys.stdout.isatty()
     if not supported_platform or not is_a_tty:
@@ -135,7 +135,6 @@ def highlight_current_function(call_state, color=colors.red, use_color=_system_s
     num_occurences = sum(str(f).count(current_name) for f in call_state._called_functions)
 
     # There's probably a better regex for this.
-    skip = f'.*{current_name}'
     regex = f"((?:.*?{current_name}.*?){{{num_occurences-1}}}.*?){current_name}(.*$)"
 
     highlighted_name = f'->{current_name}<-'

@@ -11,16 +11,16 @@ from metafunctions.util import node, star
 
 class TestUnit(BaseTestCase):
     def test_str(self):
-        c = FunctionMerge(operator.add, (a, b))
-        self.assertEqual(str(c), '(a + b)')
-        self.assertEqual(repr(c), f'FunctionMerge({operator.add}, {(a, b)})')
+        cmp = FunctionMerge(operator.add, (a, b))
+        self.assertEqual(str(cmp), '(a + b)')
+        self.assertEqual(repr(cmp), f'FunctionMerge({operator.add}, {(a, b)})')
 
     def test_call(self):
-        c = FunctionMerge(operator.add, (a, b))
-        self.assertEqual(c('_'), '_a_b')
-        self.assertEqual(c('-', '_'), '-a_b')
+        cmp = FunctionMerge(operator.add, (a, b))
+        self.assertEqual(cmp('_'), '_a_b')
+        self.assertEqual(cmp('-', '_'), '-a_b')
         with self.assertRaises(exceptions.CallError):
-            c('_', '_', '_')
+            cmp('_', '_', '_')
 
         @SimpleFunction
         def d():
@@ -29,19 +29,19 @@ class TestUnit(BaseTestCase):
         self.assertEqual(abd('-', '_'), ('-a', '_b', 'd'))
 
     def test_format(self):
-        c = FunctionMerge(operator.add, (a, b), function_join_str='tacos')
-        self.assertEqual(str(c), '(a tacos b)')
+        cmp = FunctionMerge(operator.add, (a, b), function_join_str='tacos')
+        self.assertEqual(str(cmp), '(a tacos b)')
 
     def test_non_binary(self):
-        def concat(*args):
+        def my_concat(*args):
             return ''.join(args)
 
-        c = FunctionMerge(concat, (a, a, a, a))
-        self.assertEqual(c('_'), '_a_a_a_a')
+        cmp = FunctionMerge(my_concat, (a, a, a, a))
+        self.assertEqual(cmp('_'), '_a_a_a_a')
 
-        self.assertEqual(str(c), f'(a {concat} a {concat} a {concat} a)')
+        self.assertEqual(str(cmp), f'(a {my_concat} a {my_concat} a {my_concat} a)')
 
-        d = FunctionMerge(concat, (b, b), function_join_str='q')
+        d = FunctionMerge(my_concat, (b, b), function_join_str='q')
         self.assertEqual(str(d), '(b q b)')
 
     def test_join(self):
@@ -87,13 +87,13 @@ class TestUnit(BaseTestCase):
         self.assertEqual(str(abba_), '((a + b) <> (b + a))')
         self.assertEqual(repr(abba_), f"FunctionMerge({custom}, {(add, also_add)})")
 
-        def concat(*args):
+        def my_concat(*args):
             return ''.join(args)
-        bb = FunctionMerge(concat, (b, b), function_join_str='q')
-        aa = FunctionMerge(concat, (a, a), function_join_str='q')
-        bbaa = FunctionMerge.combine(concat, bb, aa, function_join_str='q')
+        bb = FunctionMerge(my_concat, (b, b), function_join_str='q')
+        aa = FunctionMerge(my_concat, (a, a), function_join_str='q')
+        bbaa = FunctionMerge.combine(my_concat, bb, aa, function_join_str='q')
         self.assertEqual(str(bbaa), '(b q b q a q a)')
-        self.assertEqual(repr(bbaa), f"FunctionMerge({concat}, {(b, b, a, a)})")
+        self.assertEqual(repr(bbaa), f"FunctionMerge({my_concat}, {(b, b, a, a)})")
 
     def test_len_mismatch(self):
         # If len(inputs) <= len(functions), call remaining functions with  no args.

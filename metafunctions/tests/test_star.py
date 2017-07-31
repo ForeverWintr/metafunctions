@@ -1,3 +1,5 @@
+import unittest
+
 from metafunctions.util import node, star, concurrent
 from metafunctions import exceptions
 from metafunctions.tests.util import BaseTestCase
@@ -53,6 +55,11 @@ class TestUnit(BaseTestCase):
 
         aabbcc = (a & b & c) | star(concurrent(a&b&c))
         self.assertEqual(aabbcc('_'), ('_aa','_bb','_cc'))
+
+    @unittest.skip('TODO')
+    def test_recursive_upgrade(self):
+        aabbcc = (a & b & c) | star(a+b+c)
+        self.assertEqual(aabbcc('_'), '_aa_bb_cc')
 
 @node
 def a(x):

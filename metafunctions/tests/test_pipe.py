@@ -304,7 +304,7 @@ class TestIntegration(BaseTestCase):
 
         cmp = gen_a | gen_c | gen_b
         gen = cmp()
-        for i in range(5):
+        for _ in range(5):
             self.assertEqual(next(gen), 'acb')
 
 
