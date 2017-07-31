@@ -11,13 +11,15 @@ from metafunctions.util import bind_call_state
 from metafunctions.util import highlight_current_function
 from metafunctions.util import concurrent
 from metafunctions.util import mmap
+from metafunctions.util import store, recall
 from metafunctions.util import star
 from metafunctions.concurrent import ConcurrentMerge
 from metafunctions import operators
+from metafunctions.core import CallState
 from metafunctions.exceptions import ConcurrentException, CompositionError, CallError
 
 
-class TestUnit(BaseTestCase):
+class TestIntegration(BaseTestCase):
     def test_basic(self):
         ab = a + b
         cab = ConcurrentMerge(ab)
@@ -142,6 +144,65 @@ class TestUnit(BaseTestCase):
 
         cmp = ([1, 2, 3], [4, 5, 6]) | mapstar
         self.assertEqual(cmp(), ((1, 2, 3), (4, 5, 6)))
+
+    def test_call_state(self):
+        # Call state should be usable in concurrent chains
+        chain_a = a | b | store('ab')
+        chain_b = b | a | store('ba')
+        cmp = concurrent(chain_a & chain_b)
+        state = CallState()
+
+        self.assertEqual(cmp('_', call_state=state), ('_ab', '_ba'))
+        self.assertDictEqual(state.data, {'ab': '_ab', 'ba': '_ba'})
+
+        # If call_state.data contains something that isn't pickleable, fail gracefully
+        bad = [lambda: None] | store('o')
+        cmp = concurrent(bad & bad)
+        with self.assertRaises(ConcurrentException):
+            cmp()
+
+    def test_unpicklable_return(self):
+        # Concurrent can't handle functions that return unpicklable objects. Raise a descriptive
+        # exception
+        @node
+        def f():
+            return lambda:None
+        cmp = concurrent(f & f)
+        with self.assertRaises(ConcurrentException):
+            cmp()
+
+    def test_unpicklable_exception(self):
+        # Don't let child processes crash, even if they do weird things like raise unpickleable
+        # exceptions
+        @node
+        def f():
+            class BadException(Exception):
+                pass
+            raise BadException()
+
+        cmp = concurrent(f+f)
+        with self.assertRaises(ConcurrentException):
+            cmp()
+
+    @mock.patch('metafunctions.concurrent.os.fork', return_value=0)
+    @mock.patch('metafunctions.concurrent.os._exit')
+    @mock.patch('multiprocessing.queues.Queue.close')
+    @mock.patch('multiprocessing.queues.Queue.join_thread')
+    @mock.patch('metafunctions.concurrent.os.waitpid')
+    def test_no_fork(self, mock_wait, mock_join, mock_close, mock_exit, mock_fork):
+        # This test re-runs concurrent tests with forking disabled. Partially this is to
+        # address my inability to get coverage.py to recognize the code covered by forked
+        # processes, but it's also useful to have single process coverage of _process_in_fork to
+        # detect errors that may be squelched by the interactions of multiple processes
+
+        # Re-run all tests with fork patched
+        this_test = self.id().split('.')[-1]
+        for test_name in (t for t in dir(self) if t.startswith('test_') and t != this_test):
+            method = getattr(self, test_name)
+            print('calling, ', method)
+            with self.subTest(name=test_name):
+                method()
+
 
 ### Simple Sample Functions ###
 @node

@@ -2,14 +2,19 @@ import os
 import sys
 from operator import itemgetter
 from multiprocessing import Queue
-import queue
+from collections import namedtuple
+import functools
+import pickle
 
 from metafunctions.core import FunctionMerge
 from metafunctions.core import inject_call_state
 from metafunctions import exceptions
 
+# Result tuple to be sent back from workers. Defined at module level for eas of pickling
+_ConcurrentResult = namedtuple('_ConcurrentResult', 'index result call_state_data exception')
 
 class ConcurrentMerge(FunctionMerge):
+
     def __init__(self, function_merge: FunctionMerge):
         '''A subclass of FunctionMerge that calls each of its component functions in parallel.
 
@@ -39,17 +44,16 @@ class ConcurrentMerge(FunctionMerge):
         arg_iter, func_iter = self._get_call_iterators(args)
         enumerated_funcs = enumerate(func_iter)
         result_q = Queue()
-        error_q = Queue()
 
         #spawn a child for each function
         children = []
         for arg, (i, f) in zip(arg_iter, enumerated_funcs):
-            child_pid = self._process_in_fork(i, f, result_q, error_q, (arg, ), kwargs)
+            child_pid = self._process_in_fork(i, f, result_q, (arg, ), kwargs)
             children.append(child_pid)
 
         #iterate over any remaining functions for which we have no args
         for i, f in enumerated_funcs:
-            child_pid = self._process_in_fork(i, f, result_q, error_q, (), kwargs)
+            child_pid = self._process_in_fork(i, f, result_q, (), kwargs)
             children.append(child_pid)
 
         #the parent waits for all children to complete
@@ -57,16 +61,15 @@ class ConcurrentMerge(FunctionMerge):
             os.waitpid(pid, 0)
 
         #then retrieves the results
-        try:
-            error = error_q.get_nowait()
-        except queue.Empty:
-            pass
-        else:
-            raise exceptions.ConcurrentException('Caught exception in child process') from error
-
+        results = []
+        #iterate over the result q in sorted order
         result_q.put(None)
-        results = [r[1] for r in sorted(iter(result_q.get, None), key=itemgetter(0))]
-
+        for r in sorted(iter(result_q.get, None), key=itemgetter(0)):
+            if r.exception:
+                raise exceptions.ConcurrentException(
+                        'Caught exception in child process') from pickle.loads(r.exception)
+            kwargs['call_state'].data.update(pickle.loads(r.call_state_data))
+            results.append(pickle.loads(r.result))
         return self._merge_func(*results)
 
     def _get_call_iterators(self, args):
@@ -75,7 +78,7 @@ class ConcurrentMerge(FunctionMerge):
     def _call_function(self, f, args:tuple, kwargs:dict):
         return self._function_merge._call_function(f, args, kwargs)
 
-    def _process_in_fork(self, idx, func, result_q, error_q, args, kwargs):
+    def _process_in_fork(self, idx, func, result_q, args, kwargs):
         '''Call self._call_function in a child process. This function returns the ID of the child
         in the parent process, while the child process calls _call_function, puts the results in
         the provided queues, then exits.
@@ -85,19 +88,35 @@ class ConcurrentMerge(FunctionMerge):
             return pid
 
         #here we are the child
+        make_result = functools.partial(_ConcurrentResult,
+                result=None,
+                exception=None,
+                index=idx,
+                call_state_data=None
+        )
+
+        result = None
         try:
             r = self._call_function(func, args, kwargs)
+
+            #pickle here, so that we can't crash with pickle errors in the finally clause
+            pickled_r = pickle.dumps(r)
+            data = pickle.dumps(kwargs['call_state'].data)
+            result = make_result(result=pickled_r, call_state_data=data)
         except Exception as e:
-            error_q.put(e)
-        else:
-            result_q.put((idx, r))
+            try:
+                # In case func does something stupid like raising an unpicklable exception
+                pickled_exception = pickle.dumps(e)
+            except AttributeError:
+                pickled_exception = pickle.dumps(
+                        AttributeError(f'Unplicklable exception raised in {func}'))
+            result = make_result(exception=pickled_exception)
         finally:
-            # it's neccesary to explicitly close the result_q and join its background thread here,
+            result_q.put(result)
+            # it's necessary to explicitly close the result_q and join its background thread here,
             # because the below os._exit won't allow time for any cleanup.
             result_q.close()
-            error_q.close()
             result_q.join_thread()
-            error_q.join_thread()
 
             # This is the one place that the python docs say it's normal to use os._exit. Because
             # this is executed in a child process, calling sys.exit can have unintended
