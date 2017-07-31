@@ -167,7 +167,6 @@ class TestIntegration(BaseTestCase):
         @node
         def f():
             return lambda:None
-
         cmp = concurrent(f & f)
         with self.assertRaises(ConcurrentException):
             cmp()
@@ -197,10 +196,12 @@ class TestIntegration(BaseTestCase):
         # detect errors that may be squelched by the interactions of multiple processes
 
         # Re-run all tests with fork patched
-        for test_name in (t for t in dir(self) if t.startswith('test_') and t != 'test_no_fork'):
+        this_test = self.id().split('.')[-1]
+        for test_name in (t for t in dir(self) if t.startswith('test_') and t != this_test):
             method = getattr(self, test_name)
             print('calling, ', method)
-            method()
+            with self.subTest(name=test_name):
+                method()
 
 
 ### Simple Sample Functions ###
