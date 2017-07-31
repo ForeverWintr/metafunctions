@@ -4,62 +4,91 @@ Utility functions for use in function pipelines.
 import sys
 import re
 import functools
+import typing as tp
+import os
 
 import colors
 
 from metafunctions.core import MetaFunction
 from metafunctions.core import SimpleFunction
 from metafunctions.core import FunctionMerge
+from metafunctions.core import CallState
 from metafunctions.concurrent import ConcurrentMerge
+from metafunctions.map import MergeMap
+from metafunctions import operators
 
 
-def node(_func=None, *, bind=False, modify_tracebacks=True):
+def node(_func=None, *, name=None, modify_tracebacks=True):
     '''Turn the decorated function into a MetaFunction.
 
     Args:
-        _func: Internal use. This will be the decorated function if node is used as a decorator with no params.
-        bind: If True, the MetaFunction object is passed to the function as its first parameter.
-        modify_tracebacks: If true, exceptions raised in composed functions have a string appended to them describing the location of the function in the function chain.
+        _func: Internal use. This will be the decorated function if node is used as a decorator
+        with no params.
+        modify_tracebacks: If true, exceptions raised in composed functions have a string appended
+        to them describing the location of the function in the function chain.
 
     Usage:
 
-    @node(bind=True)
-    def f(metafunc, x):
+    @node
+    def f(x):
        <do something cool>
     '''
     def decorator(function):
-        newfunc = SimpleFunction(function, bind, modify_tracebacks)
+        newfunc = SimpleFunction(function, name=name, print_location_in_traceback=modify_tracebacks)
         return newfunc
     if not _func:
         return decorator
     return decorator(_func)
 
 
+def bind_call_state(func):
+    @functools.wraps(func)
+    def provides_call_state(*args, **kwargs):
+        call_state = kwargs.pop('call_state')
+        return func(call_state, *args, **kwargs)
+    provides_call_state._receives_call_state = True
+    return provides_call_state
+
+
+def star(meta_function: MetaFunction) -> MetaFunction:
+    '''
+    star calls its Metafunction with *x instead of x.
+    '''
+    fname = str(meta_function)
+    #This convoluted inline `if` just decides whether we should add brackets or not.
+    @node(name=f'star{fname}' if fname.startswith('(') else f'star({fname})')
+    @functools.wraps(meta_function)
+    def wrapper(args, **kwargs):
+        return meta_function(*args, **kwargs)
+    return wrapper
+
+
 def store(key):
     '''Store the received output in the meta data dictionary under the given key.'''
-    @node(bind=True)
-    def store(meta, val):
-        meta.data[key] = val
+    @node(name=f"store('{key}')")
+    @bind_call_state
+    def storer(call_state, val):
+        call_state.data[key] = val
         return val
-    store.__name__ = f"store('{key}')"
-    return store
+    return storer
 
 
-def recall(key, from_meta:MetaFunction=None):
-    '''Retrieve the given key from the meta data dictionary. Optionally, use `from_meta` to specify
-    a different metafunction than the current one.
+def recall(key, from_call_state:CallState=None):
+    '''Retrieve the given key from the meta data dictionary. Optionally, use `from_call_state` to
+    specify a different call_state than the current one.
     '''
-    @node(bind=True)
-    def recall(meta, val):
-        if from_meta:
-            return from_meta.data[key]
-        return meta.data[key]
-    recall.__name__ = f"recall('{key}')"
-    return recall
+    @node(name=f"recall('{key}')")
+    @bind_call_state
+    def recaller(call_state, val):
+        if from_call_state:
+            return from_call_state.data[key]
+        return call_state.data[key]
+    return recaller
 
 
 def concurrent(function: FunctionMerge) -> ConcurrentMerge:
-    '''Upgrade the specified FunctionMerge object to a ConcurrentMerge, which runs each of its
+    '''
+    Upgrade the specified FunctionMerge object to a ConcurrentMerge, which runs each of its
     component functions in separate processes. See ConcurrentMerge documentation for more
     information.
 
@@ -71,14 +100,22 @@ def concurrent(function: FunctionMerge) -> ConcurrentMerge:
     return ConcurrentMerge(function)
 
 
+def mmap(function: tp.Callable, operator: tp.Callable=operators.concat) -> MergeMap:
+    '''
+    Upgrade the specified function to a MergeMap, which calls its single function once per input,
+    as per the builtin `map` (https://docs.python.org/3.6/library/functions.html#map).
+
+    Consider the name 'mmap' to be a placeholder for now.
+    '''
+    return MergeMap(MetaFunction.make_meta(function), operator)
+
 def _system_supports_color():
     """
     Returns True if the running system's terminal supports color, and False
     otherwise.
     """
     plat = sys.platform
-    supported_platform = plat != 'Pocket PC' and (plat != 'win32' or
-                                                  'ANSICON' in os.environ)
+    supported_platform = plat != 'Pocket PC' and (plat != 'win32' or 'ANSICON' in os.environ)
     # isatty is not always implemented, #6223.
     is_a_tty = hasattr(sys.stdout, 'isatty') and sys.stdout.isatty()
     if not supported_platform or not is_a_tty:
@@ -86,26 +123,25 @@ def _system_supports_color():
     return True
 
 
-def highlight_current_function(meta, color=colors.red, use_color=_system_supports_color()):
-    '''Return a formatted string showing the location of the currently active function in meta.
+def highlight_current_function(call_state, color=colors.red, use_color=_system_supports_color()):
+    '''Return a formatted string showing the location of the currently active function in call_state.
 
     Consider this a 'you are here' when called from within a function pipeline.
     '''
-    current_name = str(meta._called_functions[-1])
+    current_name = str(call_state._called_functions[-1])
 
-    # how many times will current_name appear in str(meta)?
+    # how many times will current_name appear in str(call_state._meta_entry)?
     # Bearing in mind that pervious function names may contain current_name
-    num_occurences = sum(str(f).count(current_name) for f in meta._called_functions)
+    num_occurences = sum(str(f).count(current_name) for f in call_state._called_functions)
 
     # There's probably a better regex for this.
-    skip = f'.*{current_name}'
     regex = f"((?:.*?{current_name}.*?){{{num_occurences-1}}}.*?){current_name}(.*$)"
 
     highlighted_name = f'->{current_name}<-'
     if use_color:
         highlighted_name = color(highlighted_name)
 
-    highlighted_string = re.sub(regex, fr'\1{highlighted_name}\2', str(meta))
+    highlighted_string = re.sub(regex, fr'\1{highlighted_name}\2', str(call_state._meta_entry))
     return highlighted_string
 
 
