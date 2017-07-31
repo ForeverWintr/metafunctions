@@ -69,7 +69,7 @@ class ConcurrentMerge(FunctionMerge):
                 raise exceptions.ConcurrentException(
                         'Caught exception in child process') from pickle.loads(r.exception)
             kwargs['call_state'].data.update(pickle.loads(r.call_state_data))
-            results.append(r.result)
+            results.append(pickle.loads(r.result))
         return self._merge_func(*results)
 
     def _get_call_iterators(self, args):
@@ -99,9 +99,10 @@ class ConcurrentMerge(FunctionMerge):
         try:
             r = self._call_function(func, args, kwargs)
 
-            #pickle data here, so that we can't crash with pickle errors in the finally clause
+            #pickle here, so that we can't crash with pickle errors in the finally clause
+            pickled_r = pickle.dumps(r)
             data = pickle.dumps(kwargs['call_state'].data)
-            result = make_result(result=r, call_state_data=data)
+            result = make_result(result=pickled_r, call_state_data=data)
         except Exception as e:
             try:
                 # In case func does something stupid like raising an unpicklable exception

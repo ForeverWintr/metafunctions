@@ -161,6 +161,17 @@ class TestIntegration(BaseTestCase):
         with self.assertRaises(ConcurrentException):
             cmp()
 
+    def test_unpicklable_return(self):
+        # Concurrent can't handle functions that return unpicklable objects. Raise a descriptive
+        # exception
+        @node
+        def f():
+            return lambda:None
+
+        cmp = concurrent(f & f)
+        with self.assertRaises(ConcurrentException):
+            cmp()
+
     def test_unpicklable_exception(self):
         # Don't let child processes crash, even if they do weird things like raise unpickleable
         # exceptions
