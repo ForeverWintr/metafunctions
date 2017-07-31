@@ -19,7 +19,7 @@ from metafunctions.core import CallState
 from metafunctions.exceptions import ConcurrentException, CompositionError, CallError
 
 
-class TestUnit(BaseTestCase):
+class TestIntegration(BaseTestCase):
     def test_basic(self):
         ab = a + b
         cab = ConcurrentMerge(ab)
@@ -173,6 +173,24 @@ class TestUnit(BaseTestCase):
         cmp = concurrent(f+f)
         with self.assertRaises(ConcurrentException):
             cmp()
+
+    @mock.patch('metafunctions.concurrent.os.fork', return_value=0)
+    @mock.patch('metafunctions.concurrent.os._exit')
+    @mock.patch('multiprocessing.queues.Queue.close')
+    @mock.patch('multiprocessing.queues.Queue.join_thread')
+    @mock.patch('metafunctions.concurrent.os.waitpid')
+    def test_no_fork(self, mock_wait, mock_join, mock_close, mock_exit, mock_fork):
+        # This test re-runs concurrent tests with forking disabled. Partially this is to
+        # address my inability to get coverage.py to recognize the code covered by forked
+        # processes, but it's also useful to have single process coverage of _process_in_fork to
+        # detect errors that may be squelched by the interactions of multiple processes
+
+        # Re-run all tests with fork patched
+        for test_name in (t for t in dir(self) if t.startswith('test_') and t != 'test_no_fork'):
+            method = getattr(self, test_name)
+            print('calling, ', method)
+            method()
+
 
 ### Simple Sample Functions ###
 @node

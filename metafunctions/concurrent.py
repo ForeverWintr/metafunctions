@@ -2,7 +2,6 @@ import os
 import sys
 from operator import itemgetter
 from multiprocessing import Queue
-import queue
 from collections import namedtuple
 import functools
 import pickle
