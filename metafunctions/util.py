@@ -109,10 +109,11 @@ def mmap(function: tp.Callable, operator: tp.Callable=operators.concat) -> Merge
     '''
     return MergeMap(MetaFunction.make_meta(function), operator)
 
+
 def _system_supports_color():
     """
-    Returns True if the running system's terminal supports color, and False
-    otherwise.
+    Returns True if the running system's terminal supports color, and False otherwise. Originally
+    from Django, by way of StackOverflow: https://stackoverflow.com/a/22254892/1286571
     """
     plat = sys.platform
     supported_platform = plat != 'Pocket PC' and (plat != 'win32' or 'ANSICON' in os.environ)
