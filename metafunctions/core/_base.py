@@ -281,7 +281,7 @@ class SimpleFunction(MetaFunction):
             from metafunctions.util import highlight_current_function
             detailed_message = str(e)
             detailed_message = f"{str(e)} \n\nOccured in the following function: {highlight_current_function(call_state)}"
-            raise type(e)(detailed_message).with_traceback(e.__traceback__)
+            raise type(e)(detailed_message).with_traceback(e.__traceback__) from e
         raise
 
 

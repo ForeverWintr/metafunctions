@@ -13,6 +13,6 @@ multi_fib = F & F & F
 parallel_fib = concurrent(F & F & F)
 
 print('Multi')
-#print(parallel_fib(30))
-print(multi_fib(30))
+print(parallel_fib(30))
+#print(multi_fib(30))
 
