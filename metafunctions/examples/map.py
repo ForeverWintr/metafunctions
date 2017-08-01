@@ -4,12 +4,15 @@ from metafunctions.util import node, mmap
 def a(x):
     return x + 'a'
 
-batman = 'nnnnnnnn' | mmap(a) | ''.join
+add_a = (a & a & a) | ''.join
+print('banana:', add_a(*'bnn')) #banana: banana
 
-print(str(batman))
-print(f'{batman()} batman!')
 
-### Equivalent to:
+# What if we want to call `a` for each input?
+''.join(map(a, 'nnnnnnnn'))
 
-result = ''.join(map(a, 'nnnnnnnn'))
+batman = mmap(a) | ''.join
+
+print(f'{batman("nnnnnnnn")} batman!') # nananananananana batman!
+
 
