@@ -1,36 +1,47 @@
 import operator
+import unittest
 
 from metafunctions.core import FunctionMerge
 from metafunctions.core import SimpleFunction
 from metafunctions.tests.util import BaseTestCase
 from metafunctions.operators import concat
+from metafunctions import exceptions
+from metafunctions.util import node, star
 
 
 class TestUnit(BaseTestCase):
     def test_str(self):
-        c = FunctionMerge(operator.add, (a, b))
-        self.assertEqual(str(c), '(a + b)')
-        self.assertEqual(repr(c), f'FunctionMerge({operator.add}, {(a, b)})')
+        cmp = FunctionMerge(operator.add, (a, b))
+        self.assertEqual(str(cmp), '(a + b)')
+        self.assertEqual(repr(cmp), f'FunctionMerge({operator.add}, {(a, b)})')
 
     def test_call(self):
-        c = FunctionMerge(operator.add, (a, b))
-        self.assertEqual(c('_'), '_a_b')
+        cmp = FunctionMerge(operator.add, (a, b))
+        self.assertEqual(cmp('_'), '_a_b')
+        self.assertEqual(cmp('-', '_'), '-a_b')
+        with self.assertRaises(exceptions.CallError):
+            cmp('_', '_', '_')
+
+        @SimpleFunction
+        def d():
+            return 'd'
+        abd = a & b & d
+        self.assertEqual(abd('-', '_'), ('-a', '_b', 'd'))
 
     def test_format(self):
-        c = FunctionMerge(operator.add, (a, b), function_join_str='tacos')
-        self.assertEqual(str(c), '(a tacos b)')
+        cmp = FunctionMerge(operator.add, (a, b), function_join_str='tacos')
+        self.assertEqual(str(cmp), '(a tacos b)')
 
     def test_non_binary(self):
-        # I don't currently have any non binary functionMerges, but they're designed to be possible
-        def concat(*args):
+        def my_concat(*args):
             return ''.join(args)
 
-        c = FunctionMerge(concat, (a, a, a, a))
-        self.assertEqual(c('_'), '_a_a_a_a')
+        cmp = FunctionMerge(my_concat, (a, a, a, a))
+        self.assertEqual(cmp('_'), '_a_a_a_a')
 
-        self.assertEqual(str(c), f'(a {concat} a {concat} a {concat} a)')
+        self.assertEqual(str(cmp), f'(a {my_concat} a {my_concat} a {my_concat} a)')
 
-        d = FunctionMerge(concat, (b, b), function_join_str='q')
+        d = FunctionMerge(my_concat, (b, b), function_join_str='q')
         self.assertEqual(str(d), '(b q b)')
 
     def test_join(self):
@@ -45,6 +56,9 @@ class TestUnit(BaseTestCase):
         #__rand__ works too
         a_ = 'sweet as' & a
         self.assertEqual(a_('+'), ('sweet as', '+a'))
+
+        abc = (a & (b & c)) | ''.join
+        self.assertEqual(abc('_'), '_a_b_c')
 
 
     def test_combine(self):
@@ -73,13 +87,45 @@ class TestUnit(BaseTestCase):
         self.assertEqual(str(abba_), '((a + b) <> (b + a))')
         self.assertEqual(repr(abba_), f"FunctionMerge({custom}, {(add, also_add)})")
 
-        def concat(*args):
+        def my_concat(*args):
             return ''.join(args)
-        bb = FunctionMerge(concat, (b, b), function_join_str='q')
-        aa = FunctionMerge(concat, (a, a), function_join_str='q')
-        bbaa = FunctionMerge.combine(concat, bb, aa, function_join_str='q')
+        bb = FunctionMerge(my_concat, (b, b), function_join_str='q')
+        aa = FunctionMerge(my_concat, (a, a), function_join_str='q')
+        bbaa = FunctionMerge.combine(my_concat, bb, aa, function_join_str='q')
         self.assertEqual(str(bbaa), '(b q b q a q a)')
-        self.assertEqual(repr(bbaa), f"FunctionMerge({concat}, {(b, b, a, a)})")
+        self.assertEqual(repr(bbaa), f"FunctionMerge({my_concat}, {(b, b, a, a)})")
+
+    def test_len_mismatch(self):
+        # If len(inputs) <= len(functions), call remaining functions with  no args.
+        @node
+        def f(x=None):
+            if x:
+                return x + 'f'
+            return 'F'
+
+        cmp = (a & b) | star(f&f&f&f)
+        self.assertEqual(cmp('_'), ('_af', '_bf', 'F', 'F'))
+
+        # if len(inputs) > len(functions), fail.
+        cmp = (a & b & c) | star(f+f)
+        with self.assertRaises(exceptions.CallError):
+            cmp('_')
+
+    @unittest.skip('TODO')
+    def test_binary_functions(self):
+        # The issue here is that f + f + f + f is not converted to a single FunctionMerge. Rather
+        # it becomes nested FunctionMerges: (((f + f) + f) + f). Ideally we would be able to
+        # handle this. One potential solution is to 'flatten' the FunctionMerge, but this doesn't
+        # work for functions that aren't commutative. E.g., (a / b / c) != (a / (b / c)). I'm
+        # leaving this test for now as a todo.
+        @node
+        def f(x=None):
+            if x:
+                return x + 'f'
+            return 'F'
+
+        cmp = (a & b) | star(f+f+f+f)
+        self.assertEqual(cmp('_'), '_af_bfFF')
 
 
 @SimpleFunction
@@ -88,4 +134,7 @@ def a(x):
 @SimpleFunction
 def b(x):
     return x + 'b'
+@node
+def c(x):
+    return x + 'c'
 l = SimpleFunction(lambda x: x + 'l')

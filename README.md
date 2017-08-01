@@ -1,6 +1,6 @@
 # MetaFunctions
 [![Build Status](https://travis-ci.org/ForeverWintr/metafunctions.svg?branch=master)](https://travis-ci.org/ForeverWintr/metafunctions) [![Codecov](https://codecov.io/gh/ForeverWintr/metafunctions/coverage.svg?branch=master)](https://codecov.io/gh/ForeverWintr/metafunctions)
-## Metafunctions is a function composition and data pipelining library. 
+## Metafunctions is a function composition and data pipelining library.
 It allows for data pipeline creation separate from execution, so instead of writing:
 
 ```python
@@ -26,14 +26,14 @@ Well you may not *need* a new syntax, but the ability to compose a data pipeline
   ```python
   # load, parse, clean, validate, and format are functions
   preprocess = load | parse | clean | validate | format
-  
+
   # preprocess is now a MetaFunction, and can be reused
   clean_data1 = preprocess('path/to/data/file')
   clean_data2 = preprocess('path/to/different/file')
-  
+
   # Preprocess can be included in larger pipelines
   pipeline = preprocess | step1 | step2 | step3
-  ```  
+  ```
 * **Readability**. `step1 | step2 | step3` is both read and executed from left to right, unlike `step3(step2(step1()))`, which is executed from innermost function outwards.
 * **Inspection**. Can't remember what your MetaFunction does? `str` will tell you:
   ```python
@@ -52,7 +52,7 @@ Well you may not *need* a new syntax, but the ability to compose a data pipeline
 
 ## How does it work?
 
-Conceptually, a MetaFunction is a function that contains other functions. When you call a MetaFunction, the MetaFunction calls the functions it contains. 
+Conceptually, a MetaFunction is a function that contains other functions. When you call a MetaFunction, the MetaFunction calls the functions it contains.
 
 You can create a MetaFunction using the `node` decorator:
 ```python
@@ -92,12 +92,12 @@ MetaFunctions are also capable of upgrading regular functions to MetaFunctions a
 
 ### Helpful Tracebacks
 
-Errors in composed functions can be confusing. If an exception occurs in a MetaFunction, the exception traceback will tell you which function the exception occurred in. But what if that function appears multiple times in the data pipeline? 
+Errors in composed functions can be confusing. If an exception occurs in a MetaFunction, the exception traceback will tell you which function the exception occurred in. But what if that function appears multiple times in the data pipeline?
 
 Imagine this function, which downloads stringified numeric data from a web api:
 
 ```python
->>> compute_value = (query_volume | float) * (query_price | float) 
+>>> compute_value = (query_volume | float) * (query_price | float)
 >>> compute_value('http://prices.com/123')
 ```
 
@@ -108,7 +108,7 @@ Here we've assumed that `query_volume` and `query_price` will return strings tha
 Traceback (most recent call last):
   File "<stdin>", line 1, in <module>
   ...
-builtins.ValueError: could not convert string to float: '$800' 
+builtins.ValueError: could not convert string to float: '$800'
 ```
 
 We can deduce that float conversion failed, but *which* float function raised the exception? MetaFunctions address this by adding a locater string to any exception raised within the pipeline:
@@ -118,27 +118,68 @@ We can deduce that float conversion failed, but *which* float function raised th
 Traceback (most recent call last):
   File "<stdin>", line 1, in <module>
   ...
-builtins.ValueError: could not convert string to float: '$800' 
+builtins.ValueError: could not convert string to float: '$800'
 Occured in the following function: ((query_volume | float) + (query_price | ->float<-))
 ```
 
-*Note:* This behavior can be disabled by specifying `modify_tracebacks=False` in the `node` decorator. 
+*Note:* This behavior can be disabled by specifying `modify_tracebacks=False` in the `node` decorator.
 
-### Concurrency (*experimental*)
+### Advanced Pipeline Construction Tools
 
-Consider the following long running MetaFunction:
+Metafunctions provides utilities for constructing advanced function pipelines.
 
-```python
-process_companies = get_company_data | filter | process
-process_customers = get_customer_data | filter | process
+* **store** / **recall**: store the output of the preceding function, and recall it later to pass to a different function. For example:
+  
+  ```python
+  # The following pipeline sends the output of `a` to both `b` and `c`
+  p = a | store('a') | b | recall('a') + c
+  ```
 
-do_large_calculation = process_companies + process_customers
-```
+* **mmap**: A MetaFunction decorator that wraps a function (or MetaFunction) and calls it once per item in the input it receives. This allows you to  create loops in function pipelines:
+  
+  ```python
+  (1, 2, 3) | mmap(process) # <- equivalent to (1, 2, 3) | (process & process & process)
+  ```
+  `mmap` duplicates the behaviour of the builtin [`map`](https://docs.python.org/3/library/functions.html#map) function.
 
-Assuming the component functions in the `do_large_calculation` MetaFunction follow good functional practices and do not have side effects, it's easy to see that `process_companies` and `process_customers` are independent of each other. If that's the case, we can safely execute them in parallel. `metafunctions`' `concurrent` function allows you to specify steps in the function pipeline to execute in parallel:
+* **star**: Calls the wrapped MetaFunction with *args instead of args (It's analogous to `lambda args, **kwargs: metafunction(*args, **kwargs)`). This allows you to incorporate functions that accept more than one parameter into your function pipeline:
 
-```python
-do_large_calculation_async = concurrent(process_companies + process_customers)
-```
+  ```python
+  @node
+  def f(result1, result2):
+      ...
 
+  # When cmp is called, f will receive the results of both a and b as positional args
+  cmp = (a & b) | star(f)
+  ```
+  `star` can be combined with the above `mmap` to duplicate the behaviour of [`itertools.starmap`](https://docs.python.org/3/library/itertools.html#itertools.starmap): 
 
+  ```python
+  starmap = star(map(f))
+  ```
+
+  For more discussion of `star`, see [this pull request](https://github.com/ForeverWintr/metafunctions/pull/9)
+
+* **concurrent**:
+  *experimental, requires an os that provides `os.fork()`*
+
+  Consider the following long running MetaFunction:
+
+  ```python
+  process_companies = get_company_data | filter | process
+  process_customers = get_customer_data | filter | process
+
+  do_large_calculation = process_companies + process_customers
+  ```
+
+  Assuming the component functions in the `do_large_calculation` MetaFunction follow good functional practices and do not have side effects, it's easy to see that `process_companies` and `process_customers` are independent of each other. If that's the case, we can safely execute them in parallel. `metafunctions`' `concurrent` function allows you to specify steps in the function pipeline to execute in parallel:
+
+  ```python
+  do_large_calculation_async = concurrent(process_companies + process_customers)
+  ```
+
+  `concurrent` can be combined with `mmap` to create an asynchronous map, similar to [`multiprocessing.pool.map`](https://docs.python.org/3/library/multiprocessing.html#multiprocessing.pool.Pool.map): 
+  
+  ```python
+  map_async = concurrent(mmap(f))
+  ```

@@ -1,13 +1,14 @@
-import operator
 import typing as tp
 import abc
+import itertools
 import functools
 
 
 from metafunctions.core._decorators import binary_operation
 from metafunctions.core._decorators import inject_call_state
 from metafunctions.core._call_state import CallState
-from metafunctions.operators import concat
+from metafunctions import operators
+from metafunctions import exceptions
 
 
 class MetaFunction(metaclass=abc.ABCMeta):
@@ -61,51 +62,53 @@ class MetaFunction(metaclass=abc.ABCMeta):
 
     @binary_operation
     def __and__(self, other):
-        return FunctionMerge.combine(concat, self, other)
+        return FunctionMerge.combine(operators.concat, self, other)
 
     @binary_operation
     def __rand__(self, other):
-        return FunctionMerge.combine(concat, other, self)
+        return FunctionMerge.combine(operators.concat, other, self)
 
     @binary_operation
     def __add__(self, other):
-        return FunctionMerge(operator.add, (self, other))
+        return FunctionMerge(operators.add, (self, other))
 
     @binary_operation
     def __radd__(self, other):
-        return FunctionMerge(operator.add, (other, self))
+        return FunctionMerge(operators.add, (other, self))
 
     @binary_operation
     def __sub__(self, other):
-        return FunctionMerge(operator.sub, (self, other))
+        return FunctionMerge(operators.sub, (self, other))
 
     @binary_operation
     def __rsub__(self, other):
-        return FunctionMerge(operator.sub, (other, self))
+        return FunctionMerge(operators.sub, (other, self))
 
     @binary_operation
     def __mul__(self, other):
-        return FunctionMerge(operator.mul, (self, other))
+        return FunctionMerge(operators.mul, (self, other))
 
     @binary_operation
     def __rmul__(self, other):
-        return FunctionMerge(operator.mul, (other, self))
+        return FunctionMerge(operators.mul, (other, self))
 
     @binary_operation
     def __truediv__(self, other):
-        return FunctionMerge(operator.truediv, (self, other))
+        return FunctionMerge(operators.truediv, (self, other))
 
     @binary_operation
     def __rtruediv__(self, other):
-        return FunctionMerge(operator.truediv, (other, self))
+        return FunctionMerge(operators.truediv, (other, self))
 
     @binary_operation
     def __matmul__(self, other):
-        return BroadcastChain.combine(self, other)
+        from metafunctions.util import star
+        return FunctionChain.combine(self, star(other))
 
     @binary_operation
     def __rmatmul__(self, other):
-        return BroadcastChain.combine(other, self)
+        from metafunctions.util import star
+        return FunctionChain.combine(other, star(self))
 
 
 class FunctionChain(MetaFunction):
@@ -141,34 +144,35 @@ class FunctionChain(MetaFunction):
         return cls(*new_funcs)
 
 
-class BroadcastChain(FunctionChain):
-    _function_join_str = '@'
-
-    @inject_call_state
-    def __call__(self, *args, **kwargs):
-        f_iter = iter(self._functions)
-        result = next(f_iter)(*args, **kwargs)
-        for f in f_iter:
-            result = f(*result, **kwargs)
-        return result
-
-
 class FunctionMerge(MetaFunction):
     _character_to_operator = {
-        '+': operator.add,
-        '-': operator.sub,
-        '*': operator.mul,
-        '/': operator.truediv,
-        '&': concat,
+        '+': operators.add,
+        '-': operators.sub,
+        '*': operators.mul,
+        '/': operators.truediv,
+        '&': operators.concat,
     }
     _operator_to_character = {v: k for k, v in _character_to_operator.items()}
 
     def __init__(self, merge_func:tp.Callable, functions:tuple, function_join_str=''):
-        '''A FunctionMerge merges its functions by executing all of them and passing their results to `merge_func`
+        '''
+        A FunctionMerge merges its functions by executing all of them and passing their results to
+        `merge_func`.
+
+        Behaviour of __call__:
+
+        FunctionMerge does not pass all positional arguments to all of its functions. Rather, given
+        `f=FunctionMerge()` when f is called with `f(*args)`,
+
+        * if len(args) == 1, each component function is called with args[0]
+        * if len(args) > 1 <= len(functions), function n is called with arg n. Any remaining
+        functions after all args have been exhausted are called with no args.
+        * if len(args) < len(functions), a MetaFunction CallError is raised.
 
         Args:
             function_join_str: If you're using a `merge_func` that is not one of the standard operator
-            functions, use this argument to provide a custom character to use in string formatting. If not provided, we default to using str(merge_func).
+            functions, use this argument to provide a custom character to use in string formatting. If
+            not provided, we default to using str(merge_func).
         '''
         super().__init__()
         self._merge_func = merge_func
@@ -178,7 +182,18 @@ class FunctionMerge(MetaFunction):
 
     @inject_call_state
     def __call__(self, *args, **kwargs):
-        results = (f(*args, **kwargs) for f in self.functions)
+        args_iter, func_iter = self._get_call_iterators(args)
+
+        results = []
+        # Note that args_iter appears first in the zip. This is because I know its len is <=
+        # len(func_iter) (I asserted so above). In zip, if the first iterator is longer than the
+        # second, the first will be advanced one extra time, because zip has already called next()
+        # on the first iterator before discovering that the second has been exhausted.
+        for arg, f in zip(args_iter, func_iter):
+            results.append(self._call_function(f, (arg, ), kwargs))
+
+        #Any extra functions are called with no input
+        results.extend([self._call_function(f, (), kwargs) for f in func_iter])
         return self._merge_func(*results)
 
     def __repr__(self):
@@ -190,7 +205,8 @@ class FunctionMerge(MetaFunction):
         them into a single FunctionMerge.
 
         NOTE: combine does not check to make sure the merge_func can accept the new number of
-        arguments.
+        arguments, or that combining is appropriate for the operator. (e.g., it is inappropriate to
+        combine FunctionMerges where order of operations matter. 5 / 2 / 3 != 5 / (2 / 3))
         '''
         new_funcs = []
         for f in funcs:
@@ -200,9 +216,32 @@ class FunctionMerge(MetaFunction):
                 new_funcs.append(f)
         return cls(merge_func, tuple(new_funcs), function_join_str=function_join_str)
 
+    def _get_call_iterators(self, args):
+        '''Do length checking and return (`args_iter`, `call_iter`), iterables of arguments and
+        self.functions. Call them using zip. Note that len(args) can be less than
+        len(self.functions), and remaining functions should be called with no argument.
+        '''
+        args_iter = iter(args)
+        func_iter = iter(self.functions)
+        if len(args) > len(self.functions):
+            raise exceptions.CallError(
+                    f'{self} takes 1 or <= {len(self.functions)} '
+                    f'arguments, but {len(args)} were given')
+        if len(args) == 1:
+            args_iter = itertools.repeat(next(args_iter))
+
+        return args_iter, func_iter
+
+    def _call_function(self, f, args:tuple, kwargs:dict):
+        '''This function receives one function, and the args and kwargs that should be used to call
+        that function. It returns the result of the function call. This gets its own method so that
+        subclasses can customize its behaviour.
+        '''
+        return f(*args, **kwargs)
+
 
 class SimpleFunction(MetaFunction):
-    def __init__(self, function, print_location_in_traceback=True):
+    def __init__(self, function, name=None, print_location_in_traceback=True):
         '''A MetaFunction-aware wrapper around a single function
         The `bind` parameter causes us to pass a meta object as the first argument to our inherited function, but it is only respected if the wrapped function is not another metafunction.
         '''
@@ -215,6 +254,7 @@ class SimpleFunction(MetaFunction):
         super().__init__()
         self._function = function
         self.add_location_to_traceback = print_location_in_traceback
+        self._name = name or getattr(function, '__name__', False) or str(function)
 
     @inject_call_state
     def __call__(self, *args, call_state, **kwargs):
@@ -230,12 +270,7 @@ class SimpleFunction(MetaFunction):
         return f'{self.__class__.__name__}({self.functions[0]!r})'
 
     def __str__(self):
-        try:
-            return self.__name__
-        except AttributeError:
-            # We're usually wrapping a function, but it's possible we're wrapping another
-            # metafunction
-            return str(self.functions[0])
+        return self._name
 
     @property
     def functions(self):
@@ -245,9 +280,8 @@ class SimpleFunction(MetaFunction):
         if self.add_location_to_traceback:
             from metafunctions.util import highlight_current_function
             detailed_message = str(e)
-            if call_state:
-                detailed_message = f"{str(e)} \n\nOccured in the following function: {highlight_current_function(call_state)}"
-            raise type(e)(detailed_message).with_traceback(e.__traceback__) from e
+            detailed_message = f"{str(e)} \n\nOccured in the following function: {highlight_current_function(call_state)}"
+            raise type(e)(detailed_message).with_traceback(e.__traceback__)
         raise
 
 
@@ -256,7 +290,7 @@ class DeferredValue(SimpleFunction):
         '''A simple Deferred Value. Returns `value` when called. Equivalent to lambda x: x.
         '''
         self._value = value
-        self.__name__ = repr(value)
+        self._name = repr(value)
 
     def __call__(self, *args, **kwargs):
         return self._value
