@@ -52,14 +52,7 @@ class TestUnit(BaseTestCase):
             cmp(1)
         self.assertTrue(e.exception.args[0].endswith('(fail | (->fail<- + a))'))
 
-
     def test_highlight_with_map(self):
-        self.fail('todo')
-
-    def test_location_from_shared_state(self):
-        # If multiple functions share the same call_state, how do we construct a meaninful location
-        # string?
-
         self.fail('todo')
 
     def test_raise_with_call_state(self):

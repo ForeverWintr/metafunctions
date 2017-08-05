@@ -195,6 +195,25 @@ class TestIntegration(BaseTestCase):
         #this works if we provide our own call_state too.
         self.assertEqual(cmp(1, call_state=CallState()), 3)
 
+    def test_consistent_meta_with_shared_state(self):
+        @node
+        @bind_call_state
+        def f(call_state, expected):
+            self.assertIs(call_state._meta_entry, expected)
+            return expected
+
+        cmpa = f & f
+        cmpb = f | f | f
+
+        cmpa(cmpa)
+        cmpb(cmpb)
+
+        state = CallState()
+        cmpa(cmpa, call_state=state)
+        self.assertListEqual(state._called_functions, [f, f])
+        cmpb(cmpb, call_state=state)
+        self.assertListEqual(state._called_functions, [f, f, f])
+
     def test_defaults(self):
         '''
         If you specify defaults in nodes, they are respected.
