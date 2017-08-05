@@ -24,8 +24,14 @@ def inject_call_state(call_method):
     @wraps(call_method)
     def with_call_state(self, *args, **kwargs):
         call_state = kwargs.setdefault('call_state', self.new_call_state())
-        if call_state._meta_entry is None:
+        if not call_state._is_active:
             call_state._meta_entry = self
+            call_state._called_functions = []
+            call_state._is_active = True
+            try:
+                return call_method(self, *args, **kwargs)
+            finally:
+                call_state._is_active = False
         return call_method(self, *args, **kwargs)
     return with_call_state
 

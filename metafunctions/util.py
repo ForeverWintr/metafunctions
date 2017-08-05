@@ -2,6 +2,7 @@
 import os
 import sys
 import re
+import contextlib
 
 import colors
 
@@ -20,7 +21,8 @@ def _system_supports_color():
 
 
 def highlight_current_function(call_state, color=colors.red, use_color=_system_supports_color()):
-    '''Return a formatted string showing the location of the currently active function in call_state.
+    '''Return a formatted string showing the location of the most recently called function in
+    call_state.
 
     Consider this a 'you are here' when called from within a function pipeline.
     '''
@@ -39,3 +41,4 @@ def highlight_current_function(call_state, color=colors.red, use_color=_system_s
 
     highlighted_string = re.sub(regex, fr'\1{highlighted_name}\2', str(call_state._meta_entry))
     return highlighted_string
+
