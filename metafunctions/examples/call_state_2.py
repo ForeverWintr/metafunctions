@@ -47,8 +47,6 @@ assert r('x', call_state=call_state) == 'xxa@x@w_w_wxc@x@a_x_wxw@w@c_x_axx@w@w_w
 
 
 
-
-
 #f = fpn.call(p, q, r)
 from operator import itemgetter
 f = (p & q & r) | itemgetter(-1)

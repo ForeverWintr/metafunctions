@@ -36,6 +36,6 @@ assert f('*') == '+*a@b@c_+_a*b@c@+_a_b*c@'
 
 # Or perhaps more clearly
 g =  a | cat('b') | cat('c') * 3 | replace_init('+')
-f2 =  (g & h) @ interleave
+f2 =  (g & h) | interleave
 
 assert f2('*') == '+*a@b@c_+_a*b@c@+_a_b*c@'
