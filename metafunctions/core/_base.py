@@ -102,12 +102,12 @@ class MetaFunction(metaclass=abc.ABCMeta):
 
     @binary_operation
     def __matmul__(self, other):
-        from metafunctions.util import star
+        from metafunctions.api import star
         return FunctionChain.combine(self, star(other))
 
     @binary_operation
     def __rmatmul__(self, other):
-        from metafunctions.util import star
+        from metafunctions.api import star
         return FunctionChain.combine(other, star(self))
 
 

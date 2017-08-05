@@ -2,7 +2,8 @@ from unittest import mock
 import functools
 
 from metafunctions.tests.util import BaseTestCase
-from metafunctions.util import store, recall, node, highlight_current_function, bind_call_state
+from metafunctions.api import store, recall, node, bind_call_state
+from metafunctions.util import highlight_current_function
 from metafunctions.core import SimpleFunction, CallState
 
 

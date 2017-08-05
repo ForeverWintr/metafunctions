@@ -4,8 +4,8 @@ import functools
 import itertools
 
 from metafunctions.tests.util import BaseTestCase
-from metafunctions.util import node
-from metafunctions.util import bind_call_state
+from metafunctions.api import node
+from metafunctions.api import bind_call_state
 from metafunctions.util import highlight_current_function
 from metafunctions.core import CallState
 

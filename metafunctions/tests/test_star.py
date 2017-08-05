@@ -1,6 +1,6 @@
 import unittest
 
-from metafunctions.util import node, star, concurrent
+from metafunctions.api import node, star, concurrent
 from metafunctions import exceptions
 from metafunctions.tests.util import BaseTestCase
 

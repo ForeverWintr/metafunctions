@@ -5,13 +5,13 @@ import functools
 import colors
 
 from metafunctions.tests.util import BaseTestCase
-from metafunctions.util import node
-from metafunctions.util import bind_call_state
+from metafunctions.api import node
+from metafunctions.api import bind_call_state
 from metafunctions.util import highlight_current_function
-from metafunctions.util import concurrent
-from metafunctions.util import mmap
-from metafunctions.util import store
-from metafunctions.util import star
+from metafunctions.api import concurrent
+from metafunctions.api import mmap
+from metafunctions.api import store
+from metafunctions.api import star
 from metafunctions.concurrent import ConcurrentMerge
 from metafunctions import operators
 from metafunctions.core import CallState

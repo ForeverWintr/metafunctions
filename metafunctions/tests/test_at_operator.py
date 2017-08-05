@@ -1,4 +1,4 @@
-from metafunctions.util import node
+from metafunctions.api import node
 from metafunctions.tests.util import BaseTestCase
 
 

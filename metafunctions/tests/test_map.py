@@ -1,8 +1,8 @@
 
 from metafunctions.tests.util import BaseTestCase
-from metafunctions.util import node
-from metafunctions.util import star
-from metafunctions.util import mmap
+from metafunctions.api import node
+from metafunctions.api import star
+from metafunctions.api import mmap
 from metafunctions.map import MergeMap
 from metafunctions import operators
 
