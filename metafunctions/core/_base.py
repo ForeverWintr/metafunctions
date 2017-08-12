@@ -261,10 +261,7 @@ class SimpleFunction(MetaFunction):
         call_state._called_functions.append(self)
         if getattr(self._function, '_receives_call_state', False):
             kwargs['call_state'] = call_state
-        try:
-            return self._function(*args, **kwargs)
-        except Exception as e:
-            self._handle_exception(call_state, e)
+        return self._function(*args, **kwargs)
 
     def __repr__(self):
         return f'{self.__class__.__name__}({self.functions[0]!r})'
@@ -275,14 +272,6 @@ class SimpleFunction(MetaFunction):
     @property
     def functions(self):
         return (self._function, )
-
-    def _handle_exception(self, call_state, e):
-        if self.add_location_to_traceback:
-            from metafunctions.util import highlight_current_function
-            detailed_message = str(e)
-            detailed_message = f"{str(e)} \n\nOccured in the following function: {highlight_current_function(call_state)}"
-            raise type(e)(detailed_message).with_traceback(e.__traceback__)
-        raise
 
 
 class DeferredValue(SimpleFunction):
