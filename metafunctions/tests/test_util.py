@@ -66,12 +66,12 @@ class TestUnit(BaseTestCase):
 
         cmp = a + b | c & fail & fail
 
-        with traceback_from_call_state() as state:
-            with self.assertRaises(ZeroDivisionError) as e:
+        with self.assertRaises(ZeroDivisionError) as e:
+            with traceback_from_call_state() as state:
                 cmp('x', call_state=state)
         self.assertEqual(str(e.exception),
                 'division by zero \n\nOccured in the following function: ((a + b) | (c & ->fail<- & fail))')
-        self.fail('todo')
+
 
 @node
 def a(x):

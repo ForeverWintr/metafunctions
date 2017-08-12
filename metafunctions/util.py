@@ -53,4 +53,6 @@ def traceback_from_call_state(call_state=None):
     try:
         yield call_state
     except Exception as e:
-        raise
+        detailed_message = str(e)
+        detailed_message = f"{str(e)} \n\nOccured in the following function: {highlight_current_function(call_state)}"
+        raise type(e)(detailed_message).with_traceback(e.__traceback__)
