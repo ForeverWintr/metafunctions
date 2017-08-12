@@ -5,7 +5,7 @@ import functools
 
 
 from metafunctions.core._decorators import binary_operation
-from metafunctions.core._decorators import inject_call_state
+from metafunctions.core._decorators import manage_call_state
 from metafunctions.core._call_state import CallState
 from metafunctions import operators
 from metafunctions import exceptions
@@ -120,7 +120,7 @@ class FunctionChain(MetaFunction):
         super().__init__()
         self._functions = functions
 
-    @inject_call_state
+    @manage_call_state
     def __call__(self, *args, **kwargs):
         f_iter = iter(self._functions)
         result = next(f_iter)(*args, **kwargs)
@@ -180,7 +180,7 @@ class FunctionMerge(MetaFunction):
         self._function_join_str = function_join_str or self._operator_to_character.get(
                 merge_func, str(merge_func))
 
-    @inject_call_state
+    @manage_call_state
     def __call__(self, *args, **kwargs):
         args_iter, func_iter = self._get_call_iterators(args)
 
@@ -255,7 +255,7 @@ class SimpleFunction(MetaFunction):
         self._function = function
         self._name = name or getattr(function, '__name__', False) or str(function)
 
-    @inject_call_state
+    @manage_call_state
     def __call__(self, *args, call_state, **kwargs):
         call_state._called_functions.append(self)
         if getattr(self._function, '_receives_call_state', False):

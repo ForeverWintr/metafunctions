@@ -6,7 +6,7 @@ import functools
 import pickle
 
 from metafunctions.core import FunctionMerge
-from metafunctions.core import inject_call_state
+from metafunctions.core import manage_call_state
 from metafunctions import exceptions
 
 # Result tuple to be sent back from workers. Defined at module level for eas of pickling
@@ -35,7 +35,7 @@ class ConcurrentMerge(FunctionMerge):
         merge_name = str(self._function_merge)
         return f'concurrent{merge_name}' if merge_name.startswith('(') else f'concurrent({merge_name})'
 
-    @inject_call_state
+    @manage_call_state
     def __call__(self, *args, **kwargs):
         '''We fork here, and execute each function in a child process before joining the results
         with _merge_func

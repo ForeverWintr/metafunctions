@@ -17,7 +17,7 @@ def binary_operation(method):
     return new_operation
 
 
-def inject_call_state(call_method):
+def manage_call_state(call_method):
     '''Decorates the call method to insure call_state is present in kwargs, or create a new one.
     If the call state isn't active, we assume we are the meta entry point.
     '''
@@ -30,6 +30,9 @@ def inject_call_state(call_method):
             call_state._is_active = True
             try:
                 return call_method(self, *args, **kwargs)
+            except Exception as e:
+                call_state._exception = e
+                raise
             finally:
                 call_state._is_active = False
         return call_method(self, *args, **kwargs)
