@@ -19,7 +19,7 @@ def binary_operation(method):
 
 def inject_call_state(call_method):
     '''Decorates the call method to insure call_state is present in kwargs, or create a new one.
-    If the call state doesn't have a meta entry point set, we assume we are the meta entry point.
+    If the call state isn't active, we assume we are the meta entry point.
     '''
     @wraps(call_method)
     def with_call_state(self, *args, **kwargs):

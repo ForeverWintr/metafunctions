@@ -6,6 +6,8 @@ import contextlib
 
 import colors
 
+from metafunctions.core import CallState
+
 def _system_supports_color():
     """
     Returns True if the running system's terminal supports color, and False otherwise. Originally
@@ -42,3 +44,13 @@ def highlight_current_function(call_state, color=colors.red, use_color=_system_s
     highlighted_string = re.sub(regex, fr'\1{highlighted_name}\2', str(call_state._meta_entry))
     return highlighted_string
 
+
+@contextlib.contextmanager
+def traceback_from_call_state(call_state=None):
+    if call_state is None:
+        call_state = CallState()
+
+    try:
+        yield call_state
+    except Exception as e:
+        raise
