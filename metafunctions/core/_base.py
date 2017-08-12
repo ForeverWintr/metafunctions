@@ -241,7 +241,7 @@ class FunctionMerge(MetaFunction):
 
 
 class SimpleFunction(MetaFunction):
-    def __init__(self, function, name=None, print_location_in_traceback=True):
+    def __init__(self, function, name=None):
         '''A MetaFunction-aware wrapper around a single function
         The `bind` parameter causes us to pass a meta object as the first argument to our inherited function, but it is only respected if the wrapped function is not another metafunction.
         '''
@@ -253,7 +253,6 @@ class SimpleFunction(MetaFunction):
 
         super().__init__()
         self._function = function
-        self.add_location_to_traceback = print_location_in_traceback
         self._name = name or getattr(function, '__name__', False) or str(function)
 
     @inject_call_state

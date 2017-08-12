@@ -18,14 +18,12 @@ from metafunctions.map import MergeMap
 from metafunctions import operators
 
 
-def node(_func=None, *, name=None, modify_tracebacks=True):
+def node(_func=None, *, name=None):
     '''Turn the decorated function into a MetaFunction.
 
     Args:
         _func: Internal use. This will be the decorated function if node is used as a decorator
         with no params.
-        modify_tracebacks: If true, exceptions raised in composed functions have a string appended
-        to them describing the location of the function in the function chain.
 
     Usage:
 
@@ -34,7 +32,7 @@ def node(_func=None, *, name=None, modify_tracebacks=True):
        <do something cool>
     '''
     def decorator(function):
-        newfunc = SimpleFunction(function, name=name, print_location_in_traceback=modify_tracebacks)
+        newfunc = SimpleFunction(function, name=name)
         return newfunc
     if not _func:
         return decorator

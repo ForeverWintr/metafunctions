@@ -47,6 +47,8 @@ def highlight_current_function(call_state, color=colors.red, use_color=_system_s
 
 @contextlib.contextmanager
 def traceback_from_call_state(call_state=None):
+    '''This context manager monitors a call_state for exceptions, and attaches a message detailing the location of the exception to any traceback raised by that call_state.
+    '''
     if call_state is None:
         call_state = CallState()
 
@@ -55,4 +57,6 @@ def traceback_from_call_state(call_state=None):
     except Exception as e:
         detailed_message = str(e)
         detailed_message = f"{str(e)} \n\nOccured in the following function: {highlight_current_function(call_state)}"
-        raise type(e)(detailed_message).with_traceback(e.__traceback__)
+        new_e = type(e)(detailed_message).with_traceback(e.__traceback__)
+        raise new_e
+
