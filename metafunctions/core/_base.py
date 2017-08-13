@@ -257,7 +257,6 @@ class SimpleFunction(MetaFunction):
 
     @manage_call_state
     def __call__(self, *args, call_state, **kwargs):
-        call_state._meta_stack.append(self)
         if getattr(self._function, '_receives_call_state', False):
             kwargs['call_state'] = call_state
         return self._function(*args, **kwargs)
