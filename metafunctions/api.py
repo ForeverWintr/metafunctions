@@ -16,6 +16,7 @@ from metafunctions.core import CallState
 from metafunctions.concurrent import ConcurrentMerge
 from metafunctions.map import MergeMap
 from metafunctions import operators
+from metafunctions.util import highlight_current_function
 
 
 def node(_func=None, *, name=None):
@@ -108,6 +109,23 @@ def mmap(function: tp.Callable, operator: tp.Callable=operators.concat) -> Merge
     return MergeMap(MetaFunction.make_meta(function), operator)
 
 
+def locate_error(meta_function: MetaFunction) -> SimpleFunction:
+    '''
+    Wrap the given MetaFunction with an error handler that adds location information to any
+    exception raised therein.
 
-
-
+    Usage:
+        cmp = locate_error(a | b | c)
+        cmp()
+    '''
+    def with_location(*args, call_state, **kwargs):
+        new_e = None
+        try:
+            meta_function(*args, call_state=call_state, **kwargs)
+        except Exception as e:
+            detailed_message = f"{str(e)} \n\nOccured in the following function: {highlight_current_function(call_state)}"
+            new_e = type(e)(detailed_message).with_traceback(e.__traceback__)
+        if new_e:
+            raise new_e
+    with_location._receives_call_state = True
+    return node(with_location, name=str(meta_function))

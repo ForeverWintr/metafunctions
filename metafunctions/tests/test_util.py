@@ -2,7 +2,7 @@ from unittest import mock
 import functools
 
 from metafunctions.tests.util import BaseTestCase
-from metafunctions.api import store, recall, node, bind_call_state
+from metafunctions.api import store, recall, node, bind_call_state, locate_error
 from metafunctions.util import highlight_current_function, traceback_from_call_state
 from metafunctions.core import SimpleFunction, CallState
 
@@ -72,6 +72,48 @@ class TestUnit(BaseTestCase):
         self.assertEqual(str(e.exception),
                 'division by zero \n\nOccured in the following function: ((a + b) | (c & ->fail<- & fail))')
 
+        # If the call_state used by the metafunction != the call_state used by the context manager,
+        # the exception isn't decorated
+        with self.assertRaises(ZeroDivisionError) as e:
+            with traceback_from_call_state() as state:
+                cmp('x')
+        self.assertEqual(str(e.exception),
+                'division by zero')
+
+        with_tb = traceback_from_call_state(cmp)
+        with self.assertRaises(ZeroDivisionError) as e:
+            cmp('x')
+        self.assertEqual(str(e.exception),
+                'division by zero \n\nOccured in the following function: ((a + b) | (c & ->fail<- & fail))')
+
+        self.fail()
+
+    @mock.patch('metafunctions.util.highlight_current_function')
+    def test_locate_error(self, mock_h):
+        mock_h.side_effect = functools.partial(highlight_current_function, use_color=False)
+
+        @node
+        def fail(x):
+            1 / 0
+
+        cmp = a + b | (c & fail & fail)
+        with_tb = locate_error(cmp)
+
+        with self.assertRaises(ZeroDivisionError) as e:
+            cmp('x')
+        self.assertEqual(str(e.exception), 'division by zero')
+
+        with self.assertRaises(ZeroDivisionError) as e:
+            with_tb('x')
+        self.assertEqual(str(e.exception),
+                'division by zero \n\nOccured in the following function: ((a + b) | (c & ->fail<- & fail))')
+
+        # regular calls still work
+        with_tb2 = locate_error(a|b|c)
+        self.assertEqual(with_tb2('_'), '_abc')
+
+        self.assertEqual(str(with_tb), '(a + b) | (c & fail & fail)')
+        self.assertEqual(str(with_tb2), '(a | b | c)')
 
 @node
 def a(x):

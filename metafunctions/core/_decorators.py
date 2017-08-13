@@ -30,9 +30,6 @@ def manage_call_state(call_method):
             call_state._is_active = True
             try:
                 return call_method(self, *args, **kwargs)
-            except Exception as e:
-                call_state._exception = e
-                raise
             finally:
                 call_state._is_active = False
         return call_method(self, *args, **kwargs)
