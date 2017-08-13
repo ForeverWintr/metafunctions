@@ -28,14 +28,14 @@ def highlight_current_function(call_state, color=colors.red, use_color=_system_s
 
     Consider this a 'you are here' when called from within a function pipeline.
     '''
-    last_called_f = call_state._called_functions[-1]
+    last_called_f = call_state._meta_stack[-1]
     current_name = str(last_called_f)
 
     # how many times will current_name appear in str(call_state._meta_entry)?
     # Bearing in mind that previous function names may contain current_name
     #num_occurences = sum(str(f).count(current_name) for f in call_state._called_functions)
     num_occurences = str(call_state._meta_entry).count(current_name)
-    times_called = len([f for f in call_state._called_functions if f is last_called_f])
+    times_called = len([f for f in call_state._meta_stack if f is last_called_f])
 
     # There's probably a better regex for this.
     regex = f"((?:.*?{current_name}.*?){{{num_occurences-1}}}.*?){current_name}(.*$)"

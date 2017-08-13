@@ -137,7 +137,7 @@ class TestIntegration(BaseTestCase):
 
         call_state = abc_('_')
         self.assertIsInstance(call_state, CallState)
-        self.assertListEqual(call_state._called_functions, [a, b, c, parent_test])
+        self.assertListEqual(call_state._meta_stack, [a, b, c, parent_test])
 
     @mock.patch('metafunctions.util.highlight_current_function')
     def test_pretty_exceptions(self, mock_h):
@@ -210,9 +210,9 @@ class TestIntegration(BaseTestCase):
 
         state = CallState()
         cmpa(cmpa, call_state=state)
-        self.assertListEqual(state._called_functions, [f, f])
+        self.assertListEqual(state._meta_stack, [f, f])
         cmpb(cmpb, call_state=state)
-        self.assertListEqual(state._called_functions, [f, f, f])
+        self.assertListEqual(state._meta_stack, [f, f, f])
 
     def test_defaults(self):
         '''

@@ -18,7 +18,7 @@ class TestUnit(BaseTestCase):
         @node
         @bind_call_state
         def f(call_state, x):
-            if len(call_state._called_functions) == fmt_index:
+            if len(call_state._meta_stack) == fmt_index:
                 location_string = highlight_current_function(call_state, use_color=False)
                 location_string_color = highlight_current_function(call_state, use_color=True)
                 self.assertEqual(location_string, '(a | b | ff | f | f | ->f<- | f | f)')
