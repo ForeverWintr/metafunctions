@@ -1,6 +1,9 @@
 
 from metafunctions.util import node, store, recall
 
+
+average = node(sum) / len
+
 @node
 def a(x):
     return x + 'a'
