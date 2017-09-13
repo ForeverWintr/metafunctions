@@ -131,7 +131,7 @@ Metafunctions provides utilities for constructing advanced function pipelines.
 * **store** / **recall**: store the output of the preceding function, and recall it later to pass to a different function. For example:
   
   ```python
-  # The following pipeline sends the output of `a` to both `b` and `c`
+  # The following pipeline sends the output of `a` to `b`, and also adds it to the output of `c`
   p = a | store('a') | b | recall('a') + c
   ```
 
