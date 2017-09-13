@@ -11,8 +11,12 @@ print('banana:', add_a(*'bnn')) #banana: banana
 # What if we want to call `a` for each input?
 ''.join(map(a, 'nnnnnnnn'))
 
-batman = mmap(a) | ''.join
+batman = (mmap(a) | ''.join) + ' batman!' | print
 
-print(f'{batman("nnnnnnnn")} batman!') # nananananananana batman!
+batman("nnnnnnnn") # nananananananana batman!
+
+
+
+# star(mmap(function)) -> itertools.starmap(function, ...)
 
 

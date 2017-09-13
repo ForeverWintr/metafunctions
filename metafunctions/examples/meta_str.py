@@ -5,25 +5,10 @@ from metafunctions.util import node, store, recall
 average = node(sum) / len
 
 @node
-def a(x):
-    return x + 'a'
-@node
-def b(x):
-    return x + 'b'
-@node
-def c(x):
-    return x + 'c'
+def say_hello(name):
+    return 'Hello {}!'.format(name)
 
 
-f = a | b | c
-print('f = {}'.format(f))
-input()
+greet = input | say_hello | print
 
-
-g = a + b | store('AB') | (c * 2) + recall('AB')
-print('g = {}'.format(g))
-input()
-
-
-h = f & g
-print('h = {}'.format(h))
+big_greet = input | store('name') | say_hello + (2*recall('name')) | print

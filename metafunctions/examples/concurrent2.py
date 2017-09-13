@@ -8,10 +8,10 @@ def F(n):
     else: return F(n-1)+F(n-2)
 
 
-multi_fib = mmap(F)
+multi_fib = mmap(F) | print
 
-parallel_fib = concurrent(mmap(F))
+parallel_fib = concurrent(mmap(F)) | print
 
-print(parallel_fib([30, 32, 31]))
-#print(multi_fib([30, 32, 31]))
+# parallel_fib([30, 32, 31])
+multi_fib([30, 32, 31])
 
