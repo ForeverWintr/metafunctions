@@ -24,14 +24,9 @@ def manage_call_state(call_method):
     @wraps(call_method)
     def with_call_state(self, *args, **kwargs):
         call_state = kwargs.setdefault('call_state', self.new_call_state())
-        call_state._meta_stack.append(self)
-        try:
-            return call_method(self, *args, **kwargs)
-        except Exception as e:
-            call_state.set_exception(e)
-            raise
-        finally:
-            call_state._meta_stack.pop()
+        call_state.push(self)
+        r = call_method(self, *args, **kwargs)
+        call_state.pop()
+        return r
     return with_call_state
-
 

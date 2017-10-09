@@ -34,7 +34,7 @@ class CallTree:
         '''
         # Meta entry is conceptually the root node of the call tree
         self._meta_entry = None
-        self._active_node = None
+        self.active_node = None
         self._nodes_visited = 0
 
         # A dictionary of {child: parent} functions
@@ -52,10 +52,10 @@ class CallTree:
             self._meta_entry = node
         else:
             node = self.Node(f, self._nodes_visited)
-            self._bottom_up[node] = self._active_node
-            self._horizontal[self._active_node].append(node)
+            self._bottom_up[node] = self.active_node
+            self._horizontal[self.active_node].append(node)
         self._nodes_visited += 1
-        self._active_node = node
+        self.active_node = node
 
     def pop(self):
         '''Remove last inserted f from the call tree.'''
@@ -64,10 +64,10 @@ class CallTree:
         except KeyError:
             m = self._meta_entry
             self._meta_entry = None
-            self._active_node = None
+            self.active_node = None
             return m
         self._horizontal.pop(node, None)
-        self._active_node = parent
+        self.active_node = parent
         return node[0]
 
 

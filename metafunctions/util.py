@@ -28,7 +28,7 @@ def highlight_current_function(call_state, color=colors.red, use_color=_system_s
 
     Consider this a 'you are here' when called from within a function pipeline.
     '''
-    last_called_f = call_state._meta_stack[-1]
+    last_called_f = call_state.active_node.function
     current_name = str(last_called_f)
 
     # how many times will current_name appear in str(call_state._meta_entry)?
