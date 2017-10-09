@@ -3,7 +3,7 @@ import functools
 
 from metafunctions.tests.util import BaseTestCase
 from metafunctions.api import store, recall, node, bind_call_state, locate_error
-from metafunctions.util import highlight_current_function, traceback_from_call_state
+from metafunctions.util import highlight_current_function
 from metafunctions.core import SimpleFunction, CallState
 
 

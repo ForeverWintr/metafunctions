@@ -6,7 +6,7 @@ import functools
 
 from metafunctions.core._decorators import binary_operation
 from metafunctions.core._decorators import manage_call_state
-from metafunctions.core._call_state import CallTree
+from metafunctions.core._call_state import CallState
 from metafunctions import operators
 from metafunctions import exceptions
 
@@ -49,7 +49,7 @@ class MetaFunction(metaclass=abc.ABCMeta):
 
     @staticmethod
     def new_call_state():
-        return CallTree()
+        return CallState()
 
     ### Operator overloads ###
     @binary_operation

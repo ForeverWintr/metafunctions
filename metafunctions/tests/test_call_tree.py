@@ -1,16 +1,16 @@
 from metafunctions.tests.util import BaseTestCase
 from metafunctions.api import bind_call_state
 from metafunctions.api import node
-from metafunctions.core._call_state import CallState, CallTree
+from metafunctions.core._call_state import CallState, CallState
 
 
 class TestUnit(BaseTestCase):
     def test_add_remove(self):
         # imagine these are functions
         a, b, c, d = 'a b c d'.split()
-        Node = CallTree.Node
+        Node = CallState.Node
 
-        tree = CallTree()
+        tree = CallState()
         tree.push(a)
         tree.push(a)
         self.assertEqual(tree.pop(), a)

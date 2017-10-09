@@ -1,30 +1,10 @@
+import colors
+
 from collections import namedtuple, defaultdict, OrderedDict
+from metafunctions.util import system_supports_color
+
 
 class CallState:
-    __slots__ = (
-        'data',
-        '_meta_stack',
-        '_exception',
-        '_exception_meta_stack',
-    )
-    def __init__(self):
-        '''An object for holding state during a metafunction call.'''
-        self.data = {}
-        self._meta_stack = []
-        self._exception = None
-        self._exception_meta_stack = None
-
-    def set_exception(self, exception):
-        '''
-        Called to indicate that an exception has occured on this call_state. Saves the exception,
-        as well as freezes a copy of the meta_stack where the exception occured.
-        '''
-        if exception is not self._exception:
-            self._exception = exception
-            self._exception_meta_stack = tuple(self._meta_stack)
-
-
-class CallTree:
     Node = namedtuple('Node', 'function insert_index')
     def __init__(self):
         '''
@@ -42,6 +22,7 @@ class CallTree:
 
         # A dictionary of {parent: [children]}, in call order
         self._horizontal = defaultdict(list)
+        self.data = {}
 
     def push(self, f):
         '''
@@ -70,4 +51,11 @@ class CallTree:
         self.active_node = parent
         return node[0]
 
+    def highlight_active_function(self, color=colors.red, use_color=system_supports_color()):
+        '''
+        Return a formatted string showing the location of the most recently called function in
+        call_state.
 
+        Consider this a 'you are here' when called from within a function pipeline.
+        '''
+        asdf

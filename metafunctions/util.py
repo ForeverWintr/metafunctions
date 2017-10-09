@@ -6,9 +6,8 @@ import contextlib
 
 import colors
 
-from metafunctions.core import CallState
 
-def _system_supports_color():
+def system_supports_color():
     """
     Returns True if the running system's terminal supports color, and False otherwise. Originally
     from Django, by way of StackOverflow: https://stackoverflow.com/a/22254892/1286571
@@ -22,7 +21,7 @@ def _system_supports_color():
     return True
 
 
-def highlight_current_function(call_state, color=colors.red, use_color=_system_supports_color()):
+def highlight_current_function(call_state, color=colors.red, use_color=system_supports_color()):
     '''Return a formatted string showing the location of the most recently called function in
     call_state.
 
@@ -48,18 +47,5 @@ def highlight_current_function(call_state, color=colors.red, use_color=_system_s
     return highlighted_string
 
 
-@contextlib.contextmanager
-def traceback_from_call_state(call_state=None):
-    '''This context manager monitors a call_state for exceptions, and attaches a message detailing the location of the exception to any traceback raised by that call_state.
-    '''
-    if call_state is None:
-        call_state = CallState()
 
-    try:
-        yield call_state
-    except Exception as e:
-        detailed_message = str(e)
-        detailed_message = f"{str(e)} \n\nOccured in the following function: {highlight_current_function(call_state)}"
-        new_e = type(e)(detailed_message).with_traceback(e.__traceback__)
-        raise new_e
 
