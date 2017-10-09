@@ -29,32 +29,4 @@ def replace_nth(string, substring, occurance_index: int, new_substring):
     return re.sub(regex, fr'\1{new_substring}\2', string)
 
 
-def highlight_current_function(call_state, color=colors.red, use_color=system_supports_color()):
-    '''
-    Return a formatted string showing the location of the most recently called function in
-    call_state.
-
-    Consider this a 'you are here' when called from within a function pipeline.
-    '''
-    last_called_f = call_state.active_node.function
-    current_name = str(last_called_f)
-
-    # how many times will current_name appear in str(call_state._meta_entry)?
-    # Bearing in mind that previous function names may contain current_name
-    #num_occurences = sum(str(f).count(current_name) for f in call_state._called_functions)
-    num_occurences = str(call_state._meta_entry).count(current_name)
-    times_called = len([f for f in call_state._meta_stack if f is last_called_f])
-
-    # There's probably a better regex for this.
-    regex = f"((?:.*?{current_name}.*?){{{num_occurences-1}}}.*?){current_name}(.*$)"
-
-    highlighted_name = f'->{current_name}<-'
-    if use_color:
-        highlighted_name = color(highlighted_name)
-
-    highlighted_string = re.sub(regex, fr'\1{highlighted_name}\2', str(call_state._meta_entry))
-    return highlighted_string
-
-
-
 
