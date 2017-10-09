@@ -16,7 +16,6 @@ from metafunctions.core import CallState
 from metafunctions.concurrent import ConcurrentMerge
 from metafunctions.map import MergeMap
 from metafunctions import operators
-from metafunctions.util import highlight_current_function
 
 
 def node(_func=None, *, name=None):
@@ -124,7 +123,7 @@ def locate_error(meta_function: MetaFunction) -> SimpleFunction:
             meta_function(*args, call_state=call_state, **kwargs)
         except Exception as e:
             detailed_message = (f"{str(e)} \n\nOccured in the following function: "
-                                f"{call_state.highlight_active_function}")
+                                f"{call_state.highlight_active_function()}")
             new_e = type(e)(detailed_message).with_traceback(e.__traceback__)
         if new_e:
             raise new_e

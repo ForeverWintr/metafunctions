@@ -5,9 +5,9 @@ import functools
 import colors
 
 from metafunctions.tests.util import BaseTestCase
+from metafunctions.tests.simple_nodes import *
 from metafunctions.api import node
 from metafunctions.api import bind_call_state
-from metafunctions.util import highlight_current_function
 from metafunctions.api import concurrent
 from metafunctions.api import mmap
 from metafunctions.api import store
@@ -203,10 +203,3 @@ class TestIntegration(BaseTestCase):
                 method()
 
 
-### Simple Sample Functions ###
-@node
-def a(x):
-    return x + 'a'
-@node
-def b(x):
-    return x + 'b'

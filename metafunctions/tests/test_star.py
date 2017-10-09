@@ -1,6 +1,7 @@
 import unittest
 
 from metafunctions.api import node, star, concurrent
+from metafunctions.tests.simple_nodes import *
 from metafunctions import exceptions
 from metafunctions.tests.util import BaseTestCase
 
@@ -61,13 +62,3 @@ class TestUnit(BaseTestCase):
         aabbcc = (a & b & c) | star(a+b+c)
         self.assertEqual(aabbcc('_'), '_aa_bb_cc')
 
-@node
-def a(x):
-    return x + 'a'
-@node
-def b(x):
-    return x + 'b'
-
-@node
-def c(x):
-    return x + 'c'

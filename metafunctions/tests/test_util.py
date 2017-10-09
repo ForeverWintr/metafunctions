@@ -2,6 +2,7 @@ from unittest import mock
 import functools
 
 from metafunctions.tests.util import BaseTestCase
+from metafunctions.tests.simple_nodes import *
 from metafunctions.api import store, recall, node, bind_call_state, locate_error
 from metafunctions import util
 from metafunctions.core import SimpleFunction, CallState
@@ -122,12 +123,4 @@ class TestUnit(BaseTestCase):
         new = util.replace_nth(s, 'nothere', 1, 'BB')
         self.assertEqual(new, s)
 
-@node
-def a(x):
-    return x + 'a'
-@node()
-def b(x):
-    return x + 'b'
-@node()
-def c(x):
-    return x + 'c'
+

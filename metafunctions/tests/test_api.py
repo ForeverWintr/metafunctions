@@ -2,8 +2,8 @@ from unittest import mock
 import functools
 
 from metafunctions.tests.util import BaseTestCase
+from metafunctions.tests.simple_nodes import *
 from metafunctions.api import store, recall, node, bind_call_state
-from metafunctions.util import highlight_current_function
 from metafunctions.core import SimpleFunction, CallState
 
 
@@ -76,12 +76,3 @@ class TestUnit(BaseTestCase):
         self.assertEqual(str(recall('key')), "recall('key')")
 
 
-@node
-def a(x):
-    return x + 'a'
-@node()
-def b(x):
-    return x + 'b'
-@node()
-def c(x):
-    return x + 'c'

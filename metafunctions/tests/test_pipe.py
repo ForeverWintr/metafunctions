@@ -4,9 +4,9 @@ import functools
 import itertools
 
 from metafunctions.tests.util import BaseTestCase
+from metafunctions.tests.simple_nodes import *
 from metafunctions.api import node
 from metafunctions.api import bind_call_state
-from metafunctions.util import highlight_current_function
 from metafunctions.core import CallState
 
 
@@ -327,20 +327,5 @@ class TestIntegration(BaseTestCase):
             self.assertEqual(next(gen), 'acb')
 
 
-### Simple Sample Functions ###
-@node
-def a(x):
-    return x + 'a'
-@node
-def b(x):
-    return x + 'b'
-@node
-def c(x):
-    return x + 'c'
-@node
-def d(x):
-    return x + 'd'
-@node
-def e(x):
-    return x + 'e'
+
 
