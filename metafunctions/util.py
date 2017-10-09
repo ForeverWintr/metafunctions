@@ -21,8 +21,17 @@ def system_supports_color():
     return True
 
 
+def replace_nth(string, substring, occurance_index: int, new_substring):
+    '''Return string, with the instance of substring at `occurance_index` replaced with new_substring
+    '''
+    # There's probably a better regex for this.
+    regex = f"((?:.*?{substring}.*?){{{occurance_index-1}}}.*?){substring}(.*$)"
+    return re.sub(regex, fr'\1{new_substring}\2', string)
+
+
 def highlight_current_function(call_state, color=colors.red, use_color=system_supports_color()):
-    '''Return a formatted string showing the location of the most recently called function in
+    '''
+    Return a formatted string showing the location of the most recently called function in
     call_state.
 
     Consider this a 'you are here' when called from within a function pipeline.
