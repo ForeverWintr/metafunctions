@@ -48,6 +48,26 @@ class TestUnit(BaseTestCase):
 
     def test_iter_parents(self):
         @node
+        def l(*args):
+            return []
+        @node
         @bind_call_state
-        def return_parent(cs, *args):
-            return cs._parents[cs.active_function]
+        def return_active_node(cs, *args):
+            return list(cs.iter_parents(cs.active_node))
+
+        def nodes2str(nodes):
+            return [(str(p.function), p.insert_index) for p in nodes]
+        def get_parents(f):
+            cs = CallState()
+            return nodes2str(f('', call_state=cs))
+
+        #create some crazy compositions to get parents out of
+        simple_chain = a | b | c | return_active_node
+        self.assertListEqual(get_parents(simple_chain), [(str(simple_chain), 0)])
+
+        merges = l + (l + (l + return_active_node))
+        self.assertListEqual(get_parents(merges), [
+            ('(l + return_active_node)', 4),
+            ('(l + (l + return_active_node))', 2),
+            ('(l + (l + (l + return_active_node)))', 0)])
+

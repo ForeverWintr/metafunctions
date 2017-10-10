@@ -57,7 +57,10 @@ class CallState:
         '''
         Return an iterator over all parents of this node in the tree.
         '''
-
+        parent = self._parents[node]
+        yield parent
+        if parent is not self._meta_entry:
+            yield from self.iter_parents(parent)
 
     def highlight_active_function(self, color=colors.red, use_color=util.system_supports_color()):
         '''
