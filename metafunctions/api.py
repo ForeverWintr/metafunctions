@@ -13,6 +13,7 @@ from metafunctions.core import MetaFunction
 from metafunctions.core import SimpleFunction
 from metafunctions.core import FunctionMerge
 from metafunctions.core import CallState
+from metafunctions import util
 from metafunctions.concurrent import ConcurrentMerge
 from metafunctions.map import MergeMap
 from metafunctions import operators
@@ -108,7 +109,9 @@ def mmap(function: tp.Callable, operator: tp.Callable=operators.concat) -> Merge
     return MergeMap(MetaFunction.make_meta(function), operator)
 
 
-def locate_error(meta_function: MetaFunction) -> SimpleFunction:
+def locate_error(meta_function: MetaFunction,
+                 color=colors.red,
+                 use_color=util.system_supports_color()) -> SimpleFunction:
     '''
     Wrap the given MetaFunction with an error handler that adds location information to any
     exception raised therein.
@@ -123,7 +126,7 @@ def locate_error(meta_function: MetaFunction) -> SimpleFunction:
             return meta_function(*args, call_state=call_state, **kwargs)
         except Exception as e:
             detailed_message = (f"{str(e)} \n\nOccured in the following function: "
-                                f"{call_state.highlight_active_function()}")
+                                f"{call_state.highlight_active_function(color, use_color)}")
             new_e = type(e)(detailed_message).with_traceback(e.__traceback__)
         raise new_e
     with_location._receives_call_state = True
