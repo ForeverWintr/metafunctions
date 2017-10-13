@@ -46,7 +46,7 @@ class TestUnit(BaseTestCase):
                  Node(b, 2): [Node(a, 3), Node(a, 5), Node(b, 6), Node(c, 7), Node(d, 8)]})
         self.assertDictEqual(tree._parents, {Node(b, 2): Node(a, 0),})
 
-    def test_iter_parents(self):
+    def test_iter_parent_nodes(self):
         @node
         def l(*args):
             return []

@@ -89,9 +89,7 @@ class TestUnit(BaseTestCase):
 
         self.fail()
 
-    @mock.patch('metafunctions.util.highlight_current_function')
-    def test_locate_error(self, mock_h):
-        mock_h.side_effect = functools.partial(util.highlight_current_function, use_color=False)
+    def test_locate_error(self):
 
         @node
         def fail(x):
@@ -113,7 +111,8 @@ class TestUnit(BaseTestCase):
         with_tb2 = locate_error(a|b|c)
         self.assertEqual(with_tb2('_'), '_abc')
 
-        self.assertEqual(str(with_tb), '(a + b) | (c & fail & fail)')
+        self.assertEqual(str(with_tb), str(cmp))
+        self.assertEqual(str(with_tb), '((a + b) | (c & fail & fail))')
         self.assertEqual(str(with_tb2), '(a | b | c)')
 
     def test_replace_nth(self):

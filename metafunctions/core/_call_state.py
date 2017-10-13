@@ -53,14 +53,14 @@ class CallState:
         self.active_node = parent
         return node[0]
 
-    def iter_parents(self, node):
+    def iter_parent_nodes(self, node):
         '''
         Return an iterator over all parents of this node in the tree.
         '''
         parent = self._parents[node]
         yield parent
         if parent is not self._meta_entry:
-            yield from self.iter_parents(parent)
+            yield from self.iter_parent_nodes(parent)
 
     def highlight_active_function(self, color=colors.red, use_color=util.system_supports_color()):
         '''
@@ -69,18 +69,31 @@ class CallState:
 
         Consider this a 'you are here' when called from within a function pipeline.
         '''
+        def highlighted(s):
+            highlighted= f'->{s}<-'
+            if use_color:
+                highlighted = color(highlighted)
+            return highlighted
+
+        current_function = self.active_node.function
+        current_name = str(current_function)
+        new_name = highlighted(current_name)
+
         # rename active function in parent (if active function isn't in parent, active function becomes parent)
-        parent = self._parents[self.active_node]
-        parent_name = str(parent.function)
-        current_name = str(self.active_node.function)
-        times_called = len([f for f in self._children[parent] if f.function is self.active_node.function])
+        for parent in self.iter_parent_nodes(self.active_node):
+            parent_name = str(parent.function)
+            times_called = len([f for f in self._children[parent] if f.function is current_function])
 
-        highlighted_name = f'->{current_name}<-'
-        if use_color:
-            highlighted_name = color(highlighted_name)
+            new_name = util.replace_nth(parent_name, current_name, times_called, new_name)
+            current_function = parent.function
+            current_name = parent_name
 
-        new_parent_name = util.replace_nth(parent_name, current_name, times_called, highlighted_name)
+            #if new parent name hasn't changed (meaning it didn't contain the name we're highlighting), highlight the parent name
+            if new_name == parent_name:
+                new_name = highlighted(new_name)
+        return new_name
 
 
-        # rename parent in parent's parent
-        asdf
+
+
+

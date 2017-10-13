@@ -120,12 +120,11 @@ def locate_error(meta_function: MetaFunction) -> SimpleFunction:
     def with_location(*args, call_state, **kwargs):
         new_e = None
         try:
-            meta_function(*args, call_state=call_state, **kwargs)
+            return meta_function(*args, call_state=call_state, **kwargs)
         except Exception as e:
             detailed_message = (f"{str(e)} \n\nOccured in the following function: "
                                 f"{call_state.highlight_active_function()}")
             new_e = type(e)(detailed_message).with_traceback(e.__traceback__)
-        if new_e:
-            raise new_e
+        raise new_e
     with_location._receives_call_state = True
     return node(with_location, name=str(meta_function))
