@@ -82,13 +82,16 @@ class CallState:
         # rename active function in parent (if active function isn't in parent, active function becomes parent)
         for parent in self.iter_parent_nodes(self.active_node):
             parent_name = str(parent.function)
-            times_called = len([f for f in self._children[parent] if f.function is current_function])
 
-            new_name = util.replace_nth(parent_name, current_name, times_called, new_name)
+            # Note we count occurences of current name in functions we've called so far. We do this
+            # because it's possible previous functions contain the name of this function.
+            name_count = sum(str(n.function).count(current_name) for n in self._children[parent])
+
+            new_name = util.replace_nth(parent_name, current_name, name_count, new_name)
             current_function = parent.function
             current_name = parent_name
 
-            #if new parent name hasn't changed (meaning it didn't contain the name we're highlighting), highlight the parent name
+            # if new parent name hasn't changed (meaning it didn't contain the name we're highlighting), highlight the parent name
             if new_name == parent_name:
                 new_name = highlighted(new_name)
         return new_name

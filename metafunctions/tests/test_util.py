@@ -9,8 +9,8 @@ from metafunctions.core import SimpleFunction, CallState
 
 
 class TestUnit(BaseTestCase):
-    def test_highlight_current_function(self):
-        fmt_index = 6
+    def test_highlight_active_function(self):
+        fmt_index = 7
 
         @node
         def ff(x):
@@ -19,9 +19,9 @@ class TestUnit(BaseTestCase):
         @node
         @bind_call_state
         def f(call_state, x):
-            if len(call_state._meta_stack) == fmt_index:
-                location_string = util.highlight_current_function(call_state, use_color=False)
-                location_string_color = util.highlight_current_function(call_state, use_color=True)
+            if call_state._nodes_visited == fmt_index:
+                location_string = call_state.highlight_active_function(use_color=False)
+                location_string_color = call_state.highlight_active_function(use_color=True)
                 self.assertEqual(location_string, '(a | b | ff | f | f | ->f<- | f | f)')
                 self.assertEqual(location_string_color,
                         '(a | b | ff | f | f | \x1b[31m->f<-\x1b[0m | f | f)')
@@ -34,12 +34,12 @@ class TestUnit(BaseTestCase):
         state = CallState()
         af = a + f
         af('_', call_state=state)
-        curr_f = util.highlight_current_function(state, use_color=False)
-        self.assertEqual(curr_f, '(a + ->f<-)')
+        with self.assertRaises(AttributeError):
+            curr_f = state.highlight_active_function(use_color=False)
 
-    @mock.patch('metafunctions.util.highlight_current_function')
-    def test_highlight_current_function_multichar(self, mock_h):
-        mock_h.side_effect = functools.partial(util.highlight_current_function, use_color=False)
+    @mock.patch('metafunctions.core._call_state.CallState.highlight_active_function')
+    def test_highlight_active_function_multichar(self, mock_h):
+        mock_h.side_effect = functools.partial(CallState.highlight_active_function, use_color=False)
         # Don't fail on long named functions. This is a regression test
         @node
         def fail(x):
