@@ -53,7 +53,7 @@ class TestUnit(BaseTestCase):
         @node
         @bind_call_state
         def return_active_node(cs, *args):
-            return list(cs.iter_parents(cs.active_node))
+            return list(cs.iter_parent_nodes(cs.active_node))
 
         def nodes2str(nodes):
             return [(str(p.function), p.insert_index) for p in nodes]
