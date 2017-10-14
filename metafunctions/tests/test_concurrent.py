@@ -12,6 +12,7 @@ from metafunctions.api import concurrent
 from metafunctions.api import mmap
 from metafunctions.api import store
 from metafunctions.api import star
+from metafunctions.api import locate_error
 from metafunctions.concurrent import ConcurrentMerge
 from metafunctions import operators
 from metafunctions.core import CallState
@@ -24,21 +25,19 @@ class TestIntegration(BaseTestCase):
         cab = ConcurrentMerge(ab)
         self.assertEqual(cab('_'), '_a_b')
 
-    @mock.patch('metafunctions.util.highlight_current_function')
-    def test_exceptions(self, mock_h):
-        mock_h.side_effect = functools.partial(highlight_current_function, use_color=True)
+    def test_exceptions(self):
         @node
         def fail(x):
             if not x:
                 1 / 0
             return x - 1
 
-        cmp = ConcurrentMerge(fail - fail)
+        cmp = locate_error(ConcurrentMerge(fail - fail), use_color=True)
 
         with self.assertRaises(ConcurrentException) as e:
             cmp(0)
         self.assertIsInstance(e.exception.__cause__, ZeroDivisionError)
-        self.assertEqual(e.exception.__cause__.args[0],
+        self.assertEqual(str(e.exception),
                 f'division by zero \n\nOccured in the following function: '
                 f'concurrent({colors.red("->fail<-")} - fail)')
 
@@ -49,22 +48,22 @@ class TestIntegration(BaseTestCase):
         @node
         @bind_call_state
         def f(call_state, x):
-            self.assertIs(call_state._meta_entry, cmp)
+            self.assertIs(call_state._meta_entry.function, cmp)
             return 1
         @node()
         @bind_call_state
         def g(call_state, x):
-            self.assertIs(call_state._meta_entry, cmp)
+            self.assertIs(call_state._meta_entry.function, cmp)
             return 1
         @node
         @bind_call_state
         def h(call_state, x):
-            self.assertIs(call_state._meta_entry, cmp)
+            self.assertIs(call_state._meta_entry.function, cmp)
             return 1
         @node
         @bind_call_state
         def i(call_state, x):
-            self.assertIs(call_state._meta_entry, cmp)
+            self.assertIs(call_state._meta_entry.function, cmp)
             return 1
 
         cmp = ConcurrentMerge(h + f + f / h + i - g)
