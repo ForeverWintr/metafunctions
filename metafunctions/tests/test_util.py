@@ -3,7 +3,7 @@ import functools
 
 from metafunctions.tests.util import BaseTestCase
 from metafunctions.tests.simple_nodes import *
-from metafunctions.api import store, recall, node, bind_call_state, locate_error
+from metafunctions.api import store, recall, node, bind_call_state, locate_error, mmap
 from metafunctions import util
 from metafunctions.core import SimpleFunction, CallState
 
@@ -56,7 +56,20 @@ class TestUnit(BaseTestCase):
         self.assertTrue(e.exception.args[0].endswith('(fail | (->fail<- + a))'))
 
     def test_highlight_with_map(self):
-        self.fail('todo')
+        @node
+        def no_fail(x):
+            return x
+        @node
+        def fail(*args):
+            1 / 0
+
+        cmp = a + b | (c & no_fail & fail)
+        mapper = locate_error(('aaaaa', 'BBBBB') | mmap(cmp))
+        with self.assertRaises(ZeroDivisionError) as e:
+            mapper()
+        self.assertEqual(str(e.exception),
+                "division by zero \n\nOccured in the following function: "
+                "(('aaaaa', 'BBBBB') | mmap(((a + b) | (c & no_fail & ->fail<-))))")
 
     def test_locate_error(self):
 
