@@ -32,10 +32,10 @@ class TestIntegration(BaseTestCase):
                 1 / 0
             return x - 1
 
-        cmp = locate_error(ConcurrentMerge(fail - fail), use_color=True)
+        cmp = locate_error(0 | ConcurrentMerge(fail - fail), use_color=True)
 
         with self.assertRaises(ConcurrentException) as e:
-            cmp(0)
+            cmp()
         self.assertIsInstance(e.exception.__cause__, ZeroDivisionError)
         self.assertEqual(str(e.exception),
                 f'division by zero \n\nOccured in the following function: '
