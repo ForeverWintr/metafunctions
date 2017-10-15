@@ -63,6 +63,8 @@ class TestUnit(BaseTestCase):
             cs = CallState()
             return nodes2str(f('', call_state=cs))
 
+        self.assertEqual(return_parent_nodes(), [(return_parent_nodes, 0)])
+
         #create some crazy compositions to get parents out of
         simple_chain = a | b | c | return_parent_nodes
         self.assertListEqual(get_parents(simple_chain), [(str(simple_chain), 0)])
@@ -97,6 +99,14 @@ class TestUnit(BaseTestCase):
         af('_', call_state=state)
         with self.assertRaises(AttributeError):
             curr_f = state.highlight_active_function()
+
+    def test_hightlight_active_function_no_parents(self):
+        @node
+        @bind_call_state
+        def f(cs):
+            return cs.highlight_active_function()
+
+        self.assertEqual(f(), '->f<-')
 
     def test_highlight_active_function_multichar(self):
         # Don't fail on long named functions. This is a regression test
