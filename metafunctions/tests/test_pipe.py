@@ -130,7 +130,7 @@ class TestIntegration(BaseTestCase):
         def g(x):
             raise RuntimeError('Something bad happened in g!')
 
-        abf = locate_error(a | b + f)
+        abf = locate_error((a | b + f), use_color=False)
         abg = a | b + g
 
         with self.assertRaises(RuntimeError) as ctx:

@@ -179,7 +179,7 @@ class TestUnit(BaseTestCase):
             1 / 0
 
         cmp = a + b | (c & no_fail & fail)
-        mapper = locate_error(('aaaaa', 'BBBBB') | mmap(cmp))
+        mapper = locate_error(('aaaaa', 'BBBBB') | mmap(cmp), use_color=False)
         with self.assertRaises(ZeroDivisionError) as e:
             mapper()
         self.assertEqual(str(e.exception),

@@ -18,7 +18,7 @@ class TestUnit(BaseTestCase):
             1 / 0
 
         cmp = a + b | (c & fail & fail)
-        with_tb = locate_error(cmp)
+        with_tb = locate_error(cmp, use_color=False)
 
         with self.assertRaises(ZeroDivisionError) as e:
             cmp('x')
