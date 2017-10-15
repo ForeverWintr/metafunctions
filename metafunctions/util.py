@@ -6,6 +6,17 @@ import contextlib
 
 import colors
 
+HIGHLIGHT_TEMPLATE = '->{}<-'
+
+def highlight(string):
+    return HIGHLIGHT_TEMPLATE.format(string)
+
+_color_regex = re.compile(HIGHLIGHT_TEMPLATE.format('.*?'))
+def color_highlights(string, color=colors.red):
+    '''Color all highlights'''
+    for substr in _color_regex.findall(string):
+        string = string.replace(substr, color(substr))
+    return string
 
 def system_supports_color():
     """
