@@ -4,8 +4,8 @@ import itertools
 import functools
 
 
-from metafunctions.core._decorators import binary_operation
-from metafunctions.core._decorators import manage_call_state
+from metafunctions.core.decorators import binary_operation
+from metafunctions.core.decorators import manage_call_state
 from metafunctions.core._call_state import CallState
 from metafunctions import operators
 from metafunctions import exceptions

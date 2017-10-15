@@ -4,5 +4,5 @@ from .base import SimpleFunction
 from .base import DeferredValue
 from .base import FunctionChain
 from .base import FunctionMerge
-from ._decorators import manage_call_state
+from .decorators import manage_call_state
 from ._call_state import CallState
