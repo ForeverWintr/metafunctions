@@ -88,23 +88,6 @@ class TestIntegration(BaseTestCase):
             with self.subTest():
                 self.assertEqual(cmp(10), expected)
 
-    @unittest.skip("Making this work doesn't make sense anymore")
-    def test_or(self):
-        '''Assert that we can still use or'''
-        @node
-        def return_a_set(x):
-            return set(*x)
-
-        #Just wrap anything that isn't callable in a lambda, to put it off until call time
-        outer_set = set((1, 2, 3))
-
-        cmp = return_a_set | outer_set
-        reverse_cmp = outer_set | return_a_set
-
-        self.assertSetEqual(cmp('abc'), set('abc'))
-        self.assertSetEqual(reverse_cmp('abc'), set('abc'))
-
-
     def test_single_calls(self):
         '''every function is only called once'''
         call_count = 0
