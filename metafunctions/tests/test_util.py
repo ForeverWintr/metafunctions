@@ -11,65 +11,6 @@ from metafunctions.core import SimpleFunction, CallState
 
 
 class TestUnit(BaseTestCase):
-    def test_highlight_active_function(self):
-        fmt_index = 7
-
-        @node
-        def ff(x):
-            return x + 'F'
-
-        @node
-        @bind_call_state
-        def f(call_state, x):
-            if call_state._nodes_visited == fmt_index:
-                location_string = call_state.highlight_active_function()
-                self.assertEqual(location_string, '(a | b | ff | f | f | ->f<- | f | f)')
-                self.assertEqual(x, '_abFff')
-            return x + 'f'
-
-        pipe = a | b | ff | f | f | f | f | f
-        pipe('_')
-
-        state = CallState()
-        af = a + f
-        af('_', call_state=state)
-        with self.assertRaises(AttributeError):
-            curr_f = state.highlight_active_function()
-
-    def test_highlight_active_function_multichar(self):
-        # Don't fail on long named functions. This is a regression test
-        @node
-        def fail(x):
-            if not x:
-                1 / 0
-            return x - 1
-
-        cmp = fail | fail + a
-        color = locate_error(cmp, use_color=True)
-        no_color = locate_error(cmp, use_color=False)
-        with self.assertRaises(ZeroDivisionError) as e:
-            color(1)
-        self.assertTrue(e.exception.args[0].endswith('(fail | (\x1b[31m->fail<-\x1b[0m + a))'))
-        with self.assertRaises(ZeroDivisionError) as e:
-            no_color(1)
-        self.assertTrue(e.exception.args[0].endswith('(fail | (->fail<- + a))'))
-
-    def test_highlight_with_map(self):
-        @node
-        def no_fail(x):
-            return x
-        @node
-        def fail(*args):
-            1 / 0
-
-        cmp = a + b | (c & no_fail & fail)
-        mapper = locate_error(('aaaaa', 'BBBBB') | mmap(cmp))
-        with self.assertRaises(ZeroDivisionError) as e:
-            mapper()
-        self.assertEqual(str(e.exception),
-                "division by zero \n\nOccured in the following function: "
-                "(('aaaaa', 'BBBBB') | mmap(((a + b) | (c & no_fail & ->fail<-))))")
-
     def test_locate_error(self):
 
         @node

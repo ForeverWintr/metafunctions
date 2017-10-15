@@ -69,12 +69,9 @@ class CallState:
 
         Consider this a 'you are here' when called from within a function pipeline.
         '''
-        def highlighted(s):
-            return  f'->{s}<-'
-
         current_function = self.active_node.function
         current_name = str(current_function)
-        new_name = highlighted(current_name)
+        new_name = util.highlight(current_name)
 
         # rename active function in parent (if active function isn't in parent, active function becomes parent)
         for parent in self.iter_parent_nodes(self.active_node):
@@ -90,7 +87,7 @@ class CallState:
 
             # if new parent name hasn't changed (meaning it didn't contain the name we're highlighting), highlight the parent name
             if new_name == parent_name:
-                new_name = highlighted(new_name)
+                new_name = util.highlight(new_name)
         return new_name
 
 

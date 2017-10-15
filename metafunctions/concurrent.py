@@ -111,7 +111,7 @@ class ConcurrentMerge(FunctionMerge):
                 pickled_exception = pickle.dumps(
                         AttributeError(f'Unplicklable exception raised in {func}'))
             result = make_result(exception=pickled_exception,
-                    location=kwargs['call_state'].highlight_active_function(use_color=False))
+                    location=kwargs['call_state'].highlight_active_function())
         finally:
             result_q.put(result)
             # it's necessary to explicitly close the result_q and join its background thread here,

@@ -2,6 +2,8 @@ from metafunctions.tests.util import BaseTestCase
 from metafunctions.tests.simple_nodes import *
 from metafunctions.api import bind_call_state
 from metafunctions.api import node
+from metafunctions.api import mmap
+from metafunctions.api import locate_error
 from metafunctions.core._call_state import CallState, CallState
 
 
@@ -52,7 +54,7 @@ class TestUnit(BaseTestCase):
             return []
         @node
         @bind_call_state
-        def return_active_node(cs, *args):
+        def return_parent_nodes(cs, *args):
             return list(cs.iter_parent_nodes(cs.active_node))
 
         def nodes2str(nodes):
@@ -62,12 +64,70 @@ class TestUnit(BaseTestCase):
             return nodes2str(f('', call_state=cs))
 
         #create some crazy compositions to get parents out of
-        simple_chain = a | b | c | return_active_node
+        simple_chain = a | b | c | return_parent_nodes
         self.assertListEqual(get_parents(simple_chain), [(str(simple_chain), 0)])
 
-        merges = l + (l + (l + return_active_node))
+        merges = l + (l + (l + return_parent_nodes))
         self.assertListEqual(get_parents(merges), [
-            ('(l + return_active_node)', 4),
-            ('(l + (l + return_active_node))', 2),
-            ('(l + (l + (l + return_active_node)))', 0)])
+            ('(l + return_parent_nodes)', 4),
+            ('(l + (l + return_parent_nodes))', 2),
+            ('(l + (l + (l + return_parent_nodes)))', 0)])
 
+    def test_highlight_active_function(self):
+        fmt_index = 7
+
+        @node
+        def ff(x):
+            return x + 'F'
+
+        @node
+        @bind_call_state
+        def f(call_state, x):
+            if call_state._nodes_visited == fmt_index:
+                location_string = call_state.highlight_active_function()
+                self.assertEqual(location_string, '(a | b | ff | f | f | ->f<- | f | f)')
+                self.assertEqual(x, '_abFff')
+            return x + 'f'
+
+        pipe = a | b | ff | f | f | f | f | f
+        pipe('_')
+
+        state = CallState()
+        af = a + f
+        af('_', call_state=state)
+        with self.assertRaises(AttributeError):
+            curr_f = state.highlight_active_function()
+
+    def test_highlight_active_function_multichar(self):
+        # Don't fail on long named functions. This is a regression test
+        @node
+        def fail(x):
+            if not x:
+                1 / 0
+            return x - 1
+
+        cmp = fail | fail + a
+        color = locate_error(cmp, use_color=True)
+        no_color = locate_error(cmp, use_color=False)
+        with self.assertRaises(ZeroDivisionError) as e:
+            color(1)
+        self.assertTrue(e.exception.args[0].endswith('(fail | (\x1b[31m->fail<-\x1b[0m + a))'))
+        with self.assertRaises(ZeroDivisionError) as e:
+            no_color(1)
+        self.assertTrue(e.exception.args[0].endswith('(fail | (->fail<- + a))'))
+
+    def test_highlight_with_map(self):
+        @node
+        def no_fail(x):
+            return x
+        @node
+        def fail(*args):
+            1 / 0
+
+        cmp = a + b | (c & no_fail & fail)
+        mapper = locate_error(('aaaaa', 'BBBBB') | mmap(cmp))
+        with self.assertRaises(ZeroDivisionError) as e:
+            mapper()
+        self.assertEqual(str(e.exception),
+                "division by zero \n\nOccured in the following function: "
+                "(('aaaaa', 'BBBBB') | mmap(((a + b) | (c & no_fail & ->fail<-))))")

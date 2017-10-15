@@ -38,8 +38,9 @@ class TestIntegration(BaseTestCase):
             cmp()
         self.assertIsInstance(e.exception.__cause__, ZeroDivisionError)
         self.assertEqual(str(e.exception),
-                f'division by zero \n\nOccured in the following function: '
-                f'concurrent({colors.red("->fail<-")} - fail)')
+                f'Caught exception in child process \n\nOccured in the following function: '
+                f'(0 | concurrent({colors.red("->fail<-")} - fail))')
+        self.assertIsInstance(e.exception.__cause__, ZeroDivisionError)
 
     def test_consistent_meta(self):
         '''
