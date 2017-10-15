@@ -1,8 +1,8 @@
 
-from ._base import MetaFunction
-from ._base import SimpleFunction
-from ._base import DeferredValue
-from ._base import FunctionChain
-from ._base import FunctionMerge
+from .base import MetaFunction
+from .base import SimpleFunction
+from .base import DeferredValue
+from .base import FunctionChain
+from .base import FunctionMerge
 from ._decorators import manage_call_state
 from ._call_state import CallState
