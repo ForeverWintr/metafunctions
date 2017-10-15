@@ -125,8 +125,15 @@ def locate_error(meta_function: MetaFunction,
         try:
             return meta_function(*args, call_state=call_state, **kwargs)
         except Exception as e:
-            detailed_message = (f"{str(e)} \n\nOccured in the following function: "
-                                f"{call_state.highlight_active_function(color, use_color)}")
+            if hasattr(e, 'location') and e.location:
+                # If the exception has location info attached
+                location = e.location
+            else:
+                location = call_state.highlight_active_function()
+
+            if use_color:
+                location = util.color_highlights(location)
+            detailed_message = (f"{str(e)} \n\nOccured in the following function: {location}")
             new_e = type(e)(detailed_message).with_traceback(e.__traceback__)
             new_e.__cause__ = e.__cause__
         raise new_e

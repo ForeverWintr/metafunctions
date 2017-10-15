@@ -6,6 +6,7 @@ import itertools
 from metafunctions.tests.util import BaseTestCase
 from metafunctions.tests.simple_nodes import *
 from metafunctions.api import node
+from metafunctions.api import locate_error
 from metafunctions.api import bind_call_state
 from metafunctions.core import CallState
 
@@ -122,10 +123,7 @@ class TestIntegration(BaseTestCase):
         self.assertEqual(str(cmp), '(a | b | c | <lambda>)')
 
     def test_called_functions(self):
-        '''
-        Parent refers to the parent MetaFunction.
-        '''
-
+        # This made more sense back before call_state was a tree. Consider removing.
         @node
         @bind_call_state
         def parent_test(call_state, x):
@@ -137,24 +135,22 @@ class TestIntegration(BaseTestCase):
 
         call_state = abc_('_')
         self.assertIsInstance(call_state, CallState)
-        self.assertListEqual(call_state._meta_stack, [a, b, c, parent_test])
+        self.assertListEqual([n.function for n in call_state._children[(abc_, 0)]],
+                             [abc, parent_test])
 
-    @mock.patch('metafunctions.util.highlight_current_function')
-    def test_pretty_exceptions(self, mock_h):
-        mock_h.side_effect = functools.partial(highlight_current_function, use_color=False)
+    def test_pretty_exceptions(self):
 
         @node
         def f(x):
             raise RuntimeError('Something bad happened!')
-        @node(modify_tracebacks=False)
+        @node
         def g(x):
             raise RuntimeError('Something bad happened in g!')
 
-        abf = a | b + f
+        abf = locate_error(a | b + f)
         abg = a | b + g
 
         with self.assertRaises(RuntimeError) as ctx:
-            # TODO: assert that tracebacks are correct
             abf('_')
 
         self.assertEqual(str(ctx.exception),
@@ -171,22 +167,22 @@ class TestIntegration(BaseTestCase):
         @node
         @bind_call_state
         def f(call_state, x):
-            self.assertIs(call_state._meta_entry, cmp)
+            self.assertIs(call_state._meta_entry.function, cmp)
             return 1
         @node()
         @bind_call_state
         def g(call_state, x):
-            self.assertIs(call_state._meta_entry, cmp)
+            self.assertIs(call_state._meta_entry.function, cmp)
             return 1
         @node
         @bind_call_state
         def h(call_state, x):
-            self.assertIs(call_state._meta_entry, cmp)
+            self.assertIs(call_state._meta_entry.function, cmp)
             return 1
         @node
         @bind_call_state
         def i(call_state, x):
-            self.assertIs(call_state._meta_entry, cmp)
+            self.assertIs(call_state._meta_entry.function, cmp)
             return 1
 
         cmp = f | g | i | h + f + f / h + i - g
@@ -199,7 +195,7 @@ class TestIntegration(BaseTestCase):
         @node
         @bind_call_state
         def f(call_state, expected):
-            self.assertIs(call_state._meta_entry, expected)
+            self.assertIs(call_state._meta_entry.function, expected)
             return expected
 
         cmpa = f & f
@@ -210,9 +206,9 @@ class TestIntegration(BaseTestCase):
 
         state = CallState()
         cmpa(cmpa, call_state=state)
-        self.assertListEqual(state._meta_stack, [f, f])
+        self.assertDictEqual(state._parents, {})
         cmpb(cmpb, call_state=state)
-        self.assertListEqual(state._meta_stack, [f, f, f])
+        self.assertEqual(state._nodes_visited, 7)
 
     def test_defaults(self):
         '''
@@ -254,7 +250,7 @@ class TestIntegration(BaseTestCase):
         @node()
         @bind_call_state
         def f(call_state, x):
-            self.assertIs(call_state._meta_entry, abcf)
+            self.assertIs(call_state._meta_entry.function, abcf)
             return x + 'f'
 
         fn = node(f+'sup')

@@ -62,7 +62,7 @@ class CallState:
         if parent is not self._meta_entry:
             yield from self.iter_parent_nodes(parent)
 
-    def highlight_active_function(self, color=colors.red, use_color=util.system_supports_color()):
+    def highlight_active_function(self):
         '''
         Return a formatted string showing the location of the most recently called function in
         call_state.
@@ -70,10 +70,7 @@ class CallState:
         Consider this a 'you are here' when called from within a function pipeline.
         '''
         def highlighted(s):
-            highlighted= f'->{s}<-'
-            if use_color:
-                highlighted = color(highlighted)
-            return highlighted
+            return  f'->{s}<-'
 
         current_function = self.active_node.function
         current_name = str(current_function)

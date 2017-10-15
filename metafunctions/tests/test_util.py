@@ -22,11 +22,8 @@ class TestUnit(BaseTestCase):
         @bind_call_state
         def f(call_state, x):
             if call_state._nodes_visited == fmt_index:
-                location_string = call_state.highlight_active_function(use_color=False)
-                location_string_color = call_state.highlight_active_function(use_color=True)
+                location_string = call_state.highlight_active_function()
                 self.assertEqual(location_string, '(a | b | ff | f | f | ->f<- | f | f)')
-                self.assertEqual(location_string_color,
-                        '(a | b | ff | f | f | \x1b[31m->f<-\x1b[0m | f | f)')
                 self.assertEqual(x, '_abFff')
             return x + 'f'
 
@@ -37,7 +34,7 @@ class TestUnit(BaseTestCase):
         af = a + f
         af('_', call_state=state)
         with self.assertRaises(AttributeError):
-            curr_f = state.highlight_active_function(use_color=False)
+            curr_f = state.highlight_active_function()
 
     def test_highlight_active_function_multichar(self):
         # Don't fail on long named functions. This is a regression test
