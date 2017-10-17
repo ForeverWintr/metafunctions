@@ -188,10 +188,11 @@ class TestUnit(BaseTestCase):
 
     def test_tricky_highlight(self):
         def wrapper(mf, new_name=None):
-            def meta_wrapper(*args, **kwargs):
-                return mf(*args, **kwargs)
-            meta_wrapper._receives_call_state = True
-            return node(name=new_name or str(mf))(meta_wrapper)
+            @node(name=new_name or str(mf))
+            @bind_call_state
+            def meta_wrapper(cs, *args, **kwargs):
+                return mf(*args, call_state=cs, **kwargs)
+            return meta_wrapper
 
         @node
         @bind_call_state
