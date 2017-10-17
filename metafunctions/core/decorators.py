@@ -23,7 +23,11 @@ def manage_call_state(call_method):
     '''
     @wraps(call_method)
     def with_call_state(self, *args, **kwargs):
-        call_state = kwargs.setdefault('call_state', self.new_call_state())
+        try:
+            call_state = kwargs['call_state']
+        except KeyError:
+            call_state = self.new_call_state()
+            kwargs['call_state'] = call_state
         call_state.push(self)
         r = call_method(self, *args, **kwargs)
         call_state.pop()
