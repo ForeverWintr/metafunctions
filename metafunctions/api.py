@@ -14,7 +14,7 @@ from metafunctions.core import SimpleFunction
 from metafunctions.core import FunctionMerge
 from metafunctions.core import CallState
 from metafunctions import util
-from metafunctions.concurrent import ConcurrentMerge
+from metafunctions.core.concurrent import ConcurrentMerge
 from metafunctions.map import MergeMap
 from metafunctions import operators
 

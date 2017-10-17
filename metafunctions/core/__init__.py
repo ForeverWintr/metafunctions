@@ -6,3 +6,4 @@ from .base import FunctionChain
 from .base import FunctionMerge
 from .decorators import manage_call_state
 from .call_state import CallState
+from .concurrent import ConcurrentMerge

@@ -185,3 +185,22 @@ class TestUnit(BaseTestCase):
         self.assertEqual(str(e.exception),
                 "division by zero \n\nOccured in the following function: "
                 "(('aaaaa', 'BBBBB') | mmap(((a + b) | (c & no_fail & ->fail<-))))")
+
+    def test_tricky_highlight(self):
+        def wrapper(mf, new_name=None):
+            def meta_wrapper(*args, **kwargs):
+                return mf(*args, **kwargs)
+            meta_wrapper._receives_call_state = True
+            return node(name=new_name or str(mf))(meta_wrapper)
+
+        @node
+        @bind_call_state
+        def locator_string(cs, *args):
+            return cs.highlight_active_function()
+        cmp = a | b + c | locator_string
+
+        tim = wrapper(cmp, new_name='tim')
+        atim = a | tim
+        self.assertEqual(str(tim), 'tim')
+        self.assertEqual(str(atim), '(a | tim)')
+        self.assertEqual(atim('_'), '(a | ->tim<-)')

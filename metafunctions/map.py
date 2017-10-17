@@ -1,7 +1,7 @@
 import typing as tp
 import itertools
 
-from metafunctions.concurrent import FunctionMerge
+from metafunctions.core.concurrent import FunctionMerge
 from metafunctions.operators import concat
 
 

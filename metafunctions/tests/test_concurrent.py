@@ -13,7 +13,7 @@ from metafunctions.api import mmap
 from metafunctions.api import store
 from metafunctions.api import star
 from metafunctions.api import locate_error
-from metafunctions.concurrent import ConcurrentMerge
+from metafunctions.core.concurrent import ConcurrentMerge
 from metafunctions import operators
 from metafunctions.core import CallState
 from metafunctions.exceptions import ConcurrentException, CompositionError, CallError
@@ -183,11 +183,11 @@ class TestIntegration(BaseTestCase):
         with self.assertRaises(ConcurrentException):
             cmp()
 
-    @mock.patch('metafunctions.concurrent.os.fork', return_value=0)
-    @mock.patch('metafunctions.concurrent.os._exit')
+    @mock.patch('metafunctions.core.concurrent.os.fork', return_value=0)
+    @mock.patch('metafunctions.core.concurrent.os._exit')
     @mock.patch('multiprocessing.queues.Queue.close')
     @mock.patch('multiprocessing.queues.Queue.join_thread')
-    @mock.patch('metafunctions.concurrent.os.waitpid')
+    @mock.patch('metafunctions.core.concurrent.os.waitpid')
     def test_no_fork(self, mock_wait, mock_join, mock_close, mock_exit, mock_fork):
         # This test re-runs concurrent tests with forking disabled. Partially this is to
         # address my inability to get coverage.py to recognize the code covered by forked
