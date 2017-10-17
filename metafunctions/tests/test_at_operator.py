@@ -1,5 +1,6 @@
-from metafunctions.util import node
+from metafunctions.api import node
 from metafunctions.tests.util import BaseTestCase
+from metafunctions.tests.simple_nodes import *
 
 
 class TestUnit(BaseTestCase):
@@ -35,15 +36,4 @@ class TestUnit(BaseTestCase):
         aabbcc = (a & b & c) @ (a&b&c)
         self.assertEqual(aabbcc('_'), ('_aa', '_bb', '_cc'))
 
-
-@node
-def a(x):
-    return x + 'a'
-@node
-def b(x):
-    return x + 'b'
-
-@node
-def c(x):
-    return x + 'c'
 

@@ -6,11 +6,11 @@ import functools
 import pickle
 
 from metafunctions.core import FunctionMerge
-from metafunctions.core import inject_call_state
+from metafunctions.core import manage_call_state
 from metafunctions import exceptions
 
 # Result tuple to be sent back from workers. Defined at module level for eas of pickling
-_ConcurrentResult = namedtuple('_ConcurrentResult', 'index result call_state_data exception')
+_ConcurrentResult = namedtuple('_ConcurrentResult', 'index result call_state_data exception location')
 
 class ConcurrentMerge(FunctionMerge):
 
@@ -35,7 +35,7 @@ class ConcurrentMerge(FunctionMerge):
         merge_name = str(self._function_merge)
         return f'concurrent{merge_name}' if merge_name.startswith('(') else f'concurrent({merge_name})'
 
-    @inject_call_state
+    @manage_call_state
     def __call__(self, *args, **kwargs):
         '''We fork here, and execute each function in a child process before joining the results
         with _merge_func
@@ -66,7 +66,7 @@ class ConcurrentMerge(FunctionMerge):
         for r in sorted(iter(result_q.get, None), key=itemgetter(0)):
             if r.exception:
                 raise exceptions.ConcurrentException(
-                        'Caught exception in child process') from pickle.loads(r.exception)
+                        'Caught exception in child process', location=r.location) from pickle.loads(r.exception)
             kwargs['call_state'].data.update(pickle.loads(r.call_state_data))
             results.append(pickle.loads(r.result))
         return self._merge_func(*results)
@@ -91,7 +91,8 @@ class ConcurrentMerge(FunctionMerge):
                 result=None,
                 exception=None,
                 index=idx,
-                call_state_data=None
+                call_state_data=None,
+                location='',
         )
 
         result = None
@@ -109,7 +110,8 @@ class ConcurrentMerge(FunctionMerge):
             except AttributeError:
                 pickled_exception = pickle.dumps(
                         AttributeError(f'Unplicklable exception raised in {func}'))
-            result = make_result(exception=pickled_exception)
+            result = make_result(exception=pickled_exception,
+                    location=kwargs['call_state'].highlight_active_function())
         finally:
             result_q.put(result)
             # it's necessary to explicitly close the result_q and join its background thread here,

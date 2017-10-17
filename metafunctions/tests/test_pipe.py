@@ -4,9 +4,10 @@ import functools
 import itertools
 
 from metafunctions.tests.util import BaseTestCase
-from metafunctions.util import node
-from metafunctions.util import bind_call_state
-from metafunctions.util import highlight_current_function
+from metafunctions.tests.simple_nodes import *
+from metafunctions.api import node
+from metafunctions.api import locate_error
+from metafunctions.api import bind_call_state
 from metafunctions.core import CallState
 
 
@@ -87,23 +88,6 @@ class TestIntegration(BaseTestCase):
             with self.subTest():
                 self.assertEqual(cmp(10), expected)
 
-    @unittest.skip("Making this work doesn't make sense anymore")
-    def test_or(self):
-        '''Assert that we can still use or'''
-        @node
-        def return_a_set(x):
-            return set(*x)
-
-        #Just wrap anything that isn't callable in a lambda, to put it off until call time
-        outer_set = set((1, 2, 3))
-
-        cmp = return_a_set | outer_set
-        reverse_cmp = outer_set | return_a_set
-
-        self.assertSetEqual(cmp('abc'), set('abc'))
-        self.assertSetEqual(reverse_cmp('abc'), set('abc'))
-
-
     def test_single_calls(self):
         '''every function is only called once'''
         call_count = 0
@@ -122,10 +106,7 @@ class TestIntegration(BaseTestCase):
         self.assertEqual(str(cmp), '(a | b | c | <lambda>)')
 
     def test_called_functions(self):
-        '''
-        Parent refers to the parent MetaFunction.
-        '''
-
+        # This made more sense back before call_state was a tree. Consider removing.
         @node
         @bind_call_state
         def parent_test(call_state, x):
@@ -137,24 +118,22 @@ class TestIntegration(BaseTestCase):
 
         call_state = abc_('_')
         self.assertIsInstance(call_state, CallState)
-        self.assertListEqual(call_state._called_functions, [a, b, c, parent_test])
+        self.assertListEqual([n.function for n in call_state._children[(abc_, 0)]],
+                             [abc, parent_test])
 
-    @mock.patch('metafunctions.util.highlight_current_function')
-    def test_pretty_exceptions(self, mock_h):
-        mock_h.side_effect = functools.partial(highlight_current_function, use_color=False)
+    def test_pretty_exceptions(self):
 
         @node
         def f(x):
             raise RuntimeError('Something bad happened!')
-        @node(modify_tracebacks=False)
+        @node
         def g(x):
             raise RuntimeError('Something bad happened in g!')
 
-        abf = a | b + f
+        abf = locate_error((a | b + f), use_color=False)
         abg = a | b + g
 
         with self.assertRaises(RuntimeError) as ctx:
-            # TODO: assert that tracebacks are correct
             abf('_')
 
         self.assertEqual(str(ctx.exception),
@@ -171,22 +150,22 @@ class TestIntegration(BaseTestCase):
         @node
         @bind_call_state
         def f(call_state, x):
-            self.assertIs(call_state._meta_entry, cmp)
+            self.assertIs(call_state._meta_entry.function, cmp)
             return 1
         @node()
         @bind_call_state
         def g(call_state, x):
-            self.assertIs(call_state._meta_entry, cmp)
+            self.assertIs(call_state._meta_entry.function, cmp)
             return 1
         @node
         @bind_call_state
         def h(call_state, x):
-            self.assertIs(call_state._meta_entry, cmp)
+            self.assertIs(call_state._meta_entry.function, cmp)
             return 1
         @node
         @bind_call_state
         def i(call_state, x):
-            self.assertIs(call_state._meta_entry, cmp)
+            self.assertIs(call_state._meta_entry.function, cmp)
             return 1
 
         cmp = f | g | i | h + f + f / h + i - g
@@ -194,6 +173,25 @@ class TestIntegration(BaseTestCase):
 
         #this works if we provide our own call_state too.
         self.assertEqual(cmp(1, call_state=CallState()), 3)
+
+    def test_consistent_meta_with_shared_state(self):
+        @node
+        @bind_call_state
+        def f(call_state, expected):
+            self.assertIs(call_state._meta_entry.function, expected)
+            return expected
+
+        cmpa = f & f
+        cmpb = f | f | f
+
+        cmpa(cmpa)
+        cmpb(cmpb)
+
+        state = CallState()
+        cmpa(cmpa, call_state=state)
+        self.assertDictEqual(state._parents, {})
+        cmpb(cmpb, call_state=state)
+        self.assertEqual(state._nodes_visited, 7)
 
     def test_defaults(self):
         '''
@@ -235,7 +233,7 @@ class TestIntegration(BaseTestCase):
         @node()
         @bind_call_state
         def f(call_state, x):
-            self.assertIs(call_state._meta_entry, abcf)
+            self.assertIs(call_state._meta_entry.function, abcf)
             return x + 'f'
 
         fn = node(f+'sup')
@@ -308,20 +306,5 @@ class TestIntegration(BaseTestCase):
             self.assertEqual(next(gen), 'acb')
 
 
-### Simple Sample Functions ###
-@node
-def a(x):
-    return x + 'a'
-@node
-def b(x):
-    return x + 'b'
-@node
-def c(x):
-    return x + 'c'
-@node
-def d(x):
-    return x + 'd'
-@node
-def e(x):
-    return x + 'e'
+
 

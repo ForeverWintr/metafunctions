@@ -5,8 +5,8 @@
 ##################################################################
 [project attributes]
 proj.directory-list = [{'dirloc': loc('metafunctions'),
-                        'excludes': (),
-                        'filter': u'*',
+                        'excludes': [u'metafunctions.egg-info'],
+                        'filter': '*',
                         'include_hidden': False,
                         'recursive': True,
                         'watch_for_changes': True}]

@@ -1,8 +1,9 @@
 
 from metafunctions.tests.util import BaseTestCase
-from metafunctions.util import node
-from metafunctions.util import star
-from metafunctions.util import mmap
+from metafunctions.tests.simple_nodes import *
+from metafunctions.api import node
+from metafunctions.api import star
+from metafunctions.api import mmap
 from metafunctions.map import MergeMap
 from metafunctions import operators
 
@@ -54,12 +55,4 @@ class TestIntegration(BaseTestCase):
         cmp = (b & c & 'stoke') | mmap(len)
         self.assertEqual(cmp('_'), (2, 2, 5))
 
-@node
-def a(x):
-    return x + 'a'
-@node
-def b(x):
-    return x + 'b'
-@node
-def c(x):
-    return x + 'c'
+

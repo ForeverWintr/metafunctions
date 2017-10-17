@@ -6,7 +6,7 @@ from metafunctions.core import SimpleFunction
 from metafunctions.tests.util import BaseTestCase
 from metafunctions.operators import concat
 from metafunctions import exceptions
-from metafunctions.util import node, star
+from metafunctions.api import node, star
 
 
 class TestUnit(BaseTestCase):

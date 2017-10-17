@@ -4,9 +4,9 @@ import itertools
 import functools
 
 
-from metafunctions.core._decorators import binary_operation
-from metafunctions.core._decorators import inject_call_state
-from metafunctions.core._call_state import CallState
+from metafunctions.core.decorators import binary_operation
+from metafunctions.core.decorators import manage_call_state
+from metafunctions.core.call_state import CallState
 from metafunctions import operators
 from metafunctions import exceptions
 
@@ -102,12 +102,12 @@ class MetaFunction(metaclass=abc.ABCMeta):
 
     @binary_operation
     def __matmul__(self, other):
-        from metafunctions.util import star
+        from metafunctions.api import star
         return FunctionChain.combine(self, star(other))
 
     @binary_operation
     def __rmatmul__(self, other):
-        from metafunctions.util import star
+        from metafunctions.api import star
         return FunctionChain.combine(other, star(self))
 
 
@@ -120,7 +120,7 @@ class FunctionChain(MetaFunction):
         super().__init__()
         self._functions = functions
 
-    @inject_call_state
+    @manage_call_state
     def __call__(self, *args, **kwargs):
         f_iter = iter(self._functions)
         result = next(f_iter)(*args, **kwargs)
@@ -180,7 +180,7 @@ class FunctionMerge(MetaFunction):
         self._function_join_str = function_join_str or self._operator_to_character.get(
                 merge_func, str(merge_func))
 
-    @inject_call_state
+    @manage_call_state
     def __call__(self, *args, **kwargs):
         args_iter, func_iter = self._get_call_iterators(args)
 
@@ -241,7 +241,7 @@ class FunctionMerge(MetaFunction):
 
 
 class SimpleFunction(MetaFunction):
-    def __init__(self, function, name=None, print_location_in_traceback=True):
+    def __init__(self, function, name=None):
         '''A MetaFunction-aware wrapper around a single function
         The `bind` parameter causes us to pass a meta object as the first argument to our inherited function, but it is only respected if the wrapped function is not another metafunction.
         '''
@@ -253,18 +253,13 @@ class SimpleFunction(MetaFunction):
 
         super().__init__()
         self._function = function
-        self.add_location_to_traceback = print_location_in_traceback
         self._name = name or getattr(function, '__name__', False) or str(function)
 
-    @inject_call_state
+    @manage_call_state
     def __call__(self, *args, call_state, **kwargs):
-        call_state._called_functions.append(self)
         if getattr(self._function, '_receives_call_state', False):
             kwargs['call_state'] = call_state
-        try:
-            return self._function(*args, **kwargs)
-        except Exception as e:
-            self._handle_exception(call_state, e)
+        return self._function(*args, **kwargs)
 
     def __repr__(self):
         return f'{self.__class__.__name__}({self.functions[0]!r})'
@@ -275,14 +270,6 @@ class SimpleFunction(MetaFunction):
     @property
     def functions(self):
         return (self._function, )
-
-    def _handle_exception(self, call_state, e):
-        if self.add_location_to_traceback:
-            from metafunctions.util import highlight_current_function
-            detailed_message = str(e)
-            detailed_message = f"{str(e)} \n\nOccured in the following function: {highlight_current_function(call_state)}"
-            raise type(e)(detailed_message).with_traceback(e.__traceback__)
-        raise
 
 
 class DeferredValue(SimpleFunction):

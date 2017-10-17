@@ -5,14 +5,15 @@ import functools
 import colors
 
 from metafunctions.tests.util import BaseTestCase
-from metafunctions.util import node
-from metafunctions.util import bind_call_state
-from metafunctions.util import highlight_current_function
-from metafunctions.util import concurrent
-from metafunctions.util import mmap
-from metafunctions.util import store
-from metafunctions.util import star
-from metafunctions.concurrent import ConcurrentMerge
+from metafunctions.tests.simple_nodes import *
+from metafunctions.api import node
+from metafunctions.api import bind_call_state
+from metafunctions.api import concurrent
+from metafunctions.api import mmap
+from metafunctions.api import store
+from metafunctions.api import star
+from metafunctions.api import locate_error
+from metafunctions.core.concurrent import ConcurrentMerge
 from metafunctions import operators
 from metafunctions.core import CallState
 from metafunctions.exceptions import ConcurrentException, CompositionError, CallError
@@ -24,23 +25,22 @@ class TestIntegration(BaseTestCase):
         cab = ConcurrentMerge(ab)
         self.assertEqual(cab('_'), '_a_b')
 
-    @mock.patch('metafunctions.util.highlight_current_function')
-    def test_exceptions(self, mock_h):
-        mock_h.side_effect = functools.partial(highlight_current_function, use_color=True)
+    def test_exceptions(self):
         @node
         def fail(x):
             if not x:
                 1 / 0
             return x - 1
 
-        cmp = ConcurrentMerge(fail - fail)
+        cmp = locate_error(0 | ConcurrentMerge(fail - fail), use_color=True)
 
         with self.assertRaises(ConcurrentException) as e:
-            cmp(0)
+            cmp()
         self.assertIsInstance(e.exception.__cause__, ZeroDivisionError)
-        self.assertEqual(e.exception.__cause__.args[0],
-                f'division by zero \n\nOccured in the following function: '
-                f'concurrent({colors.red("->fail<-")} - fail)')
+        self.assertEqual(str(e.exception),
+                f'Caught exception in child process \n\nOccured in the following function: '
+                f'(0 | concurrent({colors.red("->fail<-")} - fail))')
+        self.assertIsInstance(e.exception.__cause__, ZeroDivisionError)
 
     def test_consistent_meta(self):
         '''
@@ -49,22 +49,22 @@ class TestIntegration(BaseTestCase):
         @node
         @bind_call_state
         def f(call_state, x):
-            self.assertIs(call_state._meta_entry, cmp)
+            self.assertIs(call_state._meta_entry.function, cmp)
             return 1
         @node()
         @bind_call_state
         def g(call_state, x):
-            self.assertIs(call_state._meta_entry, cmp)
+            self.assertIs(call_state._meta_entry.function, cmp)
             return 1
         @node
         @bind_call_state
         def h(call_state, x):
-            self.assertIs(call_state._meta_entry, cmp)
+            self.assertIs(call_state._meta_entry.function, cmp)
             return 1
         @node
         @bind_call_state
         def i(call_state, x):
-            self.assertIs(call_state._meta_entry, cmp)
+            self.assertIs(call_state._meta_entry.function, cmp)
             return 1
 
         cmp = ConcurrentMerge(h + f + f / h + i - g)
@@ -183,11 +183,11 @@ class TestIntegration(BaseTestCase):
         with self.assertRaises(ConcurrentException):
             cmp()
 
-    @mock.patch('metafunctions.concurrent.os.fork', return_value=0)
-    @mock.patch('metafunctions.concurrent.os._exit')
+    @mock.patch('metafunctions.core.concurrent.os.fork', return_value=0)
+    @mock.patch('metafunctions.core.concurrent.os._exit')
     @mock.patch('multiprocessing.queues.Queue.close')
     @mock.patch('multiprocessing.queues.Queue.join_thread')
-    @mock.patch('metafunctions.concurrent.os.waitpid')
+    @mock.patch('metafunctions.core.concurrent.os.waitpid')
     def test_no_fork(self, mock_wait, mock_join, mock_close, mock_exit, mock_fork):
         # This test re-runs concurrent tests with forking disabled. Partially this is to
         # address my inability to get coverage.py to recognize the code covered by forked
@@ -203,10 +203,3 @@ class TestIntegration(BaseTestCase):
                 method()
 
 
-### Simple Sample Functions ###
-@node
-def a(x):
-    return x + 'a'
-@node
-def b(x):
-    return x + 'b'
