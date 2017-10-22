@@ -1,3 +1,9 @@
+'''
+MetaFunctions is a function composition and data pipelining library.
+
+For more information, please visit the `project on github <https://github.com/ForeverWintr/metafunctions>`_.
+'''
+
 import os
 import sys
 import contextlib
@@ -52,7 +58,7 @@ setup(
     name=metafunctions.__name__,
     version=metafunctions.__version__,
     description='Metafunctions is a function composition and data pipelining library',
-    #long_description=long_description,
+    long_description=__doc__,
     url='https://github.com/ForeverWintr/metafunctions',
     author='Tom Rutherford',
     author_email='tom.rutherford@alumni.uleth.ca',
