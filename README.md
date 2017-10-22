@@ -111,10 +111,13 @@ Traceback (most recent call last):
 builtins.ValueError: could not convert string to float: '$800'
 ```
 
-We can deduce that float conversion failed, but *which* float function raised the exception? MetaFunctions address this by adding a locater string to any exception raised within the pipeline:
+We can deduce that float conversion failed, but *which* float function raised the exception? MetaFunctions addresses this by adding the `locate_error` metafunction decorator, which adds a location information string to any exception raised within the pipeline:
 
 ```
->>> compute_value('http://prices.com/123')
+from metafunctions import locate_error
+
+>>> with_location = locate_error(compute_value)
+>>> with_location('http://prices.com/123')
 Traceback (most recent call last):
   File "<stdin>", line 1, in <module>
   ...
