@@ -114,8 +114,7 @@ builtins.ValueError: could not convert string to float: '$800'
 We can deduce that float conversion failed, but *which* float function raised the exception? MetaFunctions addresses this by adding the `locate_error` metafunction decorator, which adds a location information string to any exception raised within the pipeline:
 
 ```
-from metafunctions import locate_error
-
+>>> from metafunctions import locate_error
 >>> with_location = locate_error(compute_value)
 >>> with_location('http://prices.com/123')
 Traceback (most recent call last):
@@ -175,9 +174,11 @@ Metafunctions provides utilities for constructing advanced function pipelines.
   do_large_calculation = process_companies + process_customers
   ```
 
-  Assuming the component functions in the `do_large_calculation` MetaFunction follow good functional practices and do not have side effects, it's easy to see that `process_companies` and `process_customers` are independent of each other. If that's the case, we can safely execute them in parallel. `metafunctions`' `concurrent` function allows you to specify steps in the function pipeline to execute in parallel:
+  Assuming the component functions in the `do_large_calculation` MetaFunction follow good functional practices and do not have side effects, it's easy to see that `process_companies` and `process_customers` are independent of each other. If that's the case, we can safely execute them in parallel. The `concurrent` metafunction decorator allows you to specify steps in the function pipeline to execute in parallel:
 
   ```python
+  from metafunctions import concurrent
+
   do_large_calculation_async = concurrent(process_companies + process_customers)
   ```
 
