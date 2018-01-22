@@ -4,7 +4,14 @@ import sys
 import re
 import contextlib
 
-import colors
+DEFAULT_HIGHLIGHT_COLOR = None
+try:
+    import colors
+except ImportError:
+    _HAS_COLORS = False
+else:
+    DEFAULT_HIGHLIGHT_COLOR = colors.red
+    _HAS_COLORS = True
 
 HIGHLIGHT_TEMPLATE = '->{}<-'
 
@@ -12,7 +19,7 @@ def highlight(string):
     return HIGHLIGHT_TEMPLATE.format(string)
 
 _color_regex = re.compile(HIGHLIGHT_TEMPLATE.format('.*?'))
-def color_highlights(string, color=colors.red):
+def color_highlights(string, color=DEFAULT_HIGHLIGHT_COLOR):
     '''Color all highlights'''
     for substr in _color_regex.findall(string):
         string = string.replace(substr, color(substr))
@@ -27,7 +34,7 @@ def system_supports_color():
     supported_platform = plat != 'Pocket PC' and (plat != 'win32' or 'ANSICON' in os.environ)
     # isatty is not always implemented, #6223.
     is_a_tty = hasattr(sys.stdout, 'isatty') and sys.stdout.isatty()
-    if not supported_platform or not is_a_tty:
+    if not _HAS_COLORS or not supported_platform or not is_a_tty:
         return False
     return True
 

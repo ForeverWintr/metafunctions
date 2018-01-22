@@ -7,8 +7,6 @@ import functools
 import typing as tp
 import os
 
-import colors
-
 from metafunctions.core import MetaFunction
 from metafunctions.core import SimpleFunction
 from metafunctions.core import FunctionMerge
@@ -110,7 +108,6 @@ def mmap(function: tp.Callable, operator: tp.Callable=operators.concat) -> Merge
 
 
 def locate_error(meta_function: MetaFunction,
-                 color=colors.red,
                  use_color=util.system_supports_color()) -> SimpleFunction:
     '''
     Wrap the given MetaFunction with an error handler that adds location information to any
