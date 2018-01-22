@@ -10,7 +10,8 @@ from metafunctions.core import manage_call_state
 from metafunctions import exceptions
 
 # Result tuple to be sent back from workers. Defined at module level for eas of pickling
-_ConcurrentResult = namedtuple('_ConcurrentResult', 'index result call_state_data exception location')
+_ConcurrentResult = namedtuple('_ConcurrentResult',
+                               'index result call_state_data exception location')
 
 class ConcurrentMerge(FunctionMerge):
 
@@ -26,14 +27,14 @@ class ConcurrentMerge(FunctionMerge):
             raise exceptions.CompositionError(f'{type(self)} can only upgrade FunctionMerges')
 
         super().__init__(
-                function_merge._merge_func,
-                function_merge._functions,
-                function_merge._function_join_str)
+            function_merge._merge_func,
+            function_merge._functions,
+            function_merge._function_join_str)
         self._function_merge = function_merge
 
     def __str__(self):
         merge_name = str(self._function_merge)
-        return f'concurrent{merge_name}' if merge_name.startswith('(') else f'concurrent({merge_name})'
+        return (f'concurrent{merge_name}' if merge_name.startswith('(') else f'concurrent({merge_name})')
 
     @manage_call_state
     def __call__(self, *args, **kwargs):
@@ -66,7 +67,7 @@ class ConcurrentMerge(FunctionMerge):
         for r in sorted(iter(result_q.get, None), key=itemgetter(0)):
             if r.exception:
                 raise exceptions.ConcurrentException(
-                        'Caught exception in child process', location=r.location) from pickle.loads(r.exception)
+                    'Caught exception in child process', location=r.location) from pickle.loads(r.exception)
             kwargs['call_state'].data.update(pickle.loads(r.call_state_data))
             results.append(pickle.loads(r.result))
         return self._merge_func(*results)
@@ -124,4 +125,3 @@ class ConcurrentMerge(FunctionMerge):
             # consequences. e.g., anything above this that catches the resulting SystemExit can
             # cause the child process to stay alive. the unittest framework does this.
             os._exit(0)
-

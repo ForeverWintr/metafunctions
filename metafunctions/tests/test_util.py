@@ -1,13 +1,9 @@
-from unittest import mock
-import functools
-
 import colors
 
 from metafunctions.tests.util import BaseTestCase
 from metafunctions.tests.simple_nodes import *
-from metafunctions.api import store, recall, node, bind_call_state, locate_error, mmap
+from metafunctions.api import node, locate_error
 from metafunctions import util
-from metafunctions.core import SimpleFunction, CallState
 
 
 class TestUnit(BaseTestCase):

@@ -1,5 +1,3 @@
-import re
-
 from collections import namedtuple, defaultdict, OrderedDict
 from metafunctions import util
 

@@ -1,6 +1,5 @@
 import unittest
 import random
-import importlib
 
 class TestUnit(unittest.TestCase):
     def test_api_imports(self):

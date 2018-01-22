@@ -1,11 +1,8 @@
 '''
 Utility functions for use in function pipelines.
 '''
-import sys
-import re
 import functools
 import typing as tp
-import os
 
 from metafunctions.core import MetaFunction
 from metafunctions.core import SimpleFunction
@@ -70,13 +67,13 @@ def store(key):
     return storer
 
 
-def recall(key, from_call_state:CallState=None):
+def recall(key, from_call_state: CallState=None):
     '''Retrieve the given key from the meta data dictionary. Optionally, use `from_call_state` to
     specify a different call_state than the current one.
     '''
     @node(name=f"recall('{key}')")
     @bind_call_state
-    def recaller(call_state, val):
+    def recaller(call_state, *_):
         if from_call_state:
             return from_call_state.data[key]
         return call_state.data[key]

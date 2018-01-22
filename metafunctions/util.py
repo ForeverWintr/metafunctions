@@ -2,7 +2,6 @@
 import os
 import sys
 import re
-import contextlib
 
 DEFAULT_HIGHLIGHT_COLOR = None
 try:
