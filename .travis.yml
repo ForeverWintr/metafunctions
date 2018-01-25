@@ -1,7 +1,6 @@
 language: python
 python:
   - "3.6"
-  - 3.5
 env:
   - TOXENV=py34
   - TOXENV=py35
@@ -14,3 +13,10 @@ script:
 
 after_success:
   - codecov
+
+addons: #Added to get python 3.5
+  apt:
+    sources:
+      - deadsnakes
+    packages:
+      - python3.5
