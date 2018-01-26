@@ -24,7 +24,11 @@ class ConcurrentMerge(FunctionMerge):
             #This check is necessary because functools.wraps will copy FunctionMerge attributes to
             #objects that are not FunctionMerges, so this init will succeed, then result in errors
             #at call time.
-            raise exceptions.CompositionError('{} can only upgrade FunctionMerges'.format(type(self)))
+            raise exceptions.CompositionError(
+                '{} can only upgrade FunctionMerges'.format(type(self)))
+        if not hasattr(os, 'fork'):
+            raise exceptions.CompositionError(
+                '{} requires os.fork, and thus is only available on unix'.format(type(self).__name__))
 
         super().__init__(
             function_merge._merge_func,

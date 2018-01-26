@@ -1,4 +1,6 @@
+import platform
 import operator
+import unittest
 from unittest import mock
 import functools
 
@@ -19,6 +21,7 @@ from metafunctions.core import CallState
 from metafunctions.exceptions import ConcurrentException, CompositionError, CallError
 
 
+@unittest.skipIf(platform.system() == 'Windows', "Concurrent isn't supported on windows")
 class TestIntegration(BaseTestCase):
     def test_basic(self):
         ab = a + b
@@ -203,4 +206,9 @@ class TestIntegration(BaseTestCase):
             with self.subTest(name=test_name):
                 method()
 
-
+    @mock.patch('metafunctions.core.concurrent.hasattr', return_value=False)
+    def test_windows(self, mock_hasattr):
+        with self.assertRaises(CompositionError) as e:
+            concurrent(a+a)
+        self.assertEqual(str(e.exception),
+            'ConcurrentMerge requires os.fork, and thus is only available on unix')
