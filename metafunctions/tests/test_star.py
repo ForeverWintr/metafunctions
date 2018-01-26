@@ -1,4 +1,5 @@
 import unittest
+import os
 
 from metafunctions.api import node, star, concurrent
 from metafunctions.tests.simple_nodes import *
@@ -48,6 +49,7 @@ class TestUnit(BaseTestCase):
         #reprs remain the same
         self.assertEqual(repr(star_a), 'SimpleFunction({})'.format(star_a._function))
 
+    @unittest.skipUnless(hasattr(os, 'fork'), "Concurent isn't available on windows")
     def test_concurrent(self):
         # Concurrent and star can work together, although this organization no longer makes sense
         with self.assertRaises(exceptions.CompositionError):
