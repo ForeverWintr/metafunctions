@@ -50,7 +50,7 @@ def star(meta_function: MetaFunction) -> MetaFunction:
     '''
     fname = str(meta_function)
     #This convoluted inline `if` just decides whether we should add brackets or not.
-    @node(name=f'star{fname}' if fname.startswith('(') else f'star({fname})')
+    @node(name='star{}'.format(fname) if fname.startswith('(') else 'star({})'.format(fname))
     @functools.wraps(meta_function)
     def wrapper(args, **kwargs):
         return meta_function(*args, **kwargs)
@@ -59,7 +59,7 @@ def star(meta_function: MetaFunction) -> MetaFunction:
 
 def store(key):
     '''Store the received output in the meta data dictionary under the given key.'''
-    @node(name=f"store('{key}')")
+    @node(name="store('{}')".format(key))
     @bind_call_state
     def storer(call_state, val):
         call_state.data[key] = val
@@ -71,7 +71,7 @@ def recall(key, from_call_state: CallState=None):
     '''Retrieve the given key from the meta data dictionary. Optionally, use `from_call_state` to
     specify a different call_state than the current one.
     '''
-    @node(name=f"recall('{key}')")
+    @node(name="recall('{}')".format(key))
     @bind_call_state
     def recaller(call_state, *_):
         if from_call_state:
@@ -127,7 +127,7 @@ def locate_error(meta_function: MetaFunction,
 
             if use_color:
                 location = util.color_highlights(location)
-            detailed_message = (f"{str(e)} \n\nOccured in the following function: {location}")
+            detailed_message = ("{0!s} \n\nOccured in the following function: {1}".format(e, location))
             new_e = type(e)(detailed_message).with_traceback(e.__traceback__)
             new_e.__cause__ = e.__cause__
         raise new_e

@@ -7,4 +7,4 @@ class TestUnit(unittest.TestCase):
                           'mmap', 'locate_error']
         random.shuffle(expected_names)
         for name in expected_names:
-            exec(f'from metafunctions import {name}')
+            exec('from metafunctions import {}'.format(name))

@@ -42,4 +42,6 @@ class TestUnit(BaseTestCase):
 
     def test_color_highlights(self):
         s = 'a ->test<- string ->for<- highlight'
-        self.assertEqual(util.color_highlights(s), f'a {colors.red("->test<-")} string {colors.red("->for<-")} highlight')
+        self.assertEqual(util.color_highlights(s),
+                         'a {} string {} highlight'.format(colors.red("->test<-"),
+                                                           colors.red("->for<-")))

@@ -24,7 +24,7 @@ class ConcurrentMerge(FunctionMerge):
             #This check is necessary because functools.wraps will copy FunctionMerge attributes to
             #objects that are not FunctionMerges, so this init will succeed, then result in errors
             #at call time.
-            raise exceptions.CompositionError(f'{type(self)} can only upgrade FunctionMerges')
+            raise exceptions.CompositionError('{} can only upgrade FunctionMerges'.format(type(self)))
 
         super().__init__(
             function_merge._merge_func,
@@ -34,7 +34,8 @@ class ConcurrentMerge(FunctionMerge):
 
     def __str__(self):
         merge_name = str(self._function_merge)
-        return (f'concurrent{merge_name}' if merge_name.startswith('(') else f'concurrent({merge_name})')
+        return ('concurrent{}'.format(merge_name) if merge_name.startswith('(')
+                else 'concurrent({})'.format(merge_name))
 
     @manage_call_state
     def __call__(self, *args, **kwargs):
@@ -110,7 +111,7 @@ class ConcurrentMerge(FunctionMerge):
                 pickled_exception = pickle.dumps(e)
             except AttributeError:
                 pickled_exception = pickle.dumps(
-                        AttributeError(f'Unplicklable exception raised in {func}'))
+                        AttributeError('Unplicklable exception raised in {}'.format(func)))
             result = make_result(exception=pickled_exception,
                     location=kwargs['call_state'].highlight_active_function())
         finally:

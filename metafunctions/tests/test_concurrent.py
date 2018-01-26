@@ -38,8 +38,8 @@ class TestIntegration(BaseTestCase):
             cmp()
         self.assertIsInstance(e.exception.__cause__, ZeroDivisionError)
         self.assertEqual(str(e.exception),
-                f'Caught exception in child process \n\nOccured in the following function: '
-                f'(0 | concurrent({colors.red("->fail<-")} - fail))')
+                'Caught exception in child process \n\nOccured in the following function: '
+                '(0 | concurrent({} - fail))'.format(colors.red("->fail<-")))
         self.assertIsInstance(e.exception.__cause__, ZeroDivisionError)
 
     def test_consistent_meta(self):
@@ -104,9 +104,10 @@ class TestIntegration(BaseTestCase):
         cab = ConcurrentMerge(a + b)
         cmap = concurrent(mmap(a))
 
-        self.assertEqual(repr(cab), f'ConcurrentMerge({operator.add}, ({repr(a)}, {repr(b)}))')
-        self.assertEqual(str(cab), f'concurrent(a + b)')
-        self.assertEqual(str(cmap), f'concurrent(mmap(a))')
+        self.assertEqual(repr(cab), 'ConcurrentMerge({0}, ({1!r}, {2!r}))'.format(
+            operator.add, a, b))
+        self.assertEqual(str(cab), 'concurrent(a + b)')
+        self.assertEqual(str(cmap), 'concurrent(mmap(a))')
 
     def test_basic_map(self):
         # We can upgrade maps to run in parallel

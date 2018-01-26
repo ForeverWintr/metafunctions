@@ -43,7 +43,7 @@ def replace_nth(string, substring, occurance_index: int, new_substring):
     '''
     escaped = re.escape(substring)
     # There's probably a better regex for this.
-    regex = f"((?:.*?{escaped}.*?){{{occurance_index-1}}}.*?){escaped}(.*$)"
+    regex = "((?:.*?{0}.*?){{{1}}}.*?){0}(.*$)".format(escaped, occurance_index-1)
     return re.sub(regex, fr'\1{new_substring}\2', string)
 
 
