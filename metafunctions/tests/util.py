@@ -31,6 +31,6 @@ class BaseTestCase(unittest.TestCase):
 
     def _formatMessage(self, msg, standardMsg):
         msg = msg or ''
-        return super()._formatMessage(msg=f'{msg} (seed: {self.seed})', standardMsg=standardMsg)
+        return super()._formatMessage(msg='{} (seed: {})'.format(msg, self.seed), standardMsg=standardMsg)
 
 

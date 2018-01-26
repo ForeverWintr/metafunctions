@@ -31,7 +31,7 @@ class MergeMap(FunctionMerge):
         return f(*args[0], **kwargs)
 
     def __str__(self):
-        return f'mmap({self.functions[0]!s})'
+        return 'mmap({self.functions[0]!s})'.format(self=self)
 
     def __repr__(self):
-        return f'{self.__class__.__name__}({self.functions[0]}, merge_function={self._merge_func})'
+        return '{self.__class__.__name__}({self.functions[0]}, merge_function={self._merge_func})'.format(self=self)

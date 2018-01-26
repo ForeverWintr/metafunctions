@@ -1,13 +1,9 @@
-from unittest import mock
-import functools
-
 import colors
 
 from metafunctions.tests.util import BaseTestCase
 from metafunctions.tests.simple_nodes import *
-from metafunctions.api import store, recall, node, bind_call_state, locate_error, mmap
+from metafunctions.api import node, locate_error
 from metafunctions import util
-from metafunctions.core import SimpleFunction, CallState
 
 
 class TestUnit(BaseTestCase):
@@ -46,4 +42,6 @@ class TestUnit(BaseTestCase):
 
     def test_color_highlights(self):
         s = 'a ->test<- string ->for<- highlight'
-        self.assertEqual(util.color_highlights(s), f'a {colors.red("->test<-")} string {colors.red("->for<-")} highlight')
+        self.assertEqual(util.color_highlights(s),
+                         'a {} string {} highlight'.format(colors.red("->test<-"),
+                                                           colors.red("->for<-")))

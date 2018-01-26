@@ -40,12 +40,12 @@ class TestIntegration(BaseTestCase):
     def test_auto_meta(self):
         mapsum = mmap(sum)
         self.assertEqual(mapsum([[1, 2], [3, 4]]), (3, 7))
-        self.assertEqual(str(mapsum), f'mmap(sum)')
+        self.assertEqual(str(mapsum), 'mmap(sum)')
 
     def test_str_repr(self):
         m = MergeMap(a)
         self.assertEqual(str(m), 'mmap(a)')
-        self.assertEqual(repr(m), f'MergeMap(a, merge_function={operators.concat})')
+        self.assertEqual(repr(m), 'MergeMap(a, merge_function={})'.format(operators.concat))
 
     def test_loop(self):
         cmp = (b & c & 'stoke') | mmap(a)

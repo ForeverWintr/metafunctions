@@ -12,7 +12,7 @@ class TestUnit(BaseTestCase):
         self.assertEqual(l('_'), '_l')
 
     def test_str(self):
-        self.assertEqual(repr(a), f'SimpleFunction({repr(a._function)})')
+        self.assertEqual(repr(a), 'SimpleFunction({0!r})'.format(a._function))
         self.assertEqual(str(a), 'a')
 
 

@@ -15,9 +15,6 @@ import metafunctions
 
 here = os.path.abspath(os.path.dirname(__file__))
 
-with open(os.path.join(here, 'requirements.txt')) as f:
-    requirements = f.readlines()
-
 
 class UploadCommand(Command):
     """
@@ -75,7 +72,7 @@ setup(
     keywords='functional-programming function-composition',
     packages=find_packages(),
     test_suite='metafunctions.tests',
-    install_requires=requirements,
+    install_requires='ansicolors>=1.1.8',
     # $ setup.py publish support.
     cmdclass={
         'upload': UploadCommand,

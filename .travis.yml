@@ -1,14 +1,21 @@
 language: python
 python:
   - "3.6"
-  - "3.7-dev"
+env:
+  - TOXENV=py35
+  - TOXENV=py36
 install:
-  - pip install codecov
-  - pip install -r requirements.txt
+  - pip install -U tox codecov
 
 script:
-  - coverage run -pm unittest discover
-  - coverage combine
+  - tox
 
 after_success:
   - codecov
+
+addons: #Added to get python 3.5
+  apt:
+    sources:
+      - deadsnakes
+    packages:
+      - python3.5

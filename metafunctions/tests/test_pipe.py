@@ -62,7 +62,7 @@ class TestIntegration(BaseTestCase):
         self.assertEqual(str(cmp), "(a + 'f')")
         self.assertEqual(repr(cmp),
                 "FunctionMerge(<built-in function add>, "
-                f"(SimpleFunction({repr(a._function)}), DeferredValue('f')))")
+                "(SimpleFunction({0!r}), DeferredValue('f')))".format(a._function))
 
     def test_non_callable_composition(self):
         '''
@@ -237,7 +237,7 @@ class TestIntegration(BaseTestCase):
             return x + 'f'
 
         fn = node(f+'sup')
-        self.assertEqual(repr(fn), f"SimpleFunction({(f+'sup')!r})")
+        self.assertEqual(repr(fn), "SimpleFunction({0!r})".format((f+'sup')))
         self.assertEqual(str(fn), "(f + 'sup')")
         abcf = a | b | c | fn
 

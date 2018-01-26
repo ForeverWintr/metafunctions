@@ -1,6 +1,5 @@
 import unittest
 import random
-import importlib
 
 class TestUnit(unittest.TestCase):
     def test_api_imports(self):
@@ -8,4 +7,4 @@ class TestUnit(unittest.TestCase):
                           'mmap', 'locate_error']
         random.shuffle(expected_names)
         for name in expected_names:
-            exec(f'from metafunctions import {name}')
+            exec('from metafunctions import {}'.format(name))

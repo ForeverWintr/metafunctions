@@ -16,7 +16,7 @@ class CallError(MetaFunctionError, TypeError):
         return '{}({}, {})'.format(
             self.__class__.__name__,
             self.args,
-            f"location='{self.location}'" if self.location else '')
+            "location='{}'".format(self.location) if self.location else '')
 
 class ConcurrentException(CallError):
     "Concurrent specific call errors (e.g., things that aren't picklable)"
