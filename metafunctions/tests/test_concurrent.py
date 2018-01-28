@@ -1,4 +1,6 @@
+import platform
 import operator
+import unittest
 from unittest import mock
 import functools
 
@@ -19,6 +21,7 @@ from metafunctions.core import CallState
 from metafunctions.exceptions import ConcurrentException, CompositionError, CallError
 
 
+@unittest.skipIf(platform.system() == 'Windows', "Concurrent isn't supported on windows")
 class TestIntegration(BaseTestCase):
     def test_basic(self):
         ab = a + b
@@ -38,8 +41,8 @@ class TestIntegration(BaseTestCase):
             cmp()
         self.assertIsInstance(e.exception.__cause__, ZeroDivisionError)
         self.assertEqual(str(e.exception),
-                f'Caught exception in child process \n\nOccured in the following function: '
-                f'(0 | concurrent({colors.red("->fail<-")} - fail))')
+                'Caught exception in child process \n\nOccured in the following function: '
+                '(0 | concurrent({} - fail))'.format(colors.red("->fail<-")))
         self.assertIsInstance(e.exception.__cause__, ZeroDivisionError)
 
     def test_consistent_meta(self):
@@ -104,9 +107,10 @@ class TestIntegration(BaseTestCase):
         cab = ConcurrentMerge(a + b)
         cmap = concurrent(mmap(a))
 
-        self.assertEqual(repr(cab), f'ConcurrentMerge({operator.add}, ({repr(a)}, {repr(b)}))')
-        self.assertEqual(str(cab), f'concurrent(a + b)')
-        self.assertEqual(str(cmap), f'concurrent(mmap(a))')
+        self.assertEqual(repr(cab), 'ConcurrentMerge({0}, ({1!r}, {2!r}))'.format(
+            operator.add, a, b))
+        self.assertEqual(str(cab), 'concurrent(a + b)')
+        self.assertEqual(str(cmap), 'concurrent(mmap(a))')
 
     def test_basic_map(self):
         # We can upgrade maps to run in parallel
@@ -202,4 +206,9 @@ class TestIntegration(BaseTestCase):
             with self.subTest(name=test_name):
                 method()
 
-
+    @mock.patch('metafunctions.core.concurrent.hasattr', return_value=False)
+    def test_windows(self, mock_hasattr):
+        with self.assertRaises(CompositionError) as e:
+            concurrent(a+a)
+        self.assertEqual(str(e.exception),
+            'ConcurrentMerge requires os.fork, and thus is only available on unix')

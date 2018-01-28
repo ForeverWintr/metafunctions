@@ -19,7 +19,7 @@ class TestUnit(BaseTestCase):
         cmp = a @ b
         self.assertEqual(str(cmp), '(a | star(b))')
         self.assertEqual(repr(cmp),
-                f"FunctionChain{(a, cmp.functions[1])}")
+                "FunctionChain{}".format((a, cmp.functions[1])))
 
         cmp = a | a @ b * 5 / 7 | b & b @ a
         self.assertEqual(str(cmp), '(a | (((a | star(b)) * 5) / 7) | (b & (b | star(a))))')
@@ -30,7 +30,7 @@ class TestUnit(BaseTestCase):
         cmp = a @ (b&c)
         self.assertEqual(str(cmp), '(a | star(b & c))')
         self.assertEqual(repr(cmp),
-                             f'FunctionChain({a!r}, SimpleFunction({cmp._functions[1]._function}))')
+            'FunctionChain({0!r}, SimpleFunction({1}))'.format(a, cmp._functions[1]._function))
 
     def test_upgrade_merge(self):
         aabbcc = (a & b & c) @ (a&b&c)

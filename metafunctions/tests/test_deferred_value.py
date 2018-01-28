@@ -12,7 +12,7 @@ class TestUnit(BaseTestCase):
     def test_str_repr(self):
         a = object()
         b = DeferredValue(a)
-        self.assertEqual(repr(b), f'DeferredValue({repr(a)})')
+        self.assertEqual(repr(b), 'DeferredValue({0!r})'.format(a))
         self.assertEqual(str(DeferredValue(5)), '5')
         self.assertEqual(repr(DeferredValue('a')), "DeferredValue('a')")
 
