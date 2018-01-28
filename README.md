@@ -1,5 +1,9 @@
 # MetaFunctions
-[![Build Status](https://travis-ci.org/ForeverWintr/metafunctions.svg?branch=master)](https://travis-ci.org/ForeverWintr/metafunctions) [![Codecov](https://codecov.io/gh/ForeverWintr/metafunctions/coverage.svg?branch=master)](https://codecov.io/gh/ForeverWintr/metafunctions)
+[![Build Status](https://travis-ci.org/ForeverWintr/metafunctions.svg?branch=master)](https://travis-ci.org/ForeverWintr/metafunctions) [![Build status](https://ci.appveyor.com/api/projects/status/8120lqx7e9ys2m0u/branch/master?svg=true)](https://ci.appveyor.com/project/ForeverWintr/metafunctions/branch/master) [![Codecov](https://codecov.io/gh/ForeverWintr/metafunctions/coverage.svg?branch=master)](https://codecov.io/gh/ForeverWintr/metafunctions)
+
+
+
+
 ## Metafunctions is a function composition and data pipelining library.
 It allows for data pipeline creation separate from execution, so instead of writing:
 
