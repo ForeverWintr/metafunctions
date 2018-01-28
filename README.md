@@ -54,13 +54,19 @@ Well you may not *need* a new syntax, but the ability to compose a data pipeline
   result = pipeline(data)
   ```
 
+## Installation
+
+MetaFunctions supports python 3.5+
+
+`pip install metafunctions`
+
 ## How does it work?
 
 Conceptually, a MetaFunction is a function that contains other functions. When you call a MetaFunction, the MetaFunction calls the functions it contains.
 
 You can create a MetaFunction using the `node` decorator:
 ```python
-from metafunctions.decorators import node
+from metafunctions import node
 
 @node
 def get_name(prompt):
@@ -128,8 +134,6 @@ builtins.ValueError: could not convert string to float: '$800'
 Occured in the following function: ((query_volume | float) + (query_price | ->float<-))
 ```
 
-*Note:* This behavior can be disabled by specifying `modify_tracebacks=False` in the `node` decorator.
-
 ### Advanced Pipeline Construction Tools
 
 Metafunctions provides utilities for constructing advanced function pipelines.
@@ -175,10 +179,10 @@ Metafunctions provides utilities for constructing advanced function pipelines.
   process_companies = get_company_data | filter | process
   process_customers = get_customer_data | filter | process
 
-  do_large_calculation = process_companies + process_customers
+  process_all = process_companies & process_customers
   ```
 
-  Assuming the component functions in the `do_large_calculation` MetaFunction follow good functional practices and do not have side effects, it's easy to see that `process_companies` and `process_customers` are independent of each other. If that's the case, we can safely execute them in parallel. The `concurrent` metafunction decorator allows you to specify steps in the function pipeline to execute in parallel:
+  Assuming the component functions in the `process_all` MetaFunction follow good functional practices and do not have side effects, it's easy to see that `process_companies` and `process_customers` are independent of each other. If that's the case, we can safely execute them in parallel. The `concurrent` metafunction decorator allows you to specify steps in the function pipeline to execute in parallel:
 
   ```python
   from metafunctions import concurrent
