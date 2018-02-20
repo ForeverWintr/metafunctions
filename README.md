@@ -165,7 +165,7 @@ Metafunctions provides utilities for constructing advanced function pipelines.
   `star` can be combined with the above `mmap` to duplicate the behaviour of [`itertools.starmap`](https://docs.python.org/3/library/itertools.html#itertools.starmap): 
 
   ```python
-  starmap = star(map(f))
+  starmap = star(mmap(f))
   ```
 
   For more discussion of `star`, see [this pull request](https://github.com/ForeverWintr/metafunctions/pull/9)
