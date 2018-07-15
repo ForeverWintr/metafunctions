@@ -58,7 +58,7 @@ setup(
     long_description=__doc__,
     url='https://github.com/ForeverWintr/metafunctions',
     author='Tom Rutherford',
-    author_email='tom.rutherford@alumni.uleth.ca',
+    author_email='foreverwintr@gmail.com',
     license='MIT',
     # See https://pypi.python.org/pypi?%3Aaction=list_classifiers
     classifiers=[
