@@ -58,7 +58,7 @@ setup(
     long_description=__doc__,
     url='https://github.com/ForeverWintr/metafunctions',
     author='Tom Rutherford',
-    author_email='tom.rutherford@alumni.uleth.ca',
+    author_email='foreverwintr@gmail.com',
     license='MIT',
     # See https://pypi.python.org/pypi?%3Aaction=list_classifiers
     classifiers=[
@@ -66,8 +66,12 @@ setup(
         'Intended Audience :: Developers',
         'Topic :: Software Development :: Libraries :: Python Modules',
         'License :: OSI Approved :: MIT License',
+        'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3.8',
+        'Programming Language :: Python :: 3.9',
+        'Programming Language :: Python :: 3.10',
     ],
     keywords='functional-programming function-composition',
     packages=find_packages(),

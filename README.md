@@ -1,6 +1,6 @@
 # MetaFunctions
 [![Build Status](https://travis-ci.org/ForeverWintr/metafunctions.svg?branch=master)](https://travis-ci.org/ForeverWintr/metafunctions) [![Build status](https://ci.appveyor.com/api/projects/status/8120lqx7e9ys2m0u/branch/master?svg=true)](https://ci.appveyor.com/project/ForeverWintr/metafunctions/branch/master) [![Codecov](https://codecov.io/gh/ForeverWintr/metafunctions/coverage.svg?branch=master)](https://codecov.io/gh/ForeverWintr/metafunctions)
-
+![GithubActions Badge](https://github.com/emirkmo/metafunctions/actions/workflows/python-package.yml/badge.svg)
 
 
 
@@ -56,7 +56,7 @@ Well you may not *need* a new syntax, but the ability to compose a data pipeline
 
 ## Installation
 
-MetaFunctions supports python 3.5+
+MetaFunctions supports python 3.5+ (tested to 3.10+)
 
 `pip install metafunctions`
 
@@ -165,7 +165,7 @@ Metafunctions provides utilities for constructing advanced function pipelines.
   `star` can be combined with the above `mmap` to duplicate the behaviour of [`itertools.starmap`](https://docs.python.org/3/library/itertools.html#itertools.starmap): 
 
   ```python
-  starmap = star(map(f))
+  starmap = star(mmap(f))
   ```
 
   For more discussion of `star`, see [this pull request](https://github.com/ForeverWintr/metafunctions/pull/9)
