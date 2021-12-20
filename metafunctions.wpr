@@ -1,11 +1,11 @@
 #!wing
-#!version=6.0
+#!version=8.0
 ##################################################################
-# Wing IDE project file                                          #
+# Wing project file                                              #
 ##################################################################
 [project attributes]
 proj.directory-list = [{'dirloc': loc('metafunctions'),
-                        'excludes': [u'metafunctions.egg-info'],
+                        'excludes': ['metafunctions.egg-info'],
                         'filter': '*',
                         'include_hidden': False,
                         'recursive': True,
@@ -15,7 +15,7 @@ proj.file-list = [loc('appveyor.yml'),
                   loc('tox.ini')]
 proj.file-type = 'shared'
 proj.launch-config = {loc('setup.py'): ('project',
-        (u'sdist\n',
+        ('sdist\n',
          ''))}
 testing.auto-test-file-specs = (('glob',
                                  'test_*.py'),)
