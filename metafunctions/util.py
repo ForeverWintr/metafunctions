@@ -1,4 +1,4 @@
-'''Utilities for working with MetaFunctions'''
+"""Utilities for working with MetaFunctions"""
 import os
 import sys
 import re
@@ -12,17 +12,22 @@ else:
     DEFAULT_HIGHLIGHT_COLOR = colors.red
     _HAS_COLORS = True
 
-HIGHLIGHT_TEMPLATE = '->{}<-'
+HIGHLIGHT_TEMPLATE = "->{}<-"
+
 
 def highlight(string):
     return HIGHLIGHT_TEMPLATE.format(string)
 
-_color_regex = re.compile(HIGHLIGHT_TEMPLATE.format('.*?'))
+
+_color_regex = re.compile(HIGHLIGHT_TEMPLATE.format(".*?"))
+
+
 def color_highlights(string, color=DEFAULT_HIGHLIGHT_COLOR):
-    '''Color all highlights'''
+    """Color all highlights"""
     for substr in _color_regex.findall(string):
         string = string.replace(substr, color(substr))
     return string
+
 
 def system_supports_color():
     """
@@ -30,20 +35,19 @@ def system_supports_color():
     from Django, by way of StackOverflow: https://stackoverflow.com/a/22254892/1286571
     """
     plat = sys.platform
-    supported_platform = plat != 'Pocket PC' and (plat != 'win32' or 'ANSICON' in os.environ)
+    supported_platform = plat != "Pocket PC" and (
+        plat != "win32" or "ANSICON" in os.environ
+    )
     # isatty is not always implemented, #6223.
-    is_a_tty = hasattr(sys.stdout, 'isatty') and sys.stdout.isatty()
+    is_a_tty = hasattr(sys.stdout, "isatty") and sys.stdout.isatty()
     if not _HAS_COLORS or not supported_platform or not is_a_tty:
         return False
     return True
 
 
 def replace_nth(string, substring, occurance_index: int, new_substring):
-    '''Return string, with the instance of substring at `occurance_index` replaced with new_substring
-    '''
+    """Return string, with the instance of substring at `occurance_index` replaced with new_substring"""
     escaped = re.escape(substring)
     # There's probably a better regex for this.
-    regex = "((?:.*?{0}.*?){{{1}}}.*?){0}(.*$)".format(escaped, occurance_index-1)
-    return re.sub(regex, r'\1{}\2'.format(new_substring), string)
-
-
+    regex = "((?:.*?{0}.*?){{{1}}}.*?){0}(.*$)".format(escaped, occurance_index - 1)
+    return re.sub(regex, r"\1{}\2".format(new_substring), string)

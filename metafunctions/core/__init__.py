@@ -1,4 +1,3 @@
-
 from .base import MetaFunction
 from .base import SimpleFunction
 from .base import DeferredValue
