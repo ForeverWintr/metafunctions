@@ -39,3 +39,13 @@ jobs:
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
     - name: Run tox with tox-gh-actions
       run: tox -e py
+
+    - name: Upload coverage
+    - uses: codecov/codecov-action@v2
+      with:
+        #token: ${{ secrets.CODECOV_TOKEN }} # not required for public repos
+        files: ./coverage.json # optional
+        flags: unittests # optional
+        name: test # optional
+        fail_ci_if_error: true # optional (default = false)
+        verbose: true # optional (default = false)
