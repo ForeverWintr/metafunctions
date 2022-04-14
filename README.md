@@ -1,5 +1,5 @@
 # MetaFunctions
-![GithubActions Badge](https://github.com/ForeverWintr/metafunctions/actions/workflows/test.yml/badge.svg)
+![GithubActions Badge](https://github.com/ForeverWintr/metafunctions/actions/workflows/Test/badge.svg)
 [![Codecov](https://codecov.io/gh/ForeverWintr/metafunctions/coverage.svg?branch=master)](https://codecov.io/gh/ForeverWintr/metafunctions)
 
 
