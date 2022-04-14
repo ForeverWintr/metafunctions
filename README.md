@@ -1,6 +1,6 @@
 # MetaFunctions
-[![Build Status](https://travis-ci.org/ForeverWintr/metafunctions.svg?branch=master)](https://travis-ci.org/ForeverWintr/metafunctions) [![Build status](https://ci.appveyor.com/api/projects/status/8120lqx7e9ys2m0u/branch/master?svg=true)](https://ci.appveyor.com/project/ForeverWintr/metafunctions/branch/master) [![Codecov](https://codecov.io/gh/ForeverWintr/metafunctions/coverage.svg?branch=master)](https://codecov.io/gh/ForeverWintr/metafunctions)
-![GithubActions Badge](https://github.com/emirkmo/metafunctions/actions/workflows/python-package.yml/badge.svg)
+![GithubActions Badge](https://github.com/ForeverWintr/metafunctions/actions/workflows/test.yml/badge.svg)
+[![Codecov](https://codecov.io/gh/ForeverWintr/metafunctions/coverage.svg?branch=master)](https://codecov.io/gh/ForeverWintr/metafunctions)
 
 
 

@@ -1,4 +1,3 @@
-
 from metafunctions.tests.util import BaseTestCase
 from metafunctions.tests.simple_nodes import *
 from metafunctions.api import bind_call_state
@@ -15,21 +14,21 @@ class TestUnit(BaseTestCase):
         @bind_call_state
         def f(call_state, x):
             self.assertIsInstance(call_state, CallState)
-            call_state.data['h'] = 'b'
-            return x + 'f'
+            call_state.data["h"] = "b"
+            return x + "f"
 
         @node
         def g(x):
-            return x + 'g'
+            return x + "g"
 
         @node
         @bind_call_state
         def h(call_state, x):
             self.assertIsInstance(call_state, CallState)
-            return x + call_state.data['h']
+            return x + call_state.data["h"]
 
         fg = f | g | h
-        self.assertEqual(fg('_'), '_fgb')
+        self.assertEqual(fg("_"), "_fgb")
 
     def test_provide_call_state(self):
         # A call state you provide is passed to all functions
@@ -37,24 +36,27 @@ class TestUnit(BaseTestCase):
         @bind_call_state
         def f(call_state, x):
             self.assertIs(call_state, c)
-            call_state.data['h'] = 'd'
-            return x + 'f'
+            call_state.data["h"] = "d"
+            return x + "f"
+
         @node
         def g(x):
-            return x + 'g'
+            return x + "g"
+
         @node
         @bind_call_state
         def h(call_state, x):
             self.assertIs(call_state, c)
-            return x + call_state.data['h']
+            return x + call_state.data["h"]
+
         fg = f | g | h
 
         c = CallState()
-        self.assertEqual(fg('_', call_state=c), '_fgd')
+        self.assertEqual(fg("_", call_state=c), "_fgd")
 
     def test_add_remove(self):
         # imagine these are functions
-        a, b, c, d = 'a b c d'.split()
+        a, b, c, d = "a b c d".split()
         Node = CallState.Node
 
         tree = CallState()
@@ -65,37 +67,65 @@ class TestUnit(BaseTestCase):
 
         tree.push(b)
         tree.push(a)
-        self.assertDictEqual(tree._parents,
-                             {Node(b, 2): Node(a, 0),
-                              Node(a, 3): Node(b, 2)})
-        self.assertDictEqual(tree._children,
-                             {Node(a, 0): [Node(a, 1), Node(b, 2)],
-                              Node(b, 2): [Node(a, 3)],})
+        self.assertDictEqual(
+            tree._parents, {Node(b, 2): Node(a, 0), Node(a, 3): Node(b, 2)}
+        )
+        self.assertDictEqual(
+            tree._children,
+            {
+                Node(a, 0): [Node(a, 1), Node(b, 2)],
+                Node(b, 2): [Node(a, 3)],
+            },
+        )
 
         tree.push(b)
-        self.assertDictEqual(tree._children,
-                             {Node(a, 0): [Node(a, 1), Node(b, 2)],
-                              Node(b, 2): [Node(a, 3)],
-                              Node(a, 3): [Node(b, 4)],})
-        self.assertDictEqual(tree._parents,
-                             {Node(b, 4): Node(a, 3),
-                              Node(a, 3): Node(b, 2),
-                              Node(b, 2): Node(a, 0),})
+        self.assertDictEqual(
+            tree._children,
+            {
+                Node(a, 0): [Node(a, 1), Node(b, 2)],
+                Node(b, 2): [Node(a, 3)],
+                Node(a, 3): [Node(b, 4)],
+            },
+        )
+        self.assertDictEqual(
+            tree._parents,
+            {
+                Node(b, 4): Node(a, 3),
+                Node(a, 3): Node(b, 2),
+                Node(b, 2): Node(a, 0),
+            },
+        )
 
         self.assertEqual(tree.pop(), b)
         self.assertEqual(tree.pop(), a)
         for f in a, b, c, d:
             tree.push(f)
             tree.pop()
-        self.assertDictEqual(tree._children,
-                {Node(a, 0): [Node(a, 1), Node(b, 2)],
-                 Node(b, 2): [Node(a, 3), Node(a, 5), Node(b, 6), Node(c, 7), Node(d, 8)]})
-        self.assertDictEqual(tree._parents, {Node(b, 2): Node(a, 0),})
+        self.assertDictEqual(
+            tree._children,
+            {
+                Node(a, 0): [Node(a, 1), Node(b, 2)],
+                Node(b, 2): [
+                    Node(a, 3),
+                    Node(a, 5),
+                    Node(b, 6),
+                    Node(c, 7),
+                    Node(d, 8),
+                ],
+            },
+        )
+        self.assertDictEqual(
+            tree._parents,
+            {
+                Node(b, 2): Node(a, 0),
+            },
+        )
 
     def test_iter_parent_nodes(self):
         @node
         def l(*args):
             return []
+
         @node
         @bind_call_state
         def return_parent_nodes(cs, *args):
@@ -103,44 +133,51 @@ class TestUnit(BaseTestCase):
 
         def nodes2str(nodes):
             return [(str(p.function), p.insert_index) for p in nodes]
+
         def get_parents(f):
             cs = CallState()
-            return nodes2str(f('', call_state=cs))
+            return nodes2str(f("", call_state=cs))
 
         self.assertEqual(return_parent_nodes(), [(return_parent_nodes, 0)])
 
-        #create some crazy compositions to get parents out of
+        # create some crazy compositions to get parents out of
         simple_chain = a | b | c | return_parent_nodes
         self.assertListEqual(get_parents(simple_chain), [(str(simple_chain), 0)])
 
         merges = l + (l + (l + return_parent_nodes))
-        self.assertListEqual(get_parents(merges), [
-            ('(l + return_parent_nodes)', 4),
-            ('(l + (l + return_parent_nodes))', 2),
-            ('(l + (l + (l + return_parent_nodes)))', 0)])
+        self.assertListEqual(
+            get_parents(merges),
+            [
+                ("(l + return_parent_nodes)", 4),
+                ("(l + (l + return_parent_nodes))", 2),
+                ("(l + (l + (l + return_parent_nodes)))", 0),
+            ],
+        )
 
     def test_highlight_active_function(self):
         fmt_index = 7
 
         @node
         def ff(x):
-            return x + 'F'
+            return x + "F"
 
         @node
         @bind_call_state
         def f(call_state, x):
             if call_state._nodes_visited == fmt_index:
                 location_string = call_state.highlight_active_function()
-                self.assertEqual(location_string, '(a | b | ff | f | f | ->f<- | f | f)')
-                self.assertEqual(x, '_abFff')
-            return x + 'f'
+                self.assertEqual(
+                    location_string, "(a | b | ff | f | f | ->f<- | f | f)"
+                )
+                self.assertEqual(x, "_abFff")
+            return x + "f"
 
         pipe = a | b | ff | f | f | f | f | f
-        pipe('_')
+        pipe("_")
 
         state = CallState()
         af = a + f
-        af('_', call_state=state)
+        af("_", call_state=state)
         with self.assertRaises(AttributeError):
             curr_f = state.highlight_active_function()
 
@@ -150,7 +187,7 @@ class TestUnit(BaseTestCase):
         def f(cs):
             return cs.highlight_active_function()
 
-        self.assertEqual(f(), '->f<-')
+        self.assertEqual(f(), "->f<-")
 
     def test_highlight_active_function_multichar(self):
         # Don't fail on long named functions. This is a regression test
@@ -165,26 +202,31 @@ class TestUnit(BaseTestCase):
         no_color = locate_error(cmp, use_color=False)
         with self.assertRaises(ZeroDivisionError) as e:
             color(1)
-        self.assertTrue(e.exception.args[0].endswith('(fail | (\x1b[31m->fail<-\x1b[0m + a))'))
+        self.assertTrue(
+            e.exception.args[0].endswith("(fail | (\x1b[31m->fail<-\x1b[0m + a))")
+        )
         with self.assertRaises(ZeroDivisionError) as e:
             no_color(1)
-        self.assertTrue(e.exception.args[0].endswith('(fail | (->fail<- + a))'))
+        self.assertTrue(e.exception.args[0].endswith("(fail | (->fail<- + a))"))
 
     def test_highlight_with_map(self):
         @node
         def no_fail(x):
             return x
+
         @node
         def fail(*args):
             1 / 0
 
         cmp = a + b | (c & no_fail & fail)
-        mapper = locate_error(('aaaaa', 'BBBBB') | mmap(cmp), use_color=False)
+        mapper = locate_error(("aaaaa", "BBBBB") | mmap(cmp), use_color=False)
         with self.assertRaises(ZeroDivisionError) as e:
             mapper()
-        self.assertEqual(str(e.exception),
-                "division by zero \n\nOccured in the following function: "
-                "(('aaaaa', 'BBBBB') | mmap(((a + b) | (c & no_fail & ->fail<-))))")
+        self.assertEqual(
+            str(e.exception),
+            "division by zero \n\nOccured in the following function: "
+            "(('aaaaa', 'BBBBB') | mmap(((a + b) | (c & no_fail & ->fail<-))))",
+        )
 
     def test_tricky_highlight(self):
         def wrapper(mf, new_name=None):
@@ -192,16 +234,18 @@ class TestUnit(BaseTestCase):
             @bind_call_state
             def meta_wrapper(cs, *args, **kwargs):
                 return mf(*args, call_state=cs, **kwargs)
+
             return meta_wrapper
 
         @node
         @bind_call_state
         def locator_string(cs, *args):
             return cs.highlight_active_function()
+
         cmp = a | b + c | locator_string
 
-        tim = wrapper(cmp, new_name='tim')
+        tim = wrapper(cmp, new_name="tim")
         atim = a | tim
-        self.assertEqual(str(tim), 'tim')
-        self.assertEqual(str(atim), '(a | tim)')
-        self.assertEqual(atim('_'), '(a | ->tim<-)')
+        self.assertEqual(str(tim), "tim")
+        self.assertEqual(str(atim), "(a | tim)")
+        self.assertEqual(atim("_"), "(a | ->tim<-)")
