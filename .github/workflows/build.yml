@@ -40,15 +40,9 @@ jobs:
     - name: Run tox with tox-gh-actions
       run: tox -e py
 
-    # I couldn't get this to work. The coverage uploads successfully, but codecov isn't able to
-    # read it and doesn't give an explanation for why.
-
     - name: Upload coverage
       uses: codecov/codecov-action@v2
       with:
-        #token: ${{ secrets.CODECOV_TOKEN }} # not required for public repos
         files: ./coverage.xml # optional
-        flags: unittests # optional
-        name: test # optional
         fail_ci_if_error: true # optional (default = false)
         verbose: true # optional (default = false)
