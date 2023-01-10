@@ -65,3 +65,19 @@ class TestUnit(BaseTestCase):
     def test_recursive_upgrade(self):
         aabbcc = (a & b & c) | star(a + b + c)
         self.assertEqual(aabbcc("_"), "_aa_bb_cc")
+
+    def test_simple_args(self):
+        @node
+        def foo(a):
+            return a
+
+        @node
+        def bar(b):
+            return b
+
+        @node
+        def cool(a, b, c, d):
+            return (a, b, c, d)
+
+        f = (foo & bar & "arg_c" & "arg_d") | star(cool)
+        assert f("a", "b") == ("a", "b", "arg_c", "arg_d")
