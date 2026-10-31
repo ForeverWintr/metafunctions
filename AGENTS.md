@@ -14,7 +14,7 @@ uv sync                                                        # create .venv wi
 uv run python -m unittest discover                             # run all tests (stdlib unittest, no pytest)
 uv run python -m unittest metafunctions.tests.test_pipe        # one module
 uv run python -m unittest metafunctions.tests.test_pipe.TestIntegration.test_basic_usage  # one test
-uv run --python 3.9 python -m unittest discover                # another python version (supported: >=3.9)
+uv run --python 3.11 python -m unittest discover               # another python version (supported: >=3.11)
 
 uv run black .                                                 # formatter
 uv run flake8 . --extend-exclude .venv --select=E9,F63,F7,F82  # the lint check CI fails on
@@ -24,7 +24,7 @@ uv build && uv publish                                         # release
 
 Dependencies are declared in `pyproject.toml` and locked in `uv.lock` (commit it; CI runs `uv sync --locked`). Use `uv add` / `uv add --dev` to change them.
 
-CI (`.github/workflows/test.yml`) runs flake8 then tests under coverage across Python 3.9–3.14 on Linux/macOS/Windows. `ConcurrentMerge` tests are skipped on Windows (no `os.fork`).
+CI (`.github/workflows/test.yml`) runs flake8 then tests under coverage across Python 3.11–3.14 on Linux/macOS/Windows. `ConcurrentMerge` tests are skipped on Windows (no `os.fork`).
 
 ## Architecture
 

@@ -56,7 +56,7 @@ Well you may not *need* a new syntax, but the ability to compose a data pipeline
 
 ## Installation
 
-MetaFunctions supports python 3.9+
+MetaFunctions supports python 3.11+
 
 `pip install metafunctions`
 

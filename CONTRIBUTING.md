@@ -8,7 +8,7 @@ To run the tests:
 
 To run the tests against a specific python version (uv will download it if needed):
 
-    $ uv run --python 3.9 python -m unittest discover
+    $ uv run --python 3.11 python -m unittest discover
 
 To build and publish a release:
 
