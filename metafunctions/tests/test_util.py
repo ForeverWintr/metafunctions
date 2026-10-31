@@ -1,10 +1,10 @@
 import os
 from unittest import mock
 
-from metafunctions.tests.util import BaseTestCase
-from metafunctions.tests.simple_nodes import *
-from metafunctions.api import node, locate_error
 from metafunctions import util
+from metafunctions.api import locate_error, node
+from metafunctions.tests.simple_nodes import *
+from metafunctions.tests.util import BaseTestCase
 
 
 class TestUnit(BaseTestCase):

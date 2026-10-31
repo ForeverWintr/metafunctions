@@ -4,14 +4,10 @@ Utility functions for use in function pipelines.
 import functools
 import typing as tp
 
-from metafunctions.core import MetaFunction
-from metafunctions.core import SimpleFunction
-from metafunctions.core import FunctionMerge
-from metafunctions.core import CallState
-from metafunctions import util
+from metafunctions import operators, util
+from metafunctions.core import CallState, FunctionMerge, MetaFunction, SimpleFunction
 from metafunctions.core.concurrent import ConcurrentMerge
 from metafunctions.map import MergeMap
-from metafunctions import operators
 
 
 def node(_func=None, *, name=None):
@@ -54,9 +50,9 @@ def star(meta_function: MetaFunction) -> MetaFunction:
     fname = str(meta_function)
     # This convoluted inline `if` just decides whether we should add brackets or not.
     @node(
-        name="star{}".format(fname)
+        name=f"star{fname}"
         if fname.startswith("(")
-        else "star({})".format(fname)
+        else f"star({fname})"
     )
     @functools.wraps(meta_function)
     def wrapper(args, **kwargs):
@@ -68,7 +64,7 @@ def star(meta_function: MetaFunction) -> MetaFunction:
 def store(key):
     """Store the received output in the meta data dictionary under the given key."""
 
-    @node(name="store('{}')".format(key))
+    @node(name=f"store('{key}')")
     @bind_call_state
     def storer(call_state, val):
         call_state.data[key] = val
@@ -82,7 +78,7 @@ def recall(key, from_call_state: CallState = None):
     specify a different call_state than the current one.
     """
 
-    @node(name="recall('{}')".format(key))
+    @node(name=f"recall('{key}')")
     @bind_call_state
     def recaller(call_state, *_):
         if from_call_state:
@@ -142,7 +138,7 @@ def locate_error(
             if use_color:
                 location = util.color_highlights(location)
             detailed_message = (
-                "{0!s} \n\nOccured in the following function: {1}".format(e, location)
+                f"{e!s} \n\nOccured in the following function: {location}"
             )
             new_e = type(e)(detailed_message).with_traceback(e.__traceback__)
             new_e.__cause__ = e.__cause__

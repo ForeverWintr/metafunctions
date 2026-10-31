@@ -14,13 +14,13 @@ See `CONTRIBUTING.md` for setup, running the tests (including on other Python ve
 uv run pytest metafunctions/tests/test_pipe.py                 # one module
 uv run pytest metafunctions/tests/test_pipe.py::TestIntegration::test_basic_usage  # one test
 
-uv run black .                                                 # formatter
-uv run flake8 . --extend-exclude .venv --select=E9,F63,F7,F82  # the lint check CI fails on
+uv run ruff check .                                            # lint (ruff defaults; CI enforces)
+uv run ruff format .                                           # formatter (CI runs --check)
 ```
 
 Dependencies are declared in `pyproject.toml` and locked in `uv.lock` (commit it; CI runs `uv sync --locked`). Use `uv add` / `uv add --dev` to change them.
 
-CI (`.github/workflows/test.yml`) runs flake8 then tests under coverage across Python 3.11–3.14 on Linux/macOS/Windows. `ConcurrentMerge` tests are skipped on Windows (no `os.fork`).
+CI (`.github/workflows/test.yml`) runs `ruff check` and `ruff format --check`, then tests under coverage across Python 3.11–3.14 on Linux/macOS/Windows. `ConcurrentMerge` tests are skipped on Windows (no `os.fork`).
 
 ## Architecture
 

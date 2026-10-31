@@ -1,13 +1,12 @@
-import os
-from operator import itemgetter
-from multiprocessing import Queue
-from collections import namedtuple
 import functools
+import os
 import pickle
+from collections import namedtuple
+from multiprocessing import Queue
+from operator import itemgetter
 
-from metafunctions.core import FunctionMerge
-from metafunctions.core import manage_call_state
 from metafunctions import exceptions
+from metafunctions.core import FunctionMerge, manage_call_state
 
 # Result tuple to be sent back from workers. Defined at module level for eas of pickling
 _ConcurrentResult = namedtuple(
@@ -26,13 +25,11 @@ class ConcurrentMerge(FunctionMerge):
             # objects that are not FunctionMerges, so this init will succeed, then result in errors
             # at call time.
             raise exceptions.CompositionError(
-                "{} can only upgrade FunctionMerges".format(type(self))
+                f"{type(self)} can only upgrade FunctionMerges"
             )
         if not hasattr(os, "fork"):
             raise exceptions.CompositionError(
-                "{} requires os.fork, and thus is only available on unix".format(
-                    type(self).__name__
-                )
+                f"{type(self).__name__} requires os.fork, and thus is only available on unix"
             )
 
         super().__init__(
@@ -45,9 +42,9 @@ class ConcurrentMerge(FunctionMerge):
     def __str__(self):
         merge_name = str(self._function_merge)
         return (
-            "concurrent{}".format(merge_name)
+            f"concurrent{merge_name}"
             if merge_name.startswith("(")
-            else "concurrent({})".format(merge_name)
+            else f"concurrent({merge_name})"
         )
 
     @manage_call_state
@@ -127,7 +124,7 @@ class ConcurrentMerge(FunctionMerge):
             except (AttributeError, pickle.PicklingError):
                 # Python < 3.14 raises AttributeError for local classes; 3.14+ raises PicklingError
                 pickled_exception = pickle.dumps(
-                    AttributeError("Unplicklable exception raised in {}".format(func))
+                    AttributeError(f"Unplicklable exception raised in {func}")
                 )
             result = make_result(
                 exception=pickled_exception,

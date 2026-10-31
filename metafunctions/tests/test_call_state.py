@@ -1,10 +1,7 @@
-from metafunctions.tests.util import BaseTestCase
-from metafunctions.tests.simple_nodes import *
-from metafunctions.api import bind_call_state
-from metafunctions.api import node
-from metafunctions.api import mmap
-from metafunctions.api import locate_error
+from metafunctions.api import bind_call_state, locate_error, mmap, node
 from metafunctions.core import CallState
+from metafunctions.tests.simple_nodes import *
+from metafunctions.tests.util import BaseTestCase
 
 
 class TestUnit(BaseTestCase):
@@ -56,7 +53,7 @@ class TestUnit(BaseTestCase):
 
     def test_add_remove(self):
         # imagine these are functions
-        a, b, c, d = "a b c d".split()
+        a, b, c, d = ["a", "b", "c", "d"]
         Node = CallState.Node
 
         tree = CallState()

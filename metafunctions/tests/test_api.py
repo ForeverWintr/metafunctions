@@ -1,10 +1,8 @@
-from unittest import mock
-import functools
 
-from metafunctions.tests.util import BaseTestCase
+from metafunctions.api import bind_call_state, node, recall, store
+from metafunctions.core import CallState, SimpleFunction
 from metafunctions.tests.simple_nodes import *
-from metafunctions.api import store, recall, node, bind_call_state
-from metafunctions.core import SimpleFunction, CallState
+from metafunctions.tests.util import BaseTestCase
 
 
 class TestUnit(BaseTestCase):

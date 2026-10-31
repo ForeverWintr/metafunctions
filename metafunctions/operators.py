@@ -1,7 +1,6 @@
 """
 Extra operators used by MetaFunctions
 """
-from operator import add, sub, truediv, mul
 
 
 def concat(*args):

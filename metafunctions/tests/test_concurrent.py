@@ -1,23 +1,23 @@
-import platform
 import operator
+import platform
 import unittest
 from unittest import mock
-import functools
 
-from metafunctions.tests.util import BaseTestCase
-from metafunctions.tests.simple_nodes import *
-from metafunctions.api import node
-from metafunctions.api import bind_call_state
-from metafunctions.api import concurrent
-from metafunctions.api import mmap
-from metafunctions.api import store
-from metafunctions.api import star
-from metafunctions.api import locate_error
-from metafunctions.core.concurrent import ConcurrentMerge
-from metafunctions import operators
-from metafunctions import util
+from metafunctions import operators, util
+from metafunctions.api import (
+    bind_call_state,
+    concurrent,
+    locate_error,
+    mmap,
+    node,
+    star,
+    store,
+)
 from metafunctions.core import CallState
-from metafunctions.exceptions import ConcurrentException, CompositionError, CallError
+from metafunctions.core.concurrent import ConcurrentMerge
+from metafunctions.exceptions import CallError, CompositionError, ConcurrentException
+from metafunctions.tests.simple_nodes import *
+from metafunctions.tests.util import BaseTestCase
 
 
 @unittest.skipIf(
@@ -116,7 +116,7 @@ class TestIntegration(BaseTestCase):
         cmap = concurrent(mmap(a))
 
         self.assertEqual(
-            repr(cab), "ConcurrentMerge({0}, ({1!r}, {2!r}))".format(operator.add, a, b)
+            repr(cab), f"ConcurrentMerge({operator.add}, ({a!r}, {b!r}))"
         )
         self.assertEqual(str(cab), "concurrent(a + b)")
         self.assertEqual(str(cmap), "concurrent(mmap(a))")

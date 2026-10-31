@@ -1,12 +1,11 @@
 import operator
 import unittest
 
-from metafunctions.core import FunctionMerge
-from metafunctions.core import SimpleFunction
-from metafunctions.tests.util import BaseTestCase
-from metafunctions.operators import concat
 from metafunctions import exceptions
 from metafunctions.api import node, star
+from metafunctions.core import FunctionMerge, SimpleFunction
+from metafunctions.operators import concat
+from metafunctions.tests.util import BaseTestCase
 
 
 class TestUnit(BaseTestCase):
@@ -14,7 +13,7 @@ class TestUnit(BaseTestCase):
         cmp = FunctionMerge(operator.add, (a, b))
         self.assertEqual(str(cmp), "(a + b)")
         self.assertEqual(
-            repr(cmp), "FunctionMerge({}, {})".format(operator.add, (a, b))
+            repr(cmp), f"FunctionMerge({operator.add}, {(a, b)})"
         )
 
     def test_call(self):
@@ -42,7 +41,7 @@ class TestUnit(BaseTestCase):
         cmp = FunctionMerge(my_concat, (a, a, a, a))
         self.assertEqual(cmp("_"), "_a_a_a_a")
 
-        self.assertEqual(str(cmp), "(a {m} a {m} a {m} a)".format(m=my_concat))
+        self.assertEqual(str(cmp), f"(a {my_concat} a {my_concat} a {my_concat} a)")
 
         d = FunctionMerge(my_concat, (b, b), function_join_str="q")
         self.assertEqual(str(d), "(b q b)")
@@ -56,7 +55,7 @@ class TestUnit(BaseTestCase):
         self.assertEqual(str(cmp), "(a & a & 'sweet as')")
         self.assertEqual(
             repr(cmp),
-            "FunctionMerge({}, {})".format(concat, (a, a, cmp._functions[-1])),
+            f"FunctionMerge({concat}, {(a, a, cmp._functions[-1])})",
         )
 
         # __rand__ works too
@@ -77,19 +76,19 @@ class TestUnit(BaseTestCase):
         abba = FunctionMerge.combine(operator.add, add, also_add)
         self.assertEqual(str(abba), "(a + b + b + a)")
         self.assertEqual(
-            repr(abba), "FunctionMerge({}, {})".format(operator.add, (a, b, b, a))
+            repr(abba), f"FunctionMerge({operator.add}, {(a, b, b, a)})"
         )
 
         ab_ba = FunctionMerge.combine(operator.sub, add, also_add)
         self.assertEqual(str(ab_ba), "((a + b) - (b + a))")
         self.assertEqual(
-            repr(ab_ba), "FunctionMerge({}, {})".format(operator.sub, (add, also_add))
+            repr(ab_ba), f"FunctionMerge({operator.sub}, {(add, also_add)})"
         )
 
         abab = FunctionMerge.combine(operator.add, add, div)
         self.assertEqual(str(abab), "(a + b + (a / b))")
         self.assertEqual(
-            repr(abab), "FunctionMerge({}, {})".format(operator.add, (a, b, div))
+            repr(abab), f"FunctionMerge({operator.add}, {(a, b, div)})"
         )
 
         def custom():
@@ -98,7 +97,7 @@ class TestUnit(BaseTestCase):
         abba_ = FunctionMerge.combine(custom, add, also_add, function_join_str="<>")
         self.assertEqual(str(abba_), "((a + b) <> (b + a))")
         self.assertEqual(
-            repr(abba_), "FunctionMerge({}, {})".format(custom, (add, also_add))
+            repr(abba_), f"FunctionMerge({custom}, {(add, also_add)})"
         )
 
         def my_concat(*args):
@@ -109,7 +108,7 @@ class TestUnit(BaseTestCase):
         bbaa = FunctionMerge.combine(my_concat, bb, aa, function_join_str="q")
         self.assertEqual(str(bbaa), "(b q b q a q a)")
         self.assertEqual(
-            repr(bbaa), "FunctionMerge({}, {})".format(my_concat, (b, b, a, a))
+            repr(bbaa), f"FunctionMerge({my_concat}, {(b, b, a, a)})"
         )
 
     def test_len_mismatch(self):

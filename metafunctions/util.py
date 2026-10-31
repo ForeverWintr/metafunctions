@@ -1,7 +1,7 @@
 """Utilities for working with MetaFunctions"""
 import os
-import sys
 import re
+import sys
 
 HIGHLIGHT_TEMPLATE = "->{}<-"
 
@@ -47,5 +47,5 @@ def replace_nth(string, substring, occurance_index: int, new_substring):
     """Return string, with the instance of substring at `occurance_index` replaced with new_substring"""
     escaped = re.escape(substring)
     # There's probably a better regex for this.
-    regex = "((?:.*?{0}.*?){{{1}}}.*?){0}(.*$)".format(escaped, occurance_index - 1)
-    return re.sub(regex, r"\1{}\2".format(new_substring), string)
+    regex = f"((?:.*?{escaped}.*?){{{occurance_index - 1}}}.*?){escaped}(.*$)"
+    return re.sub(regex, rf"\1{new_substring}\2", string)

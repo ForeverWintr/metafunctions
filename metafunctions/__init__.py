@@ -1,12 +1,12 @@
 __version__ = "1.1.1"
 
 from metafunctions.api import (
-    node,
     bind_call_state,
+    concurrent,
+    locate_error,
+    mmap,
+    node,
+    recall,
     star,
     store,
-    recall,
-    concurrent,
-    mmap,
-    locate_error,
 )
