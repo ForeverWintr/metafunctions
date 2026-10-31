@@ -6,7 +6,8 @@ from multiprocessing import Queue
 from operator import itemgetter
 
 from metafunctions import exceptions
-from metafunctions.core import FunctionMerge, manage_call_state
+from metafunctions.core.base import FunctionMerge
+from metafunctions.core.decorators import manage_call_state
 
 # Result tuple to be sent back from workers. Defined at module level for eas of pickling
 _ConcurrentResult = namedtuple(
@@ -121,7 +122,7 @@ class ConcurrentMerge(FunctionMerge):
             try:
                 # In case func does something stupid like raising an unpicklable exception
                 pickled_exception = pickle.dumps(e)
-            except (AttributeError, pickle.PicklingError):
+            except AttributeError, pickle.PicklingError:
                 # Python < 3.14 raises AttributeError for local classes; 3.14+ raises PicklingError
                 pickled_exception = pickle.dumps(
                     AttributeError(f"Unplicklable exception raised in {func}")

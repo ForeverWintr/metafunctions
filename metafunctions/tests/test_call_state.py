@@ -191,7 +191,7 @@ class TestUnit(BaseTestCase):
         @node
         def fail(x):
             if not x:
-                raise ZeroDivisionError
+                raise ZeroDivisionError("division by zero")
             return x - 1
 
         cmp = fail | fail + a
@@ -213,7 +213,7 @@ class TestUnit(BaseTestCase):
 
         @node
         def fail(*args):
-            raise ZeroDivisionError
+            raise ZeroDivisionError("division by zero")
 
         cmp = a + b | (c & no_fail & fail)
         mapper = locate_error(("aaaaa", "BBBBB") | mmap(cmp), use_color=False)

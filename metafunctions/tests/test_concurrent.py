@@ -33,7 +33,7 @@ class TestIntegration(BaseTestCase):
         @node
         def fail(x):
             if not x:
-                raise ZeroDivisionError
+                raise ZeroDivisionError("division by zero")
             return x - 1
 
         cmp = locate_error(0 | ConcurrentMerge(fail - fail), use_color=True)

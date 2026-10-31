@@ -11,7 +11,7 @@ class TestUnit(BaseTestCase):
     def test_locate_error(self):
         @node
         def fail(x):
-            raise ZeroDivisionError
+            raise ZeroDivisionError("division by zero")
 
         cmp = a + b | (c & fail & fail)
         with_tb = locate_error(cmp, use_color=False)
