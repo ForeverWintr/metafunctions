@@ -233,7 +233,7 @@ class TestIntegration(BaseTestCase):
             return "$" + str(x**3)
 
         numeric = (query_volume | float) + (query_price | float)
-        with self.assertRaises(ValueError) as e:
+        with self.assertRaises(ValueError):
             numeric(2)
 
     def test_decoration(self):
@@ -248,7 +248,7 @@ class TestIntegration(BaseTestCase):
             return x + "f"
 
         fn = node(f + "sup")
-        self.assertEqual(repr(fn), "SimpleFunction({0!r})".format(f + "sup"))
+        self.assertEqual(repr(fn), "SimpleFunction({!r})".format(f + "sup"))
         self.assertEqual(str(fn), "(f + 'sup')")
         abcf = a | b | c | fn
 

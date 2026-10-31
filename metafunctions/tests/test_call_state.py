@@ -176,7 +176,7 @@ class TestUnit(BaseTestCase):
         af = a + f
         af("_", call_state=state)
         with self.assertRaises(AttributeError):
-            curr_f = state.highlight_active_function()
+            state.highlight_active_function()
 
     def test_hightlight_active_function_no_parents(self):
         @node
