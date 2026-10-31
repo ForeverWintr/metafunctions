@@ -113,7 +113,8 @@ def mmap(function: tp.Callable, operator: tp.Callable = operators.concat) -> Mer
 
 
 def locate_error(
-    meta_function: MetaFunction, use_color=util.system_supports_color()
+    meta_function: MetaFunction,
+    use_color=util.system_supports_color(),  # noqa: B008
 ) -> SimpleFunction:
     """
     Wrap the given MetaFunction with an error handler that adds location information to any
@@ -128,7 +129,7 @@ def locate_error(
         new_e = None
         try:
             return meta_function(*args, call_state=call_state, **kwargs)
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             if hasattr(e, "location") and e.location:
                 # If the exception has location info attached
                 location = e.location
