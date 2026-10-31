@@ -33,7 +33,7 @@ class TestIntegration(BaseTestCase):
         @node
         def fail(x):
             if not x:
-                1 / 0
+                raise ZeroDivisionError
             return x - 1
 
         cmp = locate_error(0 | ConcurrentMerge(fail - fail), use_color=True)
@@ -115,9 +115,7 @@ class TestIntegration(BaseTestCase):
         cab = ConcurrentMerge(a + b)
         cmap = concurrent(mmap(a))
 
-        self.assertEqual(
-            repr(cab), f"ConcurrentMerge({operator.add}, ({a!r}, {b!r}))"
-        )
+        self.assertEqual(repr(cab), f"ConcurrentMerge({operator.add}, ({a!r}, {b!r}))")
         self.assertEqual(str(cab), "concurrent(a + b)")
         self.assertEqual(str(cmap), "concurrent(mmap(a))")
 
