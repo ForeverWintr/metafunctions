@@ -2,13 +2,13 @@ To develop metafunctions, install [uv](https://docs.astral.sh/uv/), then create 
 
     $ uv sync
 
-To run the tests:
+To run the tests (written in unittest style, run with pytest):
 
-    $ uv run python -m unittest discover
+    $ uv run pytest
 
 To run the tests against a specific python version (uv will download it if needed):
 
-    $ uv run --python 3.11 python -m unittest discover
+    $ uv run --python 3.11 pytest
 
 To build and publish a release:
 

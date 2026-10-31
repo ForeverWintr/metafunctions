@@ -9,12 +9,12 @@ MetaFunctions is a function composition / data pipelining library (`step1 | step
 ## Commands
 
 ```sh
-uv sync                                                        # create .venv with project + dev group (coverage, black, flake8)
+uv sync                                                        # create .venv with project + dev group (coverage, black, flake8, pytest)
 
-uv run python -m unittest discover                             # run all tests (stdlib unittest, no pytest)
-uv run python -m unittest metafunctions.tests.test_pipe        # one module
-uv run python -m unittest metafunctions.tests.test_pipe.TestIntegration.test_basic_usage  # one test
-uv run --python 3.11 python -m unittest discover               # another python version (supported: >=3.11)
+uv run pytest                                                  # run all tests
+uv run pytest metafunctions/tests/test_pipe.py                 # one module
+uv run pytest metafunctions/tests/test_pipe.py::TestIntegration::test_basic_usage  # one test
+uv run --python 3.11 pytest                                    # another python version (supported: >=3.11)
 
 uv run black .                                                 # formatter
 uv run flake8 . --extend-exclude .venv --select=E9,F63,F7,F82  # the lint check CI fails on
@@ -42,9 +42,9 @@ Key behaviours spread across files:
 - **FunctionMerge arg dispatch**: one positional arg is broadcast to every function; multiple args are distributed one-per-function, with leftover functions called with no args; more args than functions raises `CallError`. Subclasses customise via `_get_call_iterators` and `_call_function` — `MergeMap` (`map.py`, exposed as `mmap`) and `ConcurrentMerge` (`core/concurrent.py`, exposed as `concurrent`) are both `FunctionMerge` subclasses that override these hooks.
 - **CallState** (`core/call_state.py`): every `__call__` is wrapped by `manage_call_state`, which creates a `CallState` at the outermost entry point and threads it through as the `call_state` kwarg, pushing/popping nodes to build a metafunction-aware call tree. It is used for (a) `locate_error`'s `->highlighted<-` error location string, built by string-matching `str()` of nodes (`highlight_active_function` + `util.replace_nth`), so `__str__` formats matter for correctness; and (b) the `call_state.data` dict used by `store`/`recall`.
 - **Receiving call_state in user functions**: a wrapped function only gets the `call_state` kwarg if it has `_receives_call_state = True`; `bind_call_state` sets this and passes call_state as the first positional arg instead.
-- **ConcurrentMerge** forks one child per function, sends pickled results/exceptions/`call_state.data` back over a `multiprocessing.Queue`, and merges child `call_state.data` into the parent. Children exit with `os._exit(0)` intentionally (so unittest can't catch `SystemExit` and keep the child alive).
+- **ConcurrentMerge** forks one child per function, sends pickled results/exceptions/`call_state.data` back over a `multiprocessing.Queue`, and merges child `call_state.data` into the parent. Children exit with `os._exit(0)` intentionally (so the test runner can't catch `SystemExit` and keep the child alive).
 - `metafunctions/api.py` is the public surface (`node`, `star`, `store`, `recall`, `concurrent`, `mmap`, `locate_error`, `bind_call_state`), re-exported from `metafunctions/__init__.py`.
 
 ## Tests
 
-Tests live in `metafunctions/tests/`. `simple_nodes.py` defines reusable nodes `a`, `b`, `c`, … (each appends its letter to a string input, so `(a | b)('_') == '_ab'`) used throughout the suite. Test classes subclass `tests/util.py:BaseTestCase`.
+Tests live in `metafunctions/tests/`. `simple_nodes.py` defines reusable nodes `a`, `b`, `c`, … (each appends its letter to a string input, so `(a | b)('_') == '_ab'`) used throughout the suite. Tests are written in `unittest` style (classes subclass `tests/util.py:BaseTestCase`, using `self.assert*`) and run with pytest; keep new tests in that style. `python -m unittest discover` still works, and CI currently uses it.
