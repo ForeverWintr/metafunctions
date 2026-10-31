@@ -8,18 +8,14 @@ MetaFunctions is a function composition / data pipelining library (`step1 | step
 
 ## Commands
 
-```sh
-uv sync                                                        # create .venv with project + dev group (coverage, black, flake8, pytest)
+See `CONTRIBUTING.md` for setup, running the tests (including on other Python versions; supported: >=3.11), and releasing. Additionally:
 
-uv run pytest                                                  # run all tests
+```sh
 uv run pytest metafunctions/tests/test_pipe.py                 # one module
 uv run pytest metafunctions/tests/test_pipe.py::TestIntegration::test_basic_usage  # one test
-uv run --python 3.11 pytest                                    # another python version (supported: >=3.11)
 
 uv run black .                                                 # formatter
 uv run flake8 . --extend-exclude .venv --select=E9,F63,F7,F82  # the lint check CI fails on
-
-uv build && uv publish                                         # release
 ```
 
 Dependencies are declared in `pyproject.toml` and locked in `uv.lock` (commit it; CI runs `uv sync --locked`). Use `uv add` / `uv add --dev` to change them.
