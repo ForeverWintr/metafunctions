@@ -1,0 +1,39 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "metafunctions"
+dynamic = ["version"]
+description = "Metafunctions is a function composition and data pipelining library"
+readme = "README.md"
+requires-python = ">=3.9"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [{ name = "Tom Rutherford", email = "foreverwintr@gmail.com" }]
+keywords = ["functional-programming", "function-composition"]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+]
+dependencies = ["ansicolors>=1.1.8"]
+
+[project.urls]
+Homepage = "https://github.com/ForeverWintr/metafunctions"
+
+[dependency-groups]
+dev = ["coverage", "black", "flake8"]
+
+[tool.setuptools.dynamic]
+version = { attr = "metafunctions.__version__" }
+
+[tool.setuptools.packages.find]
+include = ["metafunctions*"]

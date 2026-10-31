@@ -1,13 +1,16 @@
-To develop metafunctions, first create a virtual environment, then install the project in development mode:
+To develop metafunctions, install [uv](https://docs.astral.sh/uv/), then create the virtual environment and install the project and its dev dependencies:
 
-    $ python3 -m venv venv
-    $ . venv/bin/activate
-    $ pip install -e .
+    $ uv sync
 
-Then install extra dev requirements:
+To run the tests:
 
-    $ pip install -r requirements-dev.txt
+    $ uv run python -m unittest discover
 
-The project uses Tox to run tests against multiple python versions. To run the tests:
+To run the tests against a specific python version (uv will download it if needed):
 
-    $ tox
+    $ uv run --python 3.9 python -m unittest discover
+
+To build and publish a release:
+
+    $ uv build
+    $ uv publish
