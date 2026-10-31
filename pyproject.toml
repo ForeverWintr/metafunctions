@@ -28,7 +28,12 @@ dependencies = ["ansicolors>=1.1.8"]
 Homepage = "https://github.com/ForeverWintr/metafunctions"
 
 [dependency-groups]
-dev = ["coverage", "black", "flake8"]
+dev = [
+    "coverage",
+    "black",
+    "flake8",
+    "pytest>=9.2.0",
+]
 
 [tool.setuptools.dynamic]
 version = { attr = "metafunctions.__version__" }
