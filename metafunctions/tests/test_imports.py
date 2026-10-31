@@ -16,4 +16,4 @@ class TestUnit(unittest.TestCase):
         ]
         random.shuffle(expected_names)
         for name in expected_names:
-            exec(f"from metafunctions import {name}")
+            exec(f"from metafunctions import {name}")  # noqa: S102
