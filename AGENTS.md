@@ -4,7 +4,7 @@ This file provides guidance to AI coding agents working with code in this reposi
 
 ## Project
 
-MetaFunctions is a function composition / data pipelining library (`step1 | step2 + step3`). Pure Python, one runtime dependency (`ansicolors`, imported as `colors`). Version lives in `metafunctions/__init__.py` (`__version__`) and is read by `pyproject.toml` (setuptools dynamic version); release notes go in `HISTORY.md`.
+MetaFunctions is a function composition / data pipelining library (`step1 | step2 + step3`). Pure Python, no runtime dependencies. Version lives in `metafunctions/__init__.py` (`__version__`) and is read by `pyproject.toml` (setuptools dynamic version).
 
 ## Commands
 

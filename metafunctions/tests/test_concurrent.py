@@ -4,8 +4,6 @@ import unittest
 from unittest import mock
 import functools
 
-import colors
-
 from metafunctions.tests.util import BaseTestCase
 from metafunctions.tests.simple_nodes import *
 from metafunctions.api import node
@@ -17,6 +15,7 @@ from metafunctions.api import star
 from metafunctions.api import locate_error
 from metafunctions.core.concurrent import ConcurrentMerge
 from metafunctions import operators
+from metafunctions import util
 from metafunctions.core import CallState
 from metafunctions.exceptions import ConcurrentException, CompositionError, CallError
 
@@ -45,7 +44,7 @@ class TestIntegration(BaseTestCase):
         self.assertEqual(
             str(e.exception),
             "Caught exception in child process \n\nOccured in the following function: "
-            "(0 | concurrent({} - fail))".format(colors.red("->fail<-")),
+            "(0 | concurrent({} - fail))".format(util.red("->fail<-")),
         )
         self.assertIsInstance(e.exception.__cause__, ZeroDivisionError)
 

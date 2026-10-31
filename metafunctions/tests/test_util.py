@@ -1,4 +1,5 @@
-import colors
+import os
+from unittest import mock
 
 from metafunctions.tests.util import BaseTestCase
 from metafunctions.tests.simple_nodes import *
@@ -46,6 +47,39 @@ class TestUnit(BaseTestCase):
         self.assertEqual(
             util.color_highlights(s),
             "a {} string {} highlight".format(
-                colors.red("->test<-"), colors.red("->for<-")
+                util.red("->test<-"), util.red("->for<-")
             ),
         )
+
+    def test_red(self):
+        self.assertEqual(util.red("x"), "\x1b[31mx\x1b[0m")
+
+    def test_system_supports_color(self):
+        tty = mock.Mock(isatty=lambda: True)
+        not_tty = mock.Mock(isatty=lambda: False)
+
+        def supports_color(env, platform="linux", stdout=tty):
+            with (
+                mock.patch.dict(os.environ, env, clear=True),
+                mock.patch.object(util.sys, "platform", platform),
+                mock.patch.object(util.sys, "stdout", stdout),
+            ):
+                return util.system_supports_color()
+
+        # Default: color only on a tty, and never on windows
+        self.assertTrue(supports_color({}))
+        self.assertFalse(supports_color({}, stdout=not_tty))
+        self.assertFalse(supports_color({}, stdout=object()))
+        self.assertFalse(supports_color({}, platform="win32"))
+
+        # NO_COLOR disables color
+        self.assertFalse(supports_color({"NO_COLOR": "1"}))
+        self.assertTrue(supports_color({"NO_COLOR": ""}))
+
+        # FORCE_COLOR enables color, even without a tty or on windows
+        self.assertTrue(supports_color({"FORCE_COLOR": "1"}, stdout=not_tty))
+        self.assertTrue(supports_color({"FORCE_COLOR": "1"}, platform="win32"))
+        self.assertFalse(supports_color({"FORCE_COLOR": ""}, stdout=not_tty))
+
+        # NO_COLOR takes precedence over FORCE_COLOR
+        self.assertFalse(supports_color({"NO_COLOR": "1", "FORCE_COLOR": "1"}))

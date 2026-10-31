@@ -22,7 +22,7 @@ classifiers = [
     "Programming Language :: Python :: 3.13",
     "Programming Language :: Python :: 3.14",
 ]
-dependencies = ["ansicolors>=1.1.8"]
+dependencies = []
 
 [project.urls]
 Homepage = "https://github.com/ForeverWintr/metafunctions"

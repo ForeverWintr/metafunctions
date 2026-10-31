@@ -3,16 +3,12 @@ import os
 import sys
 import re
 
-DEFAULT_HIGHLIGHT_COLOR = None
-try:
-    import colors
-except ImportError:
-    _HAS_COLORS = False
-else:
-    DEFAULT_HIGHLIGHT_COLOR = colors.red
-    _HAS_COLORS = True
-
 HIGHLIGHT_TEMPLATE = "->{}<-"
+
+
+def red(string):
+    """Wrap string in ANSI escape codes for red text"""
+    return f"\033[31m{string}\033[0m"
 
 
 def highlight(string):
@@ -22,27 +18,29 @@ def highlight(string):
 _color_regex = re.compile(HIGHLIGHT_TEMPLATE.format(".*?"))
 
 
-def color_highlights(string, color=DEFAULT_HIGHLIGHT_COLOR):
-    """Color all highlights"""
+def color_highlights(string):
+    """Color all highlights red"""
     for substr in _color_regex.findall(string):
-        string = string.replace(substr, color(substr))
+        string = string.replace(substr, red(substr))
     return string
 
 
 def system_supports_color():
     """
-    Returns True if the running system's terminal supports color, and False otherwise. Originally
-    from Django, by way of StackOverflow: https://stackoverflow.com/a/22254892/1286571
+    Returns True if the running system's terminal supports color, and False otherwise.
+
+    A non-empty NO_COLOR environment variable disables color (https://no-color.org), and a
+    non-empty FORCE_COLOR enables it. NO_COLOR takes precedence. Otherwise, color is off on
+    Windows, and elsewhere is on only if stdout is a tty.
     """
-    plat = sys.platform
-    supported_platform = plat != "Pocket PC" and (
-        plat != "win32" or "ANSICON" in os.environ
-    )
-    # isatty is not always implemented, #6223.
-    is_a_tty = hasattr(sys.stdout, "isatty") and sys.stdout.isatty()
-    if not _HAS_COLORS or not supported_platform or not is_a_tty:
+    if os.environ.get("NO_COLOR"):
         return False
-    return True
+    if os.environ.get("FORCE_COLOR"):
+        return True
+    if sys.platform == "win32":
+        return False
+    # isatty is not always implemented
+    return hasattr(sys.stdout, "isatty") and sys.stdout.isatty()
 
 
 def replace_nth(string, substring, occurance_index: int, new_substring):
