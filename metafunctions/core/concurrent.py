@@ -124,7 +124,8 @@ class ConcurrentMerge(FunctionMerge):
             try:
                 # In case func does something stupid like raising an unpicklable exception
                 pickled_exception = pickle.dumps(e)
-            except AttributeError:
+            except (AttributeError, pickle.PicklingError):
+                # Python < 3.14 raises AttributeError for local classes; 3.14+ raises PicklingError
                 pickled_exception = pickle.dumps(
                     AttributeError("Unplicklable exception raised in {}".format(func))
                 )
