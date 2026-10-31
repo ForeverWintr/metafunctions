@@ -12,9 +12,7 @@ class TestUnit(BaseTestCase):
     def test_str(self):
         cmp = FunctionMerge(operator.add, (a, b))
         self.assertEqual(str(cmp), "(a + b)")
-        self.assertEqual(
-            repr(cmp), f"FunctionMerge({operator.add}, {(a, b)})"
-        )
+        self.assertEqual(repr(cmp), f"FunctionMerge({operator.add}, {(a, b)})")
 
     def test_call(self):
         cmp = FunctionMerge(operator.add, (a, b))
@@ -75,9 +73,7 @@ class TestUnit(BaseTestCase):
         # operator.add only takes two args). I'm just using to combine for test purposes.
         abba = FunctionMerge.combine(operator.add, add, also_add)
         self.assertEqual(str(abba), "(a + b + b + a)")
-        self.assertEqual(
-            repr(abba), f"FunctionMerge({operator.add}, {(a, b, b, a)})"
-        )
+        self.assertEqual(repr(abba), f"FunctionMerge({operator.add}, {(a, b, b, a)})")
 
         ab_ba = FunctionMerge.combine(operator.sub, add, also_add)
         self.assertEqual(str(ab_ba), "((a + b) - (b + a))")
@@ -87,18 +83,14 @@ class TestUnit(BaseTestCase):
 
         abab = FunctionMerge.combine(operator.add, add, div)
         self.assertEqual(str(abab), "(a + b + (a / b))")
-        self.assertEqual(
-            repr(abab), f"FunctionMerge({operator.add}, {(a, b, div)})"
-        )
+        self.assertEqual(repr(abab), f"FunctionMerge({operator.add}, {(a, b, div)})")
 
         def custom():
             pass
 
         abba_ = FunctionMerge.combine(custom, add, also_add, function_join_str="<>")
         self.assertEqual(str(abba_), "((a + b) <> (b + a))")
-        self.assertEqual(
-            repr(abba_), f"FunctionMerge({custom}, {(add, also_add)})"
-        )
+        self.assertEqual(repr(abba_), f"FunctionMerge({custom}, {(add, also_add)})")
 
         def my_concat(*args):
             return "".join(args)
@@ -107,9 +99,7 @@ class TestUnit(BaseTestCase):
         aa = FunctionMerge(my_concat, (a, a), function_join_str="q")
         bbaa = FunctionMerge.combine(my_concat, bb, aa, function_join_str="q")
         self.assertEqual(str(bbaa), "(b q b q a q a)")
-        self.assertEqual(
-            repr(bbaa), f"FunctionMerge({my_concat}, {(b, b, a, a)})"
-        )
+        self.assertEqual(repr(bbaa), f"FunctionMerge({my_concat}, {(b, b, a, a)})")
 
     def test_len_mismatch(self):
         # If len(inputs) <= len(functions), call remaining functions with  no args.

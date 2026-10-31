@@ -1,6 +1,7 @@
 """
 Some simple nodes to use in tests.
 """
+
 from metafunctions.api import node
 
 

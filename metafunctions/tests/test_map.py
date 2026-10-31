@@ -43,9 +43,7 @@ class TestIntegration(BaseTestCase):
     def test_str_repr(self):
         m = MergeMap(a)
         self.assertEqual(str(m), "mmap(a)")
-        self.assertEqual(
-            repr(m), f"MergeMap(a, merge_function={operators.concat})"
-        )
+        self.assertEqual(repr(m), f"MergeMap(a, merge_function={operators.concat})")
 
     def test_loop(self):
         cmp = (b & c & "stoke") | mmap(a)

@@ -1,6 +1,7 @@
 """
 Internal decorators that are applied to MetaFunction methods, not functions.
 """
+
 from collections.abc import Callable
 from functools import wraps
 

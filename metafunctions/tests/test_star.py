@@ -44,9 +44,7 @@ class TestUnit(BaseTestCase):
         self.assertEqual(str(chain_star), "star(a | b)")
 
         # You can technically apply star to a regular function, and it'll become a SimpleFunction
-        self.assertEqual(
-            str(h), f"star({h._function.__closure__[0].cell_contents})"
-        )
+        self.assertEqual(str(h), f"star({h._function.__closure__[0].cell_contents})")
 
         # reprs remain the same
         self.assertEqual(repr(star_a), f"SimpleFunction({star_a._function})")

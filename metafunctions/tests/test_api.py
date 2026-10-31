@@ -1,4 +1,3 @@
-
 from metafunctions.api import bind_call_state, node, recall, store
 from metafunctions.core import CallState, SimpleFunction
 from metafunctions.tests.simple_nodes import *
