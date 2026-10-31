@@ -118,7 +118,7 @@ class ConcurrentMerge(FunctionMerge):
             pickled_r = pickle.dumps(r)
             data = pickle.dumps(kwargs["call_state"].data)
             result = make_result(result=pickled_r, call_state_data=data)
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             try:
                 # In case func does something stupid like raising an unpicklable exception
                 pickled_exception = pickle.dumps(e)

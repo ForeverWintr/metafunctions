@@ -9,7 +9,6 @@ from metafunctions.core.decorators import binary_operation, manage_call_state
 
 
 class MetaFunction(metaclass=abc.ABCMeta):
-
     # Metafunctions will pass call state to any function with this attribute set to true
     _receives_call_state = True
     _function_join_str = ""
@@ -146,14 +145,16 @@ class FunctionChain(MetaFunction):
 
 
 class FunctionMerge(MetaFunction):
-    _character_to_operator = {
+    _character_to_operator: tp.ClassVar = {
         "+": operators.add,
         "-": operators.sub,
         "*": operators.mul,
         "/": operators.truediv,
         "&": operators.concat,
     }
-    _operator_to_character = {v: k for k, v in _character_to_operator.items()}
+    _operator_to_character: tp.ClassVar = {
+        v: k for k, v in _character_to_operator.items()
+    }
 
     def __init__(self, merge_func: tp.Callable, functions: tuple, function_join_str=""):
         """
