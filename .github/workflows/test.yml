@@ -38,8 +38,11 @@ jobs:
         uv run coverage xml
 
     - name: Upload coverage
+      # Only upload from one job in the matrix
+      if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.14'
       uses: codecov/codecov-action@v5
       with:
         files: ./coverage.xml # optional
+        token: ${{ secrets.CODECOV_TOKEN }}
         fail_ci_if_error: true # optional (default = false)
         verbose: true # optional (default = false)
