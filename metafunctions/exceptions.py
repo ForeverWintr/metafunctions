@@ -4,7 +4,6 @@ class MetaFunctionError(Exception):
 
 class CompositionError(MetaFunctionError, TypeError):
     "An exception that occureds when MetaFunctions are composed incorrectly"
-    pass
 
 
 class CallError(MetaFunctionError, TypeError):
@@ -18,7 +17,7 @@ class CallError(MetaFunctionError, TypeError):
         return "{}({}, {})".format(
             self.__class__.__name__,
             self.args,
-            "location='{}'".format(self.location) if self.location else "",
+            f"location='{self.location}'" if self.location else "",
         )
 
 

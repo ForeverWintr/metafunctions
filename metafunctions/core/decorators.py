@@ -1,8 +1,9 @@
 """
 Internal decorators that are applied to MetaFunction methods, not functions.
 """
-from functools import wraps
+
 from collections.abc import Callable
+from functools import wraps
 
 
 def binary_operation(method):

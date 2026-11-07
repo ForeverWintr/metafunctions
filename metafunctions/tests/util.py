@@ -1,11 +1,12 @@
 """
 Testing tools
 """
-import unittest
-import tempfile
-import sys
-import random
+
 import os
+import random
+import sys
+import tempfile
+import unittest
 
 
 class BaseTestCase(unittest.TestCase):
@@ -19,7 +20,7 @@ class BaseTestCase(unittest.TestCase):
         """Return a temporary directory that exists for the duration of the test and is automatically removed after teardown."""
         if not (self._tempdir and os.path.exists(self._tempdir.name)):
             self._tempdir = tempfile.TemporaryDirectory(
-                prefix="{}_".format(self._testMethodName)
+                prefix=f"{self._testMethodName}_"
             )
             self.addCleanup(self.cleanup_self_destructing_directory)
             self._tempdir.__enter__()
@@ -33,5 +34,5 @@ class BaseTestCase(unittest.TestCase):
     def _formatMessage(self, msg, standardMsg):
         msg = msg or ""
         return super()._formatMessage(
-            msg="{} (seed: {})".format(msg, self.seed), standardMsg=standardMsg
+            msg=f"{msg} (seed: {self.seed})", standardMsg=standardMsg
         )

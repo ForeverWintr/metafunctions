@@ -1,17 +1,18 @@
 """
 Utility functions for use in function pipelines.
 """
+
 import functools
 import typing as tp
 
+from metafunctions import operators
+from metafunctions import util
+from metafunctions.core import CallState
+from metafunctions.core import FunctionMerge
 from metafunctions.core import MetaFunction
 from metafunctions.core import SimpleFunction
-from metafunctions.core import FunctionMerge
-from metafunctions.core import CallState
-from metafunctions import util
 from metafunctions.core.concurrent import ConcurrentMerge
 from metafunctions.map import MergeMap
-from metafunctions import operators
 
 
 def node(_func=None, *, name=None):
@@ -52,12 +53,9 @@ def star(meta_function: MetaFunction) -> MetaFunction:
     star calls its Metafunction with *x instead of x.
     """
     fname = str(meta_function)
+
     # This convoluted inline `if` just decides whether we should add brackets or not.
-    @node(
-        name="star{}".format(fname)
-        if fname.startswith("(")
-        else "star({})".format(fname)
-    )
+    @node(name=f"star{fname}" if fname.startswith("(") else f"star({fname})")
     @functools.wraps(meta_function)
     def wrapper(args, **kwargs):
         return meta_function(*args, **kwargs)
@@ -68,7 +66,7 @@ def star(meta_function: MetaFunction) -> MetaFunction:
 def store(key):
     """Store the received output in the meta data dictionary under the given key."""
 
-    @node(name="store('{}')".format(key))
+    @node(name=f"store('{key}')")
     @bind_call_state
     def storer(call_state, val):
         call_state.data[key] = val
@@ -82,7 +80,7 @@ def recall(key, from_call_state: CallState = None):
     specify a different call_state than the current one.
     """
 
-    @node(name="recall('{}')".format(key))
+    @node(name=f"recall('{key}')")
     @bind_call_state
     def recaller(call_state, *_):
         if from_call_state:
@@ -117,7 +115,8 @@ def mmap(function: tp.Callable, operator: tp.Callable = operators.concat) -> Mer
 
 
 def locate_error(
-    meta_function: MetaFunction, use_color=util.system_supports_color()
+    meta_function: MetaFunction,
+    use_color=util.system_supports_color(),  # noqa: B008
 ) -> SimpleFunction:
     """
     Wrap the given MetaFunction with an error handler that adds location information to any
@@ -132,7 +131,7 @@ def locate_error(
         new_e = None
         try:
             return meta_function(*args, call_state=call_state, **kwargs)
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             if hasattr(e, "location") and e.location:
                 # If the exception has location info attached
                 location = e.location
@@ -142,7 +141,7 @@ def locate_error(
             if use_color:
                 location = util.color_highlights(location)
             detailed_message = (
-                "{0!s} \n\nOccured in the following function: {1}".format(e, location)
+                f"{e!s} \n\nOccured in the following function: {location}"
             )
             new_e = type(e)(detailed_message).with_traceback(e.__traceback__)
             new_e.__cause__ = e.__cause__

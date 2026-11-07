@@ -1,9 +1,11 @@
-import unittest
 import os
+import unittest
 
-from metafunctions.api import node, star, concurrent
-from metafunctions.tests.simple_nodes import *
 from metafunctions import exceptions
+from metafunctions.api import concurrent
+from metafunctions.api import node
+from metafunctions.api import star
+from metafunctions.tests.simple_nodes import *
 from metafunctions.tests.util import BaseTestCase
 
 
@@ -44,12 +46,10 @@ class TestUnit(BaseTestCase):
         self.assertEqual(str(chain_star), "star(a | b)")
 
         # You can technically apply star to a regular function, and it'll become a SimpleFunction
-        self.assertEqual(
-            str(h), "star({})".format(h._function.__closure__[0].cell_contents)
-        )
+        self.assertEqual(str(h), f"star({h._function.__closure__[0].cell_contents})")
 
         # reprs remain the same
-        self.assertEqual(repr(star_a), "SimpleFunction({})".format(star_a._function))
+        self.assertEqual(repr(star_a), f"SimpleFunction({star_a._function})")
 
     @unittest.skipUnless(hasattr(os, "fork"), "Concurent isn't available on windows")
     def test_concurrent(self):

@@ -1,4 +1,7 @@
-from collections import namedtuple, defaultdict, OrderedDict
+from collections import OrderedDict
+from collections import defaultdict
+from collections import namedtuple
+
 from metafunctions import util
 
 

@@ -1,6 +1,6 @@
 from metafunctions.api import node
-from metafunctions.tests.util import BaseTestCase
 from metafunctions.tests.simple_nodes import *
+from metafunctions.tests.util import BaseTestCase
 
 
 class TestUnit(BaseTestCase):
@@ -18,7 +18,7 @@ class TestUnit(BaseTestCase):
     def test_str_repr(self):
         cmp = a @ b
         self.assertEqual(str(cmp), "(a | star(b))")
-        self.assertEqual(repr(cmp), "FunctionChain{}".format((a, cmp.functions[1])))
+        self.assertEqual(repr(cmp), f"FunctionChain{(a, cmp.functions[1])}")
 
         cmp = a | a @ b * 5 / 7 | b & b @ a
         self.assertEqual(
@@ -32,9 +32,7 @@ class TestUnit(BaseTestCase):
         self.assertEqual(str(cmp), "(a | star(b & c))")
         self.assertEqual(
             repr(cmp),
-            "FunctionChain({0!r}, SimpleFunction({1}))".format(
-                a, cmp._functions[1]._function
-            ),
+            f"FunctionChain({a!r}, SimpleFunction({cmp._functions[1]._function}))",
         )
 
     def test_upgrade_merge(self):

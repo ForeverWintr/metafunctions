@@ -1,10 +1,10 @@
-from metafunctions.tests.util import BaseTestCase
-from metafunctions.tests.simple_nodes import *
 from metafunctions.api import bind_call_state
-from metafunctions.api import node
-from metafunctions.api import mmap
 from metafunctions.api import locate_error
+from metafunctions.api import mmap
+from metafunctions.api import node
 from metafunctions.core import CallState
+from metafunctions.tests.simple_nodes import *
+from metafunctions.tests.util import BaseTestCase
 
 
 class TestUnit(BaseTestCase):
@@ -56,7 +56,7 @@ class TestUnit(BaseTestCase):
 
     def test_add_remove(self):
         # imagine these are functions
-        a, b, c, d = "a b c d".split()
+        a, b, c, d = ["a", "b", "c", "d"]
         Node = CallState.Node
 
         tree = CallState()
@@ -179,7 +179,7 @@ class TestUnit(BaseTestCase):
         af = a + f
         af("_", call_state=state)
         with self.assertRaises(AttributeError):
-            curr_f = state.highlight_active_function()
+            state.highlight_active_function()
 
     def test_hightlight_active_function_no_parents(self):
         @node
@@ -194,7 +194,7 @@ class TestUnit(BaseTestCase):
         @node
         def fail(x):
             if not x:
-                1 / 0
+                raise ZeroDivisionError("division by zero")
             return x - 1
 
         cmp = fail | fail + a
@@ -216,7 +216,7 @@ class TestUnit(BaseTestCase):
 
         @node
         def fail(*args):
-            1 / 0
+            raise ZeroDivisionError("division by zero")
 
         cmp = a + b | (c & no_fail & fail)
         mapper = locate_error(("aaaaa", "BBBBB") | mmap(cmp), use_color=False)
