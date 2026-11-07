@@ -46,3 +46,13 @@ jobs:
         token: ${{ secrets.CODECOV_TOKEN }}
         fail_ci_if_error: true # optional (default = false)
         verbose: true # optional (default = false)
+
+  # Single status for branch protection to require, so matrix changes don't need protection updates.
+  # always() makes this report failure (rather than be skipped) when a matrix job fails.
+  all-tests:
+    if: always()
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+    - name: Check that all matrix jobs passed
+      run: test "${{ needs.build.result }}" = "success"
