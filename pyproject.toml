@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "metafunctions"
-dynamic = ["version"]
+version = "1.1.1"
 description = "Metafunctions is a function composition and data pipelining library"
 readme = "README.md"
 requires-python = ">=3.11"
@@ -34,9 +34,6 @@ dev = [
     "pytest>=9.2.0",
     "ruff>=0.17.3",
 ]
-
-[tool.setuptools.dynamic]
-version = { attr = "metafunctions.__version__" }
 
 [tool.setuptools.packages.find]
 include = ["metafunctions*"]
