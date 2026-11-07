@@ -1,5 +1,5 @@
-import unittest
 import random
+import unittest
 
 
 class TestUnit(unittest.TestCase):
@@ -16,4 +16,4 @@ class TestUnit(unittest.TestCase):
         ]
         random.shuffle(expected_names)
         for name in expected_names:
-            exec("from metafunctions import {}".format(name))
+            exec(f"from metafunctions import {name}")  # noqa: S102

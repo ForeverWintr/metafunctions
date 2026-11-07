@@ -1,5 +1,5 @@
-import typing as tp
 import itertools
+import typing as tp
 
 from metafunctions.core.concurrent import FunctionMerge
 from metafunctions.operators import concat
@@ -30,9 +30,7 @@ class MergeMap(FunctionMerge):
         return f(*args[0], **kwargs)
 
     def __str__(self):
-        return "mmap({self.functions[0]!s})".format(self=self)
+        return f"mmap({self.functions[0]!s})"
 
     def __repr__(self):
-        return "{self.__class__.__name__}({self.functions[0]}, merge_function={self._merge_func})".format(
-            self=self
-        )
+        return f"{self.__class__.__name__}({self.functions[0]}, merge_function={self._merge_func})"

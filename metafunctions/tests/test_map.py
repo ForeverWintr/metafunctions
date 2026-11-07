@@ -1,10 +1,8 @@
-from metafunctions.tests.util import BaseTestCase
-from metafunctions.tests.simple_nodes import *
-from metafunctions.api import node
-from metafunctions.api import star
-from metafunctions.api import mmap
-from metafunctions.map import MergeMap
 from metafunctions import operators
+from metafunctions.api import mmap, node, star
+from metafunctions.map import MergeMap
+from metafunctions.tests.simple_nodes import *
+from metafunctions.tests.util import BaseTestCase
 
 
 class TestIntegration(BaseTestCase):
@@ -45,9 +43,7 @@ class TestIntegration(BaseTestCase):
     def test_str_repr(self):
         m = MergeMap(a)
         self.assertEqual(str(m), "mmap(a)")
-        self.assertEqual(
-            repr(m), "MergeMap(a, merge_function={})".format(operators.concat)
-        )
+        self.assertEqual(repr(m), f"MergeMap(a, merge_function={operators.concat})")
 
     def test_loop(self):
         cmp = (b & c & "stoke") | mmap(a)

@@ -1,8 +1,6 @@
 import operator
 
-from metafunctions.core import FunctionChain
-from metafunctions.core import FunctionMerge
-from metafunctions.core import SimpleFunction
+from metafunctions.core import FunctionChain, FunctionMerge, SimpleFunction
 from metafunctions.tests.util import BaseTestCase
 
 
@@ -10,7 +8,7 @@ class TestUnit(BaseTestCase):
     def test_str(self):
         c = FunctionChain(a, b, l)
         self.assertEqual(str(c), "(a | b | <lambda>)")
-        self.assertEqual(repr(c), "FunctionChain{}".format((a, b, l)))
+        self.assertEqual(repr(c), f"FunctionChain{(a, b, l)}")
 
     def test_call(self):
         c = FunctionChain(a, b, l)

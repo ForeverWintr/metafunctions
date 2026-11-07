@@ -10,7 +10,7 @@ It allows for data pipeline creation separate from execution, so instead of writ
 ```python
 result = step3(step2(step1(data)))
 
-#or
+# or
 result_1 = step1(data)
 result_2 = step2(result_1)
 result_3 = step3(result_2)
@@ -32,8 +32,8 @@ Well you may not *need* a new syntax, but the ability to compose a data pipeline
   preprocess = load | parse | clean | validate | format
 
   # preprocess is now a MetaFunction, and can be reused
-  clean_data1 = preprocess('path/to/data/file')
-  clean_data2 = preprocess('path/to/different/file')
+  clean_data1 = preprocess("path/to/data/file")
+  clean_data2 = preprocess("path/to/different/file")
 
   # Preprocess can be included in larger pipelines
   pipeline = preprocess | step1 | step2 | step3
@@ -56,7 +56,7 @@ Well you may not *need* a new syntax, but the ability to compose a data pipeline
 
 ## Installation
 
-MetaFunctions supports python 3.5+ (tested to 3.10+)
+MetaFunctions supports python 3.11+
 
 `pip install metafunctions`
 
@@ -68,13 +68,15 @@ You can create a MetaFunction using the `node` decorator:
 ```python
 from metafunctions import node
 
+
 @node
 def get_name(prompt):
     return input(prompt)
 
+
 @node
 def say_hello(name):
-    return 'Hello {}!'.format(name)
+    return "Hello {}!".format(name)
 ```
 
 MetaFunctions override certain operators to allow for composition. For example, the following creates a new MetaFunction that combines `get_name` and `say_hello`:
@@ -86,8 +88,8 @@ When we call the `greet` MetaFunction, it calls both its internal functions in t
 ```python
 # First, `get_name` is called, which prints our prompt to the screen.
 # If we enter 'Tom' at the prompt, the second function returns the string 'Hello Tom!'
-greeting = greet('Please enter your name ')
-print(greeting) # Hello Tom!
+greeting = greet("Please enter your name ")
+print(greeting)  # Hello Tom!
 ```
 
 MetaFunctions are also capable of upgrading regular functions to MetaFunctions at composition time, so we can simplify our example by composing `say_hello` directly with the builtin `input` and `print` functions:
@@ -142,13 +144,13 @@ Metafunctions provides utilities for constructing advanced function pipelines.
   
   ```python
   # The following pipeline sends the output of `a` to `b`, and also adds it to the output of `c`
-  p = a | store('a') | b | recall('a') + c
+  p = a | store("a") | b | recall("a") + c
   ```
 
 * **mmap**: A MetaFunction decorator that wraps a function (or MetaFunction) and calls it once per item in the input it receives. This allows you to  create loops in function pipelines:
   
   ```python
-  (1, 2, 3) | mmap(process) # <- equivalent to (1, 2, 3) | (process & process & process)
+  (1, 2, 3) | mmap(process)  # <- equivalent to (1, 2, 3) | (process & process & process)
   ```
   `mmap` duplicates the behaviour of the builtin [`map`](https://docs.python.org/3/library/functions.html#map) function.
 
@@ -156,8 +158,8 @@ Metafunctions provides utilities for constructing advanced function pipelines.
 
   ```python
   @node
-  def f(result1, result2):
-      ...
+  def f(result1, result2): ...
+
 
   # When cmp is called, f will receive the results of both a and b as positional args
   cmp = (a & b) | star(f)

@@ -1,18 +1,14 @@
-import typing as tp
 import abc
-import itertools
 import functools
+import itertools
+import typing as tp
 
-
-from metafunctions.core.decorators import binary_operation
-from metafunctions.core.decorators import manage_call_state
+from metafunctions import exceptions, operators
 from metafunctions.core.call_state import CallState
-from metafunctions import operators
-from metafunctions import exceptions
+from metafunctions.core.decorators import binary_operation, manage_call_state
 
 
 class MetaFunction(metaclass=abc.ABCMeta):
-
     # Metafunctions will pass call state to any function with this attribute set to true
     _receives_call_state = True
     _function_join_str = ""
@@ -30,7 +26,7 @@ class MetaFunction(metaclass=abc.ABCMeta):
 
     def __str__(self):
         return "({})".format(
-            " {} ".format(self._function_join_str).join(str(f) for f in self.functions)
+            f" {self._function_join_str} ".join(str(f) for f in self.functions)
         )
 
     @property
@@ -134,7 +130,7 @@ class FunctionChain(MetaFunction):
         return result
 
     def __repr__(self):
-        return "{self.__class__.__name__}{self.functions}".format(self=self)
+        return f"{self.__class__.__name__}{self.functions}"
 
     @classmethod
     def combine(cls, *funcs):
@@ -149,14 +145,16 @@ class FunctionChain(MetaFunction):
 
 
 class FunctionMerge(MetaFunction):
-    _character_to_operator = {
+    _character_to_operator: tp.ClassVar = {
         "+": operators.add,
         "-": operators.sub,
         "*": operators.mul,
         "/": operators.truediv,
         "&": operators.concat,
     }
-    _operator_to_character = {v: k for k, v in _character_to_operator.items()}
+    _operator_to_character: tp.ClassVar = {
+        v: k for k, v in _character_to_operator.items()
+    }
 
     def __init__(self, merge_func: tp.Callable, functions: tuple, function_join_str=""):
         """
@@ -202,9 +200,7 @@ class FunctionMerge(MetaFunction):
         return self._merge_func(*results)
 
     def __repr__(self):
-        return "{self.__class__.__name__}({self._merge_func}, {self.functions})".format(
-            self=self
-        )
+        return f"{self.__class__.__name__}({self._merge_func}, {self.functions})"
 
     @classmethod
     def combine(cls, merge_func: tp.Callable, *funcs, function_join_str=None):
@@ -232,9 +228,7 @@ class FunctionMerge(MetaFunction):
         func_iter = iter(self.functions)
         if len(args) > len(self.functions):
             raise exceptions.CallError(
-                "{} takes 1 or <= {} arguments, but {} were given".format(
-                    self, len(self.functions), len(args)
-                )
+                f"{self} takes 1 or <= {len(self.functions)} arguments, but {len(args)} were given"
             )
         if len(args) == 1:
             args_iter = itertools.repeat(next(args_iter))
@@ -271,7 +265,7 @@ class SimpleFunction(MetaFunction):
         return self._function(*args, **kwargs)
 
     def __repr__(self):
-        return "{self.__class__.__name__}({self.functions[0]!r})".format(self=self)
+        return f"{self.__class__.__name__}({self.functions[0]!r})"
 
     def __str__(self):
         return self._name
@@ -291,7 +285,7 @@ class DeferredValue(SimpleFunction):
         return self._value
 
     def __repr__(self):
-        return "{self.__class__.__name__}({self._value!r})".format(self=self)
+        return f"{self.__class__.__name__}({self._value!r})"
 
     @property
     def functions(self):

@@ -1,14 +1,9 @@
-import unittest
-from unittest import mock
-import functools
 import itertools
 
-from metafunctions.tests.util import BaseTestCase
-from metafunctions.tests.simple_nodes import *
-from metafunctions.api import node
-from metafunctions.api import locate_error
-from metafunctions.api import bind_call_state
+from metafunctions.api import bind_call_state, locate_error, node
 from metafunctions.core import CallState
+from metafunctions.tests.simple_nodes import *
+from metafunctions.tests.util import BaseTestCase
 
 
 class TestIntegration(BaseTestCase):
@@ -65,7 +60,7 @@ class TestIntegration(BaseTestCase):
         self.assertEqual(
             repr(cmp),
             "FunctionMerge(<built-in function add>, "
-            "(SimpleFunction({0!r}), DeferredValue('f')))".format(a._function),
+            f"(SimpleFunction({a._function!r}), DeferredValue('f')))",
         )
 
     def test_non_callable_composition(self):
@@ -238,7 +233,7 @@ class TestIntegration(BaseTestCase):
             return "$" + str(x**3)
 
         numeric = (query_volume | float) + (query_price | float)
-        with self.assertRaises(ValueError) as e:
+        with self.assertRaises(ValueError):
             numeric(2)
 
     def test_decoration(self):
@@ -253,7 +248,7 @@ class TestIntegration(BaseTestCase):
             return x + "f"
 
         fn = node(f + "sup")
-        self.assertEqual(repr(fn), "SimpleFunction({0!r})".format((f + "sup")))
+        self.assertEqual(repr(fn), "SimpleFunction({!r})".format(f + "sup"))
         self.assertEqual(str(fn), "(f + 'sup')")
         abcf = a | b | c | fn
 
