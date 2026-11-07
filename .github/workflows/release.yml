@@ -7,10 +7,9 @@ on:
   push:
     branches: [ main ]
 
-# Never run two releases at once, and don't cancel one that's in progress.
+# Never run two releases at once.
 concurrency:
   group: release
-  cancel-in-progress: false
 
 permissions:
   contents: read
@@ -93,5 +92,4 @@ jobs:
         gh release create "v$VERSION" dist/*
         --repo "$GITHUB_REPOSITORY"
         --target "$GITHUB_SHA"
-        --title "v$VERSION"
         --generate-notes
