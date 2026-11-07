@@ -1,0 +1,97 @@
+# Publishes to PyPI and creates a GitHub Release when main has a version that hasn't been tagged yet.
+# PyPI uploads use trusted publishing: https://docs.pypi.org/trusted-publishers/
+
+name: Release
+
+on:
+  push:
+    branches: [ main ]
+
+# Never run two releases at once, and don't cancel one that's in progress.
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  check-version:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.check.outputs.version }}
+      is_new: ${{ steps.check.outputs.is_new }}
+    steps:
+    - uses: actions/checkout@v7
+    - uses: astral-sh/setup-uv@v7
+    - name: Check whether this version has been released
+      id: check
+      run: |
+        version=$(uv version --short)
+        echo "version=$version" >> "$GITHUB_OUTPUT"
+        if git ls-remote --exit-code --tags origin "refs/tags/v$version" > /dev/null; then
+          echo "v$version is already tagged; nothing to release."
+          echo "is_new=false" >> "$GITHUB_OUTPUT"
+        else
+          echo "v$version is new; releasing."
+          echo "is_new=true" >> "$GITHUB_OUTPUT"
+        fi
+
+  test:
+    needs: check-version
+    if: needs.check-version.outputs.is_new == 'true'
+    uses: ./.github/workflows/test.yml
+    secrets: inherit
+
+  build:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v7
+    - uses: astral-sh/setup-uv@v7
+    - name: Build sdist and wheel
+      run: uv build
+    - uses: actions/upload-artifact@v7
+      with:
+        name: dist
+        path: dist/
+
+  publish-pypi:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/project/metafunctions/
+    permissions:
+      id-token: write
+    steps:
+    - uses: actions/download-artifact@v8
+      with:
+        name: dist
+        path: dist/
+    - uses: pypa/gh-action-pypi-publish@release/v1
+      with:
+        # Lets a re-run succeed if some files were uploaded before a failure.
+        skip-existing: true
+
+  # Runs after PyPI so a failed upload leaves no tag, and the next run retries.
+  github-release:
+    needs: [ check-version, publish-pypi ]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+    - uses: actions/download-artifact@v8
+      with:
+        name: dist
+        path: dist/
+    - name: Create GitHub Release and tag
+      env:
+        GH_TOKEN: ${{ github.token }}
+        VERSION: ${{ needs.check-version.outputs.version }}
+      run: >
+        gh release create "v$VERSION" dist/*
+        --repo "$GITHUB_REPOSITORY"
+        --target "$GITHUB_SHA"
+        --title "v$VERSION"
+        --generate-notes

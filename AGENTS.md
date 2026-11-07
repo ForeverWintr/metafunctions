@@ -22,6 +22,8 @@ Dependencies are declared in `pyproject.toml` and locked in `uv.lock` (commit it
 
 CI (`.github/workflows/test.yml`) runs `ruff check` and `ruff format --check`, then tests under coverage across Python 3.11–3.14 on Linux/macOS/Windows. `ConcurrentMerge` tests are skipped on Windows (no `os.fork`).
 
+Releases are automated (see `CONTRIBUTING.md`): `.github/workflows/version-check.yml` requires PRs into `main` to bump `version` in `pyproject.toml`, and `.github/workflows/release.yml` publishes to PyPI and creates a GitHub Release when `main` has an untagged version.
+
 ## Architecture
 
 Everything is a `MetaFunction` (`metafunctions/core/base.py`), an abstract callable that holds other callables in `.functions`. Composition happens via operator overloads on `MetaFunction`:
