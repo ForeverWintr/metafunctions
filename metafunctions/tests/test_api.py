@@ -1,5 +1,9 @@
-from metafunctions.api import bind_call_state, node, recall, store
-from metafunctions.core import CallState, SimpleFunction
+from metafunctions.api import bind_call_state
+from metafunctions.api import node
+from metafunctions.api import recall
+from metafunctions.api import store
+from metafunctions.core import CallState
+from metafunctions.core import SimpleFunction
 from metafunctions.tests.simple_nodes import *
 from metafunctions.tests.util import BaseTestCase
 

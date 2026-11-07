@@ -1,6 +1,8 @@
 import itertools
 
-from metafunctions.api import bind_call_state, locate_error, node
+from metafunctions.api import bind_call_state
+from metafunctions.api import locate_error
+from metafunctions.api import node
 from metafunctions.core import CallState
 from metafunctions.tests.simple_nodes import *
 from metafunctions.tests.util import BaseTestCase

@@ -2,8 +2,10 @@ import operator
 import unittest
 
 from metafunctions import exceptions
-from metafunctions.api import node, star
-from metafunctions.core import FunctionMerge, SimpleFunction
+from metafunctions.api import node
+from metafunctions.api import star
+from metafunctions.core import FunctionMerge
+from metafunctions.core import SimpleFunction
 from metafunctions.operators import concat
 from metafunctions.tests.util import BaseTestCase
 

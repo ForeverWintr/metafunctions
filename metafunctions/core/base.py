@@ -3,9 +3,11 @@ import functools
 import itertools
 import typing as tp
 
-from metafunctions import exceptions, operators
+from metafunctions import exceptions
+from metafunctions import operators
 from metafunctions.core.call_state import CallState
-from metafunctions.core.decorators import binary_operation, manage_call_state
+from metafunctions.core.decorators import binary_operation
+from metafunctions.core.decorators import manage_call_state
 
 
 class MetaFunction(metaclass=abc.ABCMeta):

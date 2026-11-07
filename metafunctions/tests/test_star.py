@@ -2,7 +2,9 @@ import os
 import unittest
 
 from metafunctions import exceptions
-from metafunctions.api import concurrent, node, star
+from metafunctions.api import concurrent
+from metafunctions.api import node
+from metafunctions.api import star
 from metafunctions.tests.simple_nodes import *
 from metafunctions.tests.util import BaseTestCase
 

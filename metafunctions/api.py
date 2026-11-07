@@ -5,8 +5,12 @@ Utility functions for use in function pipelines.
 import functools
 import typing as tp
 
-from metafunctions import operators, util
-from metafunctions.core import CallState, FunctionMerge, MetaFunction, SimpleFunction
+from metafunctions import operators
+from metafunctions import util
+from metafunctions.core import CallState
+from metafunctions.core import FunctionMerge
+from metafunctions.core import MetaFunction
+from metafunctions.core import SimpleFunction
 from metafunctions.core.concurrent import ConcurrentMerge
 from metafunctions.map import MergeMap
 

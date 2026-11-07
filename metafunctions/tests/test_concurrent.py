@@ -3,19 +3,20 @@ import platform
 import unittest
 from unittest import mock
 
-from metafunctions import operators, util
-from metafunctions.api import (
-    bind_call_state,
-    concurrent,
-    locate_error,
-    mmap,
-    node,
-    star,
-    store,
-)
+from metafunctions import operators
+from metafunctions import util
+from metafunctions.api import bind_call_state
+from metafunctions.api import concurrent
+from metafunctions.api import locate_error
+from metafunctions.api import mmap
+from metafunctions.api import node
+from metafunctions.api import star
+from metafunctions.api import store
 from metafunctions.core import CallState
 from metafunctions.core.concurrent import ConcurrentMerge
-from metafunctions.exceptions import CallError, CompositionError, ConcurrentException
+from metafunctions.exceptions import CallError
+from metafunctions.exceptions import CompositionError
+from metafunctions.exceptions import ConcurrentException
 from metafunctions.tests.simple_nodes import *
 from metafunctions.tests.util import BaseTestCase
 

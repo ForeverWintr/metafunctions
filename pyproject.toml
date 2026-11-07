@@ -39,3 +39,6 @@ version = { attr = "metafunctions.__version__" }
 
 [tool.setuptools.packages.find]
 include = ["metafunctions*"]
+
+[tool.ruff.lint.isort]
+force-single-line = true
