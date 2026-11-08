@@ -10,6 +10,7 @@ on:
 # Never run two releases at once.
 concurrency:
   group: release
+  queue: max
 
 permissions:
   contents: read
