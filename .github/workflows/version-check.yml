@@ -16,30 +16,5 @@ jobs:
     steps:
     - uses: actions/checkout@v7
     - uses: astral-sh/setup-uv@v7
-    - name: Fetch base branch
-      run: git fetch --depth=1 origin "$GITHUB_BASE_REF"
-    - name: Check that the version is new and higher than the base branch's
-      run: |
-        version=$(uv version --short)
-        if git ls-remote --exit-code --tags origin "refs/tags/v$version" > /dev/null; then
-          echo "::error file=pyproject.toml::Version $version is already released (tag v$version exists). Bump the version in pyproject.toml."
-          exit 1
-        fi
-        git show FETCH_HEAD:pyproject.toml > "$RUNNER_TEMP/base-pyproject.toml"
-        uv run --no-project --with packaging python - "$RUNNER_TEMP/base-pyproject.toml" <<'EOF'
-        import sys
-        import tomllib
-
-        from packaging.version import Version
-
-        def read_version(path):
-            with open(path, "rb") as f:
-                return Version(tomllib.load(f)["project"]["version"])
-
-        new = read_version("pyproject.toml")
-        base = read_version(sys.argv[1])
-        if new <= base:
-            print(f"::error file=pyproject.toml::Version {new} must be higher than {base} on the base branch.")
-            sys.exit(1)
-        print(f"Version bumped: {base} -> {new}")
-        EOF
+    - name: Check that the version is higher than every release tag
+      run: uv run --locked python .github/scripts/check_version.py
