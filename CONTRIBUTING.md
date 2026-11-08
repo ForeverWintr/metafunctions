@@ -10,7 +10,7 @@ To run the tests against a specific python version (uv will download it if neede
 
     $ uv run --python 3.11 pytest
 
-To release, bump `version` in `pyproject.toml` and merge to `main`. Every PR into `main` must bump the version (enforced by `.github/workflows/version-check.yml`). On each push to `main`, `.github/workflows/release.yml` checks whether tag `v<version>` exists. If it doesn't, the workflow runs the tests, builds, publishes to PyPI, and creates a GitHub Release (which creates the tag).
+To release, bump `version` in `pyproject.toml` and merge to `main`. Every PR into `main` must bump the version (enforced by `.github/workflows/version-check.yml`). On each push to `main`, `.github/workflows/release.yml` runs the tests, builds, publishes to PyPI, and creates a GitHub Release (which creates tag `v<version>`).
 
 To build and publish manually, as a fallback:
 

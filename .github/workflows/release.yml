@@ -1,4 +1,6 @@
-# Publishes to PyPI and creates a GitHub Release when main has a version that hasn't been tagged yet.
+# Publishes to PyPI and creates a GitHub Release on every push to main.
+# version-check.yml ensures each PR into main bumps the version. If main somehow has an
+# already-released version, the run fails when creating the GitHub Release.
 # PyPI uploads use trusted publishing: https://docs.pypi.org/trusted-publishers/
 
 name: Release
@@ -16,39 +18,21 @@ permissions:
   contents: read
 
 jobs:
-  check-version:
-    runs-on: ubuntu-latest
-    outputs:
-      version: ${{ steps.check.outputs.version }}
-      is_new: ${{ steps.check.outputs.is_new }}
-    steps:
-    - uses: actions/checkout@v7
-    - uses: astral-sh/setup-uv@v7
-    - name: Check whether this version has been released
-      id: check
-      run: |
-        version=$(uv version --short)
-        echo "version=$version" >> "$GITHUB_OUTPUT"
-        if git ls-remote --exit-code --tags origin "refs/tags/v$version" > /dev/null; then
-          echo "v$version is already tagged; nothing to release."
-          echo "is_new=false" >> "$GITHUB_OUTPUT"
-        else
-          echo "v$version is new; releasing."
-          echo "is_new=true" >> "$GITHUB_OUTPUT"
-        fi
-
   test:
-    needs: check-version
-    if: needs.check-version.outputs.is_new == 'true'
     uses: ./.github/workflows/test.yml
     secrets: inherit
 
   build:
     needs: test
     runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
     steps:
     - uses: actions/checkout@v7
     - uses: astral-sh/setup-uv@v7
+    - name: Read version
+      id: version
+      run: echo "version=$(uv version --short)" >> "$GITHUB_OUTPUT"
     - name: Build sdist and wheel
       run: uv build
     - uses: actions/upload-artifact@v7
@@ -76,7 +60,7 @@ jobs:
 
   # Runs after PyPI so a failed upload leaves no tag, and the next run retries.
   github-release:
-    needs: [ check-version, publish-pypi ]
+    needs: [ build, publish-pypi ]
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -88,7 +72,7 @@ jobs:
     - name: Create GitHub Release and tag
       env:
         GH_TOKEN: ${{ github.token }}
-        VERSION: ${{ needs.check-version.outputs.version }}
+        VERSION: ${{ needs.build.outputs.version }}
       run: >
         gh release create "v$VERSION" dist/*
         --repo "$GITHUB_REPOSITORY"
