@@ -23,8 +23,8 @@ released = [
     for line in ls_remote.stdout.splitlines()
 ]
 
-latest = max(released, default=None)
-if latest is not None and version <= latest:
+latest = max(released, default=Version("0"))
+if version <= latest:
     # ::error is a GitHub Actions workflow command; it annotates the file in the PR.
     print(
         f"::error file=pyproject.toml::Version {version} must be higher than the latest release, {latest}. Bump the version in pyproject.toml."
