@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "metafunctions"
-version = "1.1.1"
+version = "1.1.2"
 description = "Metafunctions is a function composition and data pipelining library"
 readme = "README.md"
 requires-python = ">=3.11"
