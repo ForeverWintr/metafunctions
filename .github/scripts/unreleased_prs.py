@@ -33,6 +33,9 @@ while True:
         break
     limit *= 2
 
+
+# Header
+print("## Changes in this release:\n")
 for pr in json.loads(merged_prs.stdout):
     # Exit code 0 means the merge commit is on main, 1 means it isn't; anything else is an error.
     on_main = subprocess.run(
