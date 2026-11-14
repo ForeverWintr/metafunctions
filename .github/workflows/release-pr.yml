@@ -1,0 +1,46 @@
+# Keeps a PR from dev into main open whenever dev has changes main doesn't, listing the PRs it would release.
+# Merging it releases (see release.yml), once the version has been bumped (see version-check.yml).
+# The PR is opened with GITHUB_TOKEN, so the checks GitHub starts when it's opened wait for approval:
+# click "Approve workflows to run" on the PR. Later pushes to dev start them normally.
+
+name: Release PR
+
+on:
+  push:
+    branches: [ dev ]
+
+# A newer pending run replaces an older one, so the PR ends up reflecting the latest dev.
+concurrency:
+  group: release-pr
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  update-release-pr:
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+    - uses: actions/checkout@v7
+      with:
+        # Full history, to tell which PRs' merge commits are on main.
+        fetch-depth: 0
+    - name: Check whether dev is ahead of main
+      id: ahead
+      run: echo "count=$(git rev-list --count origin/main..origin/dev)" >> "$GITHUB_OUTPUT"
+    - uses: astral-sh/setup-uv@v7
+      if: steps.ahead.outputs.count != '0'
+    - name: Create or update the release PR
+      if: steps.ahead.outputs.count != '0'
+      run: |
+        python3 .github/scripts/unreleased_prs.py > body.md
+        # The version on dev, i.e. the one merging this PR would release.
+        TITLE="Release v$(uv version --short)"
+        PR_NUMBER=$(gh pr list --head dev --base main --json number --jq '.[0].number // empty')
+        if [ -z "$PR_NUMBER" ]; then
+          gh pr create --head dev --base main --title "$TITLE" --body-file body.md
+        else
+          gh pr edit "$PR_NUMBER" --title "$TITLE" --body-file body.md
+        fi
