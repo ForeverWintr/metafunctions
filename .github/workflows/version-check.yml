@@ -16,5 +16,11 @@ jobs:
     steps:
     - uses: actions/checkout@v7
     - uses: astral-sh/setup-uv@v7
-    - name: Check that the version is higher than every release tag
-      run: uv run --locked python .github/scripts/check_version.py
+    - name: Fetch base commit
+      env:
+        BASE_SHA: ${{ github.event.pull_request.base.sha }}
+      run: git fetch --depth=1 origin "$BASE_SHA"
+    - name: Check that the version is higher than the base branch's
+      env:
+        BASE_SHA: ${{ github.event.pull_request.base.sha }}
+      run: uv run --locked python .github/scripts/check_version.py "$BASE_SHA"
