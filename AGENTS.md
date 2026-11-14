@@ -4,7 +4,7 @@ This file provides guidance to AI coding agents working with code in this reposi
 
 ## Project
 
-MetaFunctions is a function composition / data pipelining library (`step1 | step2 + step3`). Pure Python, no runtime dependencies. Version lives in `metafunctions/__init__.py` (`__version__`) and is read by `pyproject.toml` (setuptools dynamic version).
+MetaFunctions is a function composition / data pipelining library (`step1 | step2 + step3`). Pure Python, no runtime dependencies. Version lives in `pyproject.toml` (`version`); `metafunctions/__init__.py` reads it back from the installed package metadata (`importlib.metadata`) as `__version__`.
 
 ## Commands
 
@@ -20,7 +20,9 @@ uv run ruff format .                                           # formatter (CI r
 
 Dependencies are declared in `pyproject.toml` and locked in `uv.lock` (commit it; CI runs `uv sync --locked`). Use `uv add` / `uv add --dev` to change them.
 
-CI (`.github/workflows/test.yml`) runs `ruff check` and `ruff format --check`, then tests under coverage across Python 3.11–3.14 on Linux/macOS/Windows. `ConcurrentMerge` tests are skipped on Windows (no `os.fork`).
+CI (`.github/workflows/test.yml`) runs `ruff check` and `ruff format --check`, then tests under coverage across Python 3.11–3.15 on Linux/macOS/Windows. `ConcurrentMerge` tests are skipped on Windows (no `os.fork`).
+
+Releases are automated (see `CONTRIBUTING.md`): `.github/workflows/version-check.yml` requires PRs into `main` to bump `version` in `pyproject.toml`, and `.github/workflows/release.yml` publishes to PyPI and creates a GitHub Release on every push to `main`.
 
 ## Architecture
 
