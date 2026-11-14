@@ -5,8 +5,10 @@ name: Test
 
 on:
   push:
-    branches: [ master, dev ]
+    branches: [ main, dev ]
   pull_request:
+  # Lets release.yml run the test suite before publishing.
+  workflow_call:
 
 
 jobs:

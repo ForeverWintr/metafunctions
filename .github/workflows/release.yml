@@ -1,0 +1,80 @@
+# Publishes to PyPI and creates a GitHub Release on every push to main.
+# version-check.yml ensures each PR into main bumps the version. If main somehow has an
+# already-released version, the run fails when creating the GitHub Release.
+# PyPI uploads use trusted publishing: https://docs.pypi.org/trusted-publishers/
+
+name: Release
+
+on:
+  push:
+    branches: [ main ]
+
+# Never run two releases at once.
+concurrency:
+  group: release
+  queue: max
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    uses: ./.github/workflows/test.yml
+    secrets: inherit
+
+  build:
+    needs: test
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    steps:
+    - uses: actions/checkout@v7
+    - uses: astral-sh/setup-uv@v7
+    - name: Read version
+      id: version
+      run: echo "version=$(uv version --short)" >> "$GITHUB_OUTPUT"
+    - name: Build sdist and wheel
+      run: uv build
+    - uses: actions/upload-artifact@v7
+      with:
+        name: dist
+        path: dist/
+
+  publish-pypi:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/project/metafunctions/
+    permissions:
+      id-token: write
+    steps:
+    - uses: actions/download-artifact@v8
+      with:
+        name: dist
+        path: dist/
+    - uses: pypa/gh-action-pypi-publish@release/v1
+      with:
+        # Lets a re-run succeed if some files were uploaded before a failure.
+        skip-existing: true
+
+  # Runs after PyPI so a failed upload leaves no tag, and the next run retries.
+  github-release:
+    needs: [ build, publish-pypi ]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+    - uses: actions/download-artifact@v8
+      with:
+        name: dist
+        path: dist/
+    - name: Create GitHub Release and tag
+      env:
+        GH_TOKEN: ${{ github.token }}
+        VERSION: ${{ needs.build.outputs.version }}
+      run: >
+        gh release create "v$VERSION" dist/*
+        --repo "$GITHUB_REPOSITORY"
+        --target "$GITHUB_SHA"
+        --generate-notes

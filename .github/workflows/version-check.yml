@@ -1,0 +1,20 @@
+# Requires every PR into main to bump the version, so main never differs from what's on PyPI.
+# Every merge to main is released by release.yml.
+
+name: Version check
+
+on:
+  pull_request:
+    branches: [ main ]
+
+permissions:
+  contents: read
+
+jobs:
+  version-bumped:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v7
+    - uses: astral-sh/setup-uv@v7
+    - name: Check that the version is higher than every release tag
+      run: uv run --locked python .github/scripts/check_version.py

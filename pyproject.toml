@@ -31,6 +31,7 @@ Homepage = "https://github.com/ForeverWintr/metafunctions"
 [dependency-groups]
 dev = [
     "coverage",
+    "packaging>=26.3",
     "pytest>=9.2.0",
     "ruff>=0.17.3",
 ]
